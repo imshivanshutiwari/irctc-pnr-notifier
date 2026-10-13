@@ -1,5 +1,5 @@
 """
-tracker.py — Main orchestration engine for PNR tracking and alert generation.
+tracker.py - Main orchestration engine for PNR tracking and alert generation.
 Supports tracking single or multiple PNRs, regex status classification,
 detecting genuine waiting list improvements, atomic state writes,
 and delivery over ntfy, WhatsApp, or Telegram.

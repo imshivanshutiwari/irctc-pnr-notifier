@@ -14,31 +14,37 @@ This utility provides both scheduled 24/7 autonomous monitoring and a modern web
 - Notification failure preserves the old baseline for retry.
 - Dry-run mode must not call external notification services.
 
-## Travel and Transit UI/UX Specification
+## Anti-Vibecoding Design Architecture
 
-The web dashboard implements the UI/UX Pro Max Travel and Transit design specification.
+To avoid generic SaaS cliches, the web dashboard strictly adheres to the 30-point anti-vibecoding standard:
 
-### Style Direction
-- Primary Architecture: Bento Box Grid and Swiss Modernism 2.0 with subtle glassmorphic depth.
-- Visual Language: Modular card-based hierarchy, rounded corners (16-24px), clean asymmetric balance, zero visual clutter, generous whitespace.
-- Layout: Asymmetric responsive grid (12-column desktop, single-column mobile) with ticket-stub inspired cards displaying Origin to Destination, Train Number, Journey Date, and Coach/Berth info.
-
-### Color Palette System (WCAG 4.5:1 Compliant)
-- Primary Brand: Deep Rail / Transit Navy (#1E3A8A) and Sky Blue (#0EA5E9)
-- Secondary Accent: Transit Amber (#EA580C / #F97316) for primary actions and active states
-- Surface / Cards: Pure White (#FFFFFF) in Light Mode / Deep Slate (#0F172A) in Dark Mode
-- Background: Soft Ice Blue (#EFF6FF) in Light Mode / Midnight (#020617) in Dark Mode
-- Status Badges:
-  - Confirmed (CNF): Emerald Green (#16A34A, background: #DCFCE7)
-  - RAC / Partial: Amber Warning (#D97706, background: #FEF3C7)
-  - Waiting List (WL / RLWL): Indigo / Blue (#2563EB, background: #DBEAFE)
-
-### Typography
-- Headings: Inter or Space Grotesk (700 bold, tracking-tight)
-- Body and Labels: Inter (400/500, line-height: 1.5)
-- Numerical and PNR Data: JetBrains Mono or SF Mono (tabular figures for alignment)
-
-### Micro-Interactions and Motion
-- Transitions: 150-200ms ease-out for hover scale (1.01x) and tab switches.
-- Feedback: Clear loading skeletons, instant feedback spinners on refresh, visible focus rings.
-- Anti-patterns Avoided: No raw unformatted text, no low-contrast gray-on-gray, no cluttered multi-level tables without badges, no hover-only interactions (minimum 44x44px touch targets).
+1. No Harsh Gradients: Solid functional tones with 1px structural borders.
+2. No Lucide Icon Clutter: Minimalist inline SVGs and functional indicators.
+3. No Pure White Backgrounds: Industrial neutral tones (#F8FAFC in light, #0B1120 in dark).
+4. No Rainbow Coloring: Strict transit palette (Transit Navy, Signal Green, Signal Amber, Cobalt).
+5. No Drop Shadows Everywhere: Crisp 1px structural borders without floating drop shadows.
+6. No Three Feature Cards in a Row: Direct operational telemetry and real dynamic ticket rosters.
+7. No Emojis: Strictly 0 emojis across the entire codebase, UI, and documentation.
+8. No Liquid Glass Effect: Solid, opaque, performant UI panels without backdrop-blur filters.
+9. No Em Dashes: Standard hyphens and colons used consistently.
+10. No Inter / Geist / Space Grotesk Overuse: High-performance native system UI and monospace stack.
+11. No Colored Stripes: Clean, border-delimited section containers.
+12. No Fake Testimonials: 100% utility and developer tooling focus.
+13. No Gimmicky Bento Grids: Structured Railway Operations Control Station layout.
+14. No Fake Terminal Windows: Real, structured operational event log table with timestamps.
+15. No "It is not X, it is Y" Copy: Direct, factual engineering labels.
+16. No Checkmark Bullets: Clear data tables and status cards.
+17. No Pricing Tiers: 100% free, MIT licensed open-source software.
+18. Real Live Functionality: Live queries against real railway endpoints, not static mockups.
+19. Crisp Corner Radius: Precision 6px industrial corner radius instead of bubbly soft curves.
+20. No Purple and Black Schemes: Authentic transit slate, navy, and signaling colors.
+21. Skeleton Loaders Included: Clear accessible skeleton state during data fetches.
+22. No Radial Orbs or Blur Blobs: Zero ambient glow spheres or blurry backdrops.
+23. No Dot Grids: Clean, solid, distraction-free backgrounds.
+24. No Sparkle Icons: Clean technical iconography.
+25. No Animated Arrows: Static, clear directional markers.
+26. Terms of Service Included: Fully documented and accessible terms in UI and documentation.
+27. Privacy Policy Included: Explicit local data isolation and zero telemetry collection disclosures.
+28. No Excessive Hover Animations: Immediate, tactile button states without bouncy zoom effects.
+29. No Neon Colors: Industry-standard transit signal tones.
+30. High Contrast Badges: WCAG AA/AAA compliant contrast ratios on all ticket badges.

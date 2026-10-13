@@ -1,4 +1,4 @@
-# Product Requirements — IRCTC PNR Notifier
+# Product Requirements - IRCTC PNR Notifier
 
 ## Problem
 Travelers want to know when a waitlisted or RAC ticket improves without repeatedly checking PNR status manually.

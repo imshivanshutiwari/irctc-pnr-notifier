@@ -1,5 +1,5 @@
 """
-notifier.py — Notification dispatch engine for IRCTC PNR status alerts.
+notifier.py - Notification dispatch engine for IRCTC PNR status alerts.
 Supports:
 1. WhatsApp via CallMeBot (100% Free personal WhatsApp gateway)
 2. Telegram Bot (Free alternative)

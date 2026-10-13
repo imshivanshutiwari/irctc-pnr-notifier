@@ -1,5 +1,5 @@
 """
-pnr_client.py — Fetches and normalizes Indian Railways / IRCTC PNR status.
+pnr_client.py - Fetches and normalizes Indian Railways / IRCTC PNR status.
 Supports:
 1. RapidAPI Indian Railway / IRCTC PNR status endpoints
 2. Mock data provider for testing/simulation
