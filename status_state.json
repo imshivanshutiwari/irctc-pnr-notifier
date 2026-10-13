@@ -1,0 +1,16 @@
+{
+  "pnr": "4763331979",
+  "train_number": "12791",
+  "train_name": "SC DNR SF EXP",
+  "date_of_journey": "17-10-2026",
+  "from_station": "Nagpur",
+  "to_station": "Prayagraj",
+  "chart_prepared": false,
+  "passengers": [
+    {
+      "passenger_number": 1,
+      "booking_status": "W/L  22,RLGN",
+      "current_status": "RLWL  8"
+    }
+  ]
+}
