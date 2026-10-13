@@ -32,9 +32,10 @@ jobs:
 
       - name: Execute PNR Status Check
         env:
-          PNR_NUMBER: ${{ secrets.PNR_NUMBER }}
-          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-          RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST || 'irctc-indian-railway-pnr-status.p.rapidapi.com' }}
+          PNR_NUMBER: ${{ secrets.PNR_NUMBER || '4763331979' }}
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY || 'd0e141607amshe38a6e6682ab684p1566f8jsn4e9bd1ca0663' }}
+          RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST || 'irctc1.p.rapidapi.com' }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'shivanshu-irctc-4763331979' }}
           WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
           CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
         run: |

@@ -30,12 +30,14 @@ class Notifier:
         callmebot_api_key: Optional[str] = None,
         telegram_bot_token: Optional[str] = None,
         telegram_chat_id: Optional[str] = None,
+        ntfy_topic: Optional[str] = None,
         dry_run: bool = False
     ):
         self.whatsapp_phone = whatsapp_phone or os.getenv("WHATSAPP_PHONE")
         self.callmebot_api_key = callmebot_api_key or os.getenv("CALLMEBOT_API_KEY")
         self.telegram_bot_token = telegram_bot_token or os.getenv("TELEGRAM_BOT_TOKEN")
         self.telegram_chat_id = telegram_chat_id or os.getenv("TELEGRAM_CHAT_ID")
+        self.ntfy_topic = ntfy_topic or os.getenv("NTFY_TOPIC")
         self.dry_run = dry_run or os.getenv("DRY_RUN", "false").lower() == "true"
 
     def format_alert_message(
@@ -149,11 +151,44 @@ class Notifier:
             print(f"[Notifier] Failed to send Telegram message: {e}")
             return False
 
+    def send_ntfy(self, message: str, title: str = "IRCTC Waiting List Alert", tags: str = "train,tada") -> bool:
+        """
+        Sends an instant push notification to phone via ntfy.sh (No account required).
+        """
+        if not self.ntfy_topic:
+            return False
+
+        if self.dry_run:
+            safe_print(f"[Notifier - Dry Run] ntfy push simulated to {self.ntfy_topic}:\n{message}")
+            return True
+
+        url = f"https://ntfy.sh/{self.ntfy_topic}"
+        headers = {
+            "Title": title,
+            "Priority": "urgent",
+            "Tags": tags
+        }
+        try:
+            resp = requests.post(url, data=message.encode("utf-8"), headers=headers, timeout=15)
+            if resp.status_code == 200:
+                print(f"[Notifier] ntfy push notification delivered to topic '{self.ntfy_topic}'.")
+                return True
+            else:
+                print(f"[Notifier] ntfy returned status {resp.status_code}: {resp.text}")
+                return False
+        except Exception as e:
+            print(f"[Notifier] Failed to send ntfy push notification: {e}")
+            return False
+
     def send_alert(self, message: str) -> bool:
         """
-        Sends alert to all configured channels (WhatsApp and/or Telegram).
+        Sends alert to all configured channels (ntfy, WhatsApp, and/or Telegram).
         """
         sent = False
+        if self.ntfy_topic:
+            if self.send_ntfy(message):
+                sent = True
+
         if self.whatsapp_phone and self.callmebot_api_key:
             if self.send_whatsapp(message):
                 sent = True
