@@ -4,25 +4,29 @@ on:
   schedule:
     # Runs every 5 hours (at minute 0 past every 5th hour)
     - cron: '0 */5 * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+  workflow_dispatch: # Allows manual trigger from GitHub Actions anytime
 
 permissions:
-  contents: write # Needed to commit status_state.json back to repo
+  contents: read
+  actions: write
+
+concurrency:
+  group: pnr-monitor
+  cancel-in-progress: false
 
 jobs:
   check-pnr:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
           cache: 'pip'
 
       - name: Install dependencies
@@ -30,25 +34,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Run verification test suite
+        run: |
+          python -m unittest discover -s tests -v
+
+      - name: Restore private state cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/status_state.json
+          key: pnr-state-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            pnr-state-${{ runner.os }}-
+
       - name: Execute PNR Status Check
         env:
-          PNR_NUMBER: ${{ secrets.PNR_NUMBER || '4763331979,7000126327,6610459110' }}
-          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY || 'd0e141607amshe38a6e6682ab684p1566f8jsn4e9bd1ca0663' }}
-          RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST || 'irctc1.p.rapidapi.com' }}
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC || 'shivanshu-irctc-4763331979' }}
+          PNR_NUMBER: ${{ secrets.PNR_NUMBER }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST }}
           WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
           CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python tracker.py
-
-      - name: Commit updated state
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add status_state.json
-          if git diff --staged --quiet; then
-            echo "No change in status state to commit."
-          else
-            git commit -m "chore: update PNR status cache [skip ci]"
-            git push
-          fi
+          python tracker.py --state-file "$RUNNER_TEMP/status_state.json"

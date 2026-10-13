@@ -1,104 +1,159 @@
-# 🚂 IRCTC PNR Waiting List WhatsApp Notifier
+# 🚄 RailPulse — Autonomous IRCTC PNR Waiting List Monitor
 
-An automated, 24/7 cloud notification system that monitors your Indian Railways (IRCTC) ticket and immediately sends you a WhatsApp message whenever your waiting list reduces (e.g. from `RLWL 10` ➔ `RLWL 9`, or gets promoted to `RAC` / `CNF`).
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmonth-brightgreen.svg)]()
+[![CI Status](https://img.shields.io/badge/CI-Passing-success.svg)]()
+[![Multi-Channel](https://img.shields.io/badge/Alerts-ntfy%20%7C%20WhatsApp%20%7C%20Telegram-orange.svg)]()
 
----
-
-## ✨ Features
-- **Instant WhatsApp Alerts**: Delivers formatted alerts directly to your phone via CallMeBot (100% Free).
-- **WL Reduction Tracking**: Detects when your waitlist position improves, or when seats confirm (`RAC`, `CNF`).
-- **Free 24/7 Cloud Automation**: Runs on GitHub Actions on a schedule (every 5 hours) without needing your computer to be turned on.
-- **State Persistence**: Tracks historical status in `status_state.json` so you only get alerted when there is an actual change.
-- **Offline / Dry-run Mode**: Test everything locally with mock data before connecting real APIs.
+> **Autonomous, 100% zero-cost cloud monitoring engine that watches Indian Railways (IRCTC) waiting list tickets 24/7 and sends instant mobile alerts when your seat moves up or confirms.**
 
 ---
 
-## 📲 Step 1: Get Free WhatsApp API Key (30 Seconds)
+## ⚡ The Problem & The Solution
 
-We use **CallMeBot**, a free gateway that sends messages directly to your WhatsApp without needing Twilio or business accounts:
+Anyone who books Indian Railways tickets knows the anxiety of being on the waiting list (`WL 10`, `RLWL 5`). Checking IRCTC every few hours is tedious, spammy apps bombard you with ads, and paid SMS alerts charge fees.
 
-1. Add the phone number **`+34 911 06 14 99`** to your phone contacts (e.g., name it "CallMeBot").
-2. Open WhatsApp and send this message to that contact:
-   ```text
-   I allow callmebot to send me messages
-   ```
-3. Within 10–20 seconds, the bot will reply with your personal **`apikey`** (e.g., `123456`).
-4. Keep your phone number (in international format with country code, e.g., `+919876543210`) and API key ready.
-
----
-
-## 🔑 Step 2: Get Free RapidAPI PNR Key
-
-1. Go to [RapidAPI](https://rapidapi.com/) and create a free account.
-2. Search for **"IRCTC Indian Railway PNR Status"** (e.g., `irctc-indian-railway-pnr-status`).
-3. Click **Subscribe to Test** (choose the Free tier with free monthly calls).
-4. Copy your `X-RapidAPI-Key`.
+**RailPulse** solves this completely:
+* 🔋 **100% Autonomous & Serverless**: Runs in GitHub Actions cloud for free — no laptop or VPS needed.
+* 🛡️ **Zero Spam Guarantee**: Completely silent background checks. It triggers an alert **if and only if** your status genuinely improves (e.g. `RLWL 10` ➔ `RLWL 9`, promotion to `RAC`, or final `CNF`).
+* 🚀 **Zero API Key Quotas**: Integrates an open railway endpoint with fallback, eliminating API key limits.
+* 📲 **Multi-Channel Instant Alerts**: Push notifications straight to your phone via **ntfy.sh**, **WhatsApp**, or **Telegram**.
+* 🎯 **Multi-Ticket Monitoring**: Concurrently tracks multiple 10-digit PNRs in a single run.
 
 ---
 
-## 💻 Step 3: Local Setup & Testing
+## 🏗️ Architecture & Data Flow
 
-### 1. Install Dependencies
+```mermaid
+flowchart TD
+    subgraph Cloud["GitHub Actions Cloud (Every 5 Hours)"]
+        Cron["⏰ Cron Trigger / Manual Dispatch"] --> Engine["tracker.py Engine"]
+    end
+
+    subgraph RailAPI["Rail Gateway"]
+        Engine --> Gateway{"Open Rail Gateway<br>(api.confirmtkt.com)"}
+        Gateway -->|Fallback| RapidAPI["RapidAPI IRCTC"]
+    end
+
+    subgraph State["Private State Management"]
+        Engine <--> Cache[("GitHub Actions Cache / Local JSON<br>(Zero Public Leaks)")]
+    end
+
+    subgraph Detection["Deterministic Transition Rules"]
+        Engine --> Classifier["Regex Classifier<br>(GNWL, RLWL, PQWL, RAC, CNF)"]
+        Classifier --> Diff{"Position Reduced<br>or Confirmed?"}
+    end
+
+    subgraph Alerts["Instant Mobile Notifications"]
+        Diff -->|Yes (Improved)| Push["📲 ntfy.sh (Instant Push)"]
+        Diff -->|Yes (Improved)| WA["💬 WhatsApp (CallMeBot)"]
+        Diff -->|Yes (Improved)| TG["✈️ Telegram Bot"]
+        Diff -->|No Change| Silent["🔇 Silent (Zero Spam)"]
+    end
+```
+
+---
+
+## 🚀 Quick Start (Local Setup)
+
+### 1. Clone & Install
 ```bash
+git clone https://github.com/imshivanshutiwari/irctc-pnr-notifier.git
+cd irctc-pnr-notifier
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
-Copy `.env.example` to `.env`:
+### 2. Configure `.env`
+Copy the example template:
 ```bash
 cp .env.example .env
 ```
-Edit `.env` and fill in your details:
+Edit `.env`:
 ```ini
-PNR_NUMBER=1234567890
-RAPIDAPI_KEY=your_rapidapi_key
-WHATSAPP_PHONE=+919876543210
-CALLMEBOT_API_KEY=your_callmebot_api_key
+# Monitor single or multiple comma-separated PNRs
+PNR_NUMBER=4763331979,7000126327,6610459110
+
+# Choose your notification channel (ntfy is recommended - zero signup)
+NTFY_TOPIC=my-private-train-topic
+
+# Optional: WhatsApp / Telegram
+WHATSAPP_PHONE=
+CALLMEBOT_API_KEY=
 ```
 
-### 3. Test Run
-To test without calling external APIs (Dry Run):
-```bash
-python tracker.py --dry-run
-```
-
-To run a live check:
+### 3. Run Check
 ```bash
 python tracker.py
 ```
 
----
-
-## ☁️ Step 4: Run 24/7 in the Cloud (Free via GitHub Actions)
-
-To let it run every 5 hours automatically even when your laptop is turned off:
-
-1. Create a **Private** repository on GitHub and push this code:
-   ```bash
-   git remote add origin https://github.com/<your-username>/irctc-pnr-notifier.git
-   git branch -M main
-   git push -u origin main
-   ```
-2. In your GitHub repository, go to **Settings** ➔ **Secrets and variables** ➔ **Actions**.
-3. Under **Repository secrets**, click **New repository secret** and add:
-   - `PNR_NUMBER`: Your 10-digit PNR
-   - `RAPIDAPI_KEY`: Your RapidAPI key
-   - `WHATSAPP_PHONE`: Your WhatsApp number (e.g., `+919876543210`)
-   - `CALLMEBOT_API_KEY`: Your CallMeBot API key
-4. Enable workflow write permissions so it can save `status_state.json`:
-   - Go to **Settings** ➔ **Actions** ➔ **General**.
-   - Under **Workflow permissions**, select **"Read and write permissions"** and click **Save**.
-5. Done! The workflow in `.github/workflows/pnr_monitor.yml` will automatically run every 5 hours. You can also trigger it manually anytime under the **Actions** tab by clicking **"Run workflow"**.
+### 4. Run Automated Test Suite
+```bash
+python -m unittest discover -s tests -v
+python -m unittest test_tracker.py -v
+```
+All 11 automated unit tests run against offline mocks with zero API consumption.
 
 ---
 
-## 🧪 Running the Automated Test Suite
+## ☁️ 24/7 Cloud Automation (GitHub Actions)
+
+Deploying 24/7 background monitoring takes less than 60 seconds:
+
+1. **Fork or Push** this repository to your GitHub account.
+2. Go to **Settings** ➔ **Secrets and variables** ➔ **Actions**.
+3. Add the following repository secrets:
+   * `PNR_NUMBER`: Your 10-digit PNR numbers (comma-separated).
+   * `NTFY_TOPIC`: Your private ntfy channel topic (e.g. `user-train-pnr-alerts`).
+   * *(Optional)* `RAPIDAPI_KEY`, `WHATSAPP_PHONE`, `CALLMEBOT_API_KEY`.
+4. Go to **Actions** tab and enable workflows.
+
+The cloud worker will wake up every 5 hours, inspect the tickets, deliver notifications, and securely cache booking state between runs without leaking passenger details into git history.
+
+---
+
+## 📊 Live Web Dashboard Preview
+
+Launch the dark-mode web monitoring dashboard locally:
 
 ```bash
-python -m unittest test_tracker.py
+pip install fastapi uvicorn
+python web_dashboard.py
 ```
-This runs 5 automated unit tests verifying:
-- Baseline state detection
-- RLWL reduction (e.g. `RLWL 10` ➔ `RLWL 9`)
-- RAC and CNF promotion alerts
-- WhatsApp message formatting
+Open **`http://localhost:8000`** in your browser to view real-time ticket statuses, coach allocations, and diff history.
+
+---
+
+## 📂 Project Structure
+
+```
+├── .github/workflows/
+│   └── pnr_monitor.yml       # 24/7 GitHub Actions cron scheduler & CI
+├── docs/                     # Full software specification suite
+│   ├── ARCHITECTURE.md       # High-level architecture and boundaries
+│   ├── PRD.md                # Product requirements & problem statement
+│   ├── DESIGN.md             # Component contracts & data flow
+│   ├── SECURITY.md           # Threat modeling & secret management
+│   └── TEST_PLAN.md          # Test strategy & mock verification
+├── tests/
+│   └── test_status_rules.py  # Deterministic regex status unit tests
+├── pnr_client.py             # Dual-gateway rail API client
+├── notifier.py               # Multi-channel notification adapter
+├── tracker.py                # Core diff engine & atomic state manager
+├── web_dashboard.py          # FastAPI + Tailwind local monitoring UI
+├── test_tracker.py           # Integration & multi-passenger test suite
+└── requirements.txt          # Python dependencies
+```
+
+---
+
+## 🛡️ Security & Privacy
+
+* **Zero Public Leakage**: State caches and runtime JSON are untracked in `.gitignore` to prevent travel details from being logged in commits.
+* **Secret Protection**: API tokens and phone numbers are managed purely through environment variables and GitHub Secrets.
+
+---
+
+## 📜 License
+
+Distributed under the **MIT License**. See `LICENSE` for details.

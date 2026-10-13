@@ -20,3 +20,12 @@
 - **Tasks:**
   - Task 3.1: Create `.github/workflows/pnr_monitor.yml` with 5-hour cron schedule and artifact/commit state persistence.
   - Task 3.2: Create `.env.example`, `requirements.txt`, and comprehensive `README.md` with step-by-step CallMeBot setup and GitHub Actions deployment instructions.
+
+### Phase 4: Full-Fledged Project Polish & Architecture Upgrade (GitHub & LinkedIn Showcase)
+- **Goal:** Elevate codebase into an enterprise-grade open-source project with deterministic transition rules, private state caching, rich documentation, test automation, and web dashboard.
+- **Tasks:**
+  - Task 4.1: Merge Documentation Suite (`docs/`: `ARCHITECTURE.md`, `PRD.md`, `DESIGN.md`, `SECURITY.md`, `TEST_PLAN.md`, `DECISIONS.md`, `RULES.md`).
+  - Task 4.2: Integrate regex-based status classification, atomic state persistence, and retry safety into `tracker.py`.
+  - Task 4.3: Add `tests/test_status_rules.py` and verify all 11 unit tests pass across both suites.
+  - Task 4.4: Configure GitHub Secrets (`PNR_NUMBER`, `NTFY_TOPIC`) and update `.gitignore` + `.github/workflows/pnr_monitor.yml` with private Actions cache.
+  - Task 4.5: Design portfolio-grade `README.md`, MIT license, and web dashboard.
