@@ -7,6 +7,13 @@ import os
 import json
 import argparse
 from typing import Dict, Any, List, Tuple
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from pnr_client import PNRClient
 from notifier import Notifier
 

@@ -1,15 +1,19 @@
 # STATE.md — Project State Memory
 
 ## Position
-- **Active Phase**: Phase 1 — Core Engine Implementation
-- **Current Task**: Task 1.1 — Create `notifier.py`
+- **Active Phase**: Phase 3 Complete — Cloud 24/7 Automation & Documentation
 - **Spec Status**: FINALIZED
 
-## Wave Status
-- Wave 1: Foundation (Tasks 1.1, 1.2, 1.3) — In Progress
-- Wave 2: Verification (Tasks 2.1, 2.2) — Pending
-- Wave 3: Cloud Automation & Docs (Tasks 3.1, 3.2) — Pending
+## Wave Summary
+- **Wave 1 (Core Engine)**:
+  - `notifier.py`: WhatsApp (CallMeBot) and Telegram notification engine with Windows console encoding safety.
+  - `pnr_client.py`: Multi-schema Indian Railway / RapidAPI client and mock provider.
+  - `tracker.py`: State persistence (`status_state.json`), diff engine for waiting list movement detection.
+- **Wave 2 (Verification)**:
+  - `test_tracker.py`: 5 automated unit tests executed and passed (`OK` in 0.058s).
+- **Wave 3 (Cloud Automation & Documentation)**:
+  - `.github/workflows/pnr_monitor.yml`: 5-hour scheduled cron (`0 */5 * * *`) with state auto-commit.
+  - `requirements.txt`, `.env.example`, `.gitignore`, and `README.md` complete.
 
-## Last Known Good
-- Git initialized in `C:\Users\SHIVANSHU\irctc-pnr-notifier`.
-- Spec and Roadmap finalized.
+## Verification
+- Test command: `python -m unittest test_tracker.py` -> 5 tests passed with exit code 0.

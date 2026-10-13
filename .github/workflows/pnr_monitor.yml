@@ -1,0 +1,53 @@
+name: IRCTC PNR Waiting List 24/7 Monitor
+
+on:
+  schedule:
+    # Runs every 5 hours (at minute 0 past every 5th hour)
+    - cron: '0 */5 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+
+permissions:
+  contents: write # Needed to commit status_state.json back to repo
+
+jobs:
+  check-pnr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Execute PNR Status Check
+        env:
+          PNR_NUMBER: ${{ secrets.PNR_NUMBER }}
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST || 'irctc-indian-railway-pnr-status.p.rapidapi.com' }}
+          WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+          CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+        run: |
+          python tracker.py
+
+      - name: Commit updated state
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add status_state.json
+          if git diff --staged --quiet; then
+            echo "No change in status state to commit."
+          else
+            git commit -m "chore: update PNR status cache [skip ci]"
+            git push
+          fi
