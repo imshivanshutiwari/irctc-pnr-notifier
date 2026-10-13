@@ -7,9 +7,21 @@ Supports:
 """
 
 import os
+import sys
 import urllib.parse
 import requests
 from typing import Optional, Dict, Any
+
+def safe_print(text: str):
+    """Prints text safely even on consoles that do not support full UTF-8 / emojis (like Windows cp1252)."""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        try:
+            print(text.encode(sys.stdout.encoding or "utf-8", errors="replace").decode(sys.stdout.encoding or "utf-8"))
+        except Exception:
+            print(text.encode("ascii", errors="replace").decode("ascii"))
+
 
 class Notifier:
     def __init__(
@@ -88,7 +100,7 @@ class Notifier:
             return False
 
         if self.dry_run:
-            print(f"[Notifier - Dry Run] WhatsApp message simulated:\n{message}")
+            safe_print(f"[Notifier - Dry Run] WhatsApp message simulated:\n{message}")
             return True
 
         encoded_text = urllib.parse.quote(message)
@@ -116,7 +128,7 @@ class Notifier:
             return False
 
         if self.dry_run:
-            print(f"[Notifier - Dry Run] Telegram message simulated:\n{message}")
+            safe_print(f"[Notifier - Dry Run] Telegram message simulated:\n{message}")
             return True
 
         url = f"https://api.telegram.org/bot{self.telegram_bot_token}/sendMessage"
@@ -151,8 +163,8 @@ class Notifier:
                 sent = True
 
         if not sent:
-            print("[Notifier] No external delivery channels succeeded. Alert message:")
-            print(message)
+            safe_print("[Notifier] No external delivery channels succeeded. Alert message:")
+            safe_print(message)
             return self.dry_run
 
         return sent
