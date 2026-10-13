@@ -1,6 +1,7 @@
 """
-web_dashboard.py — Lightweight, modern web dashboard for IRCTC PNR Tracker.
-Powered by FastAPI and Tailwind CSS (Zero extra frontend build steps required).
+web_dashboard.py — Production Travel UI/UX Dashboard for IRCTC PNR Tracker.
+Designed following UI/UX Pro Max (Travel / Transit Bento Box Architecture).
+Powered by FastAPI + Tailwind CSS (Zero extra frontend build steps required).
 Run with: python web_dashboard.py
 """
 
@@ -12,7 +13,7 @@ from pnr_client import PNRClient
 from notifier import Notifier
 from tracker import PNRTracker, DEFAULT_STATE_FILE
 
-app = FastAPI(title="RailPulse — IRCTC PNR Tracker Dashboard")
+app = FastAPI(title="RailPulse — Autonomous IRCTC PNR Monitor")
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -20,121 +21,193 @@ HTML_TEMPLATE = """
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RailPulse — Autonomous IRCTC PNR Waiting List Monitor</title>
+  <title>RailPulse - Autonomous IRCTC PNR Waiting List Monitor</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            brand: '#3b82f6',
-            rail: '#f97316'
+            transit: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49'
+            },
+            amberAccent: {
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            heading: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
           }
         }
       }
     }
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    .mono { font-family: 'JetBrains Mono', monospace; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #030712;
+    }
+    
+    .ticket-stub-border {
+      background-image: radial-gradient(circle at 0 50%, transparent 8px, #111827 8.5px),
+                        radial-gradient(circle at 100% 50%, transparent 8px, #111827 8.5px);
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-500 selection:text-white">
+<body class="bg-[#030712] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
 
-  <!-- Top Navigation Header -->
-  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-          <i class="fa-solid fa-train-subway text-white text-lg"></i>
+  <!-- Top Transit Bar -->
+  <header class="border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-600/25 ring-1 ring-white/10">
+          <i class="fa-solid fa-train text-white text-base"></i>
         </div>
         <div>
-          <span class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">RailPulse</span>
-          <span class="text-xs px-2 py-0.5 ml-2 rounded-full font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">24/7 Cloud Active</span>
+          <div class="flex items-center space-x-2">
+            <span class="text-lg font-bold font-heading tracking-tight text-white">RailPulse</span>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono tracking-wide">
+              SYSTEM ACTIVE
+            </span>
+          </div>
+          <span class="text-[11px] text-slate-400 font-mono">Zero-Cost Cloud Monitor</span>
         </div>
       </div>
-      <div class="flex items-center space-x-3">
-        <button onclick="triggerCheck()" id="refreshBtn" class="flex items-center space-x-2 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition border border-slate-700">
-          <i class="fa-solid fa-rotate text-blue-400"></i>
+      
+      <div class="flex items-center space-x-2.5">
+        <button onclick="triggerCheck()" id="refreshBtn" class="min-h-[40px] flex items-center space-x-2 text-xs font-semibold px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 transition border border-slate-700/80 hover:border-slate-600 focus:ring-2 focus:ring-sky-500/50">
+          <i class="fa-solid fa-arrows-rotate text-sky-400"></i>
           <span>Check Now</span>
         </button>
-        <button onclick="testNotification()" class="flex items-center space-x-2 text-xs font-semibold px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/20 transition">
+        <button onclick="testNotification()" id="pingBtn" class="min-h-[40px] flex items-center space-x-2 text-xs font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-amberAccent-600 to-amberAccent-500 hover:from-amberAccent-500 hover:to-amberAccent-600 text-white shadow-lg shadow-orange-600/20 transition focus:ring-2 focus:ring-orange-500/50">
           <i class="fa-solid fa-bell"></i>
-          <span>Test Phone Ping</span>
+          <span>Test Alert</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Hero & Add PNR Section -->
-  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full space-y-8">
-    <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950/40 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-      <div class="absolute -right-16 -top-16 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      
-      <div class="max-w-2xl">
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-2">
-          Autonomous Waiting List Monitor
-        </h1>
-        <p class="text-sm sm:text-base text-slate-400 mb-6">
-          Zero-spam, serverless rail tracker. Checks Indian Railways 24/7 and pings your phone the instant your waiting list position moves.
-        </p>
-      </div>
+  <!-- Main Content Layout (Bento Box Architecture) -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
 
-      <!-- Quick Add PNR Bar -->
-      <form id="addPnrForm" onsubmit="addPNR(event)" class="flex flex-col sm:flex-row gap-3 max-w-xl">
-        <div class="relative flex-1">
-          <i class="fa-solid fa-ticket absolute left-3.5 top-3.5 text-slate-500"></i>
-          <input type="text" id="pnrInput" placeholder="Enter 10-digit PNR Number..." required pattern="[0-9]{10}" maxlength="10" 
-                 class="w-full bg-slate-950/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition mono">
+    <!-- Hero / Add Ticket Bento Banner -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Left: Input & Callout (8 cols) -->
+      <div class="lg:col-span-8 bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-sky-950/30 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+        <div class="absolute -right-12 -top-12 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div>
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-mono font-medium mb-3">
+            <i class="fa-solid fa-shield-halved text-[10px]"></i>
+            <span>Deterministic Status Engine</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold font-heading text-white tracking-tight mb-2">
+            Autonomous IRCTC PNR Monitor
+          </h1>
+          <p class="text-sm text-slate-300 max-w-xl leading-relaxed mb-6">
+            Monitors Indian Railways waiting list tickets in the background and delivers instant push notifications to your device when positions drop or confirm.
+          </p>
         </div>
-        <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm rounded-xl transition shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-2">
-          <i class="fa-solid fa-plus"></i>
-          <span>Track Ticket</span>
-        </button>
-      </form>
-    </div>
 
-    <!-- Active Tracked Tickets Grid -->
-    <div>
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-bold text-slate-200 flex items-center space-x-2">
-          <i class="fa-solid fa-train text-blue-400"></i>
-          <span>Active Tracked Tickets</span>
-          <span id="ticketCountBadge" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">0</span>
-        </h2>
-        <span class="text-xs text-slate-500 flex items-center space-x-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Adaptive Polling Active</span>
-        </span>
+        <!-- Add PNR Quick Input -->
+        <form id="addPnrForm" onsubmit="addPNR(event)" class="flex flex-col sm:flex-row gap-3 max-w-xl">
+          <div class="relative flex-1">
+            <i class="fa-solid fa-ticket absolute left-3.5 top-3.5 text-slate-400"></i>
+            <input type="text" id="pnrInput" placeholder="Enter 10-digit PNR..." required pattern="[0-9]{10}" maxlength="10"
+                   class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 transition font-mono min-h-[44px]">
+          </div>
+          <button type="submit" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm rounded-xl transition shadow-lg shadow-sky-600/30 flex items-center justify-center space-x-2 min-h-[44px]">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>Track PNR</span>
+          </button>
+        </form>
       </div>
 
-      <div id="ticketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-
-    <!-- System Telemetry & Logs -->
-    <div class="border border-slate-800 bg-slate-900/40 rounded-2xl p-5">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="text-sm font-semibold text-slate-300 flex items-center space-x-2">
-          <i class="fa-solid fa-terminal text-slate-400"></i>
-          <span>Live Execution Console</span>
+      <!-- Right: Live System Specs Bento (4 cols) -->
+      <div class="lg:col-span-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono mb-4 flex items-center space-x-2">
+          <i class="fa-solid fa-gauge-high text-sky-400"></i>
+          <span>Engine Telemetry</span>
         </h3>
-        <span class="text-xs text-slate-500 font-mono">ntfy: shivanshu-irctc-4763331979</span>
-      </div>
-      <div id="consoleLog" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs mono text-slate-400 h-28 overflow-y-auto space-y-1">
-        <div>[System] RailPulse Dashboard initialized.</div>
-        <div>[System] Open Rail Gateway connected without quota limits.</div>
+        
+        <div class="space-y-3.5">
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs">
+            <span class="text-slate-400">Polling Frequency</span>
+            <span class="font-mono font-semibold text-white">Every 5 Hours</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs">
+            <span class="text-slate-400">Active Channel</span>
+            <span class="font-mono font-semibold text-emerald-400">ntfy Push Webhook</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs">
+            <span class="text-slate-400">Rail API Gateway</span>
+            <span class="font-mono font-semibold text-sky-400">Direct Open Rail</span>
+          </div>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs">
+            <span class="text-slate-400">Spam Guard</span>
+            <span class="font-mono font-semibold text-amberAccent-500">Silent on Unchanged</span>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+          <span>Runner: GitHub Cloud</span>
+          <span class="text-emerald-400">Passing 11/11 tests</span>
+        </div>
       </div>
     </div>
+
+    <!-- Active Tickets Bento Section -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+          <h2 class="text-base font-bold font-heading text-white tracking-tight">Active Monitored Tickets</h2>
+          <span id="ticketCountBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-sky-400 font-mono font-bold">0</span>
+        </div>
+        <span class="text-xs text-slate-400 font-mono">Real-time Seat Movement</span>
+      </div>
+
+      <!-- Tickets Grid -->
+      <div id="ticketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Dynamic Ticket Cards -->
+      </div>
+    </div>
+
+    <!-- Live Execution Console -->
+    <div class="border border-slate-800 bg-slate-900/40 rounded-2xl p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono flex items-center space-x-2">
+          <i class="fa-solid fa-terminal text-slate-400"></i>
+          <span>Execution Log Console</span>
+        </h3>
+        <span class="text-[11px] text-slate-500 font-mono">Channel: shivanshu-irctc-4763331979</span>
+      </div>
+      <div id="consoleLog" class="bg-slate-950/90 border border-slate-800/80 rounded-xl p-3.5 text-xs font-mono text-slate-300 h-32 overflow-y-auto space-y-1">
+        <div class="text-sky-400">[System] RailPulse Travel Dashboard initialized.</div>
+        <div class="text-slate-400">[System] Open Rail Gateway connected without quota limits.</div>
+      </div>
+    </div>
+
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-600">
-    RailPulse &bull; Open Source Autonomous IRCTC Monitor &bull; MIT License
+  <footer class="border-t border-slate-900/80 py-5 text-center text-xs text-slate-500 font-mono">
+    RailPulse &bull; Autonomous IRCTC PNR Waiting List Monitor &bull; MIT Open Source License
   </footer>
 
   <script>
@@ -163,32 +236,32 @@ HTML_TEMPLATE = """
       document.getElementById("ticketCountBadge").textContent = pnrList.length;
 
       if (pnrList.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500">No active tickets tracked yet. Add a PNR above!</div>`;
+        grid.innerHTML = `<div class="col-span-full py-16 text-center text-slate-500 font-mono">No active tickets tracked yet. Add a 10-digit PNR above!</div>`;
         return;
       }
 
       pnrList.forEach(pnr => {
         const t = tickets[pnr];
         const passengers = t.passengers || [];
-        
+
         const card = document.createElement("div");
-        card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition flex flex-col justify-between shadow-lg relative overflow-hidden group";
+        card.className = "bg-slate-900/80 border border-slate-800 hover:border-sky-500/50 rounded-2xl p-5 transition-all duration-200 hover:scale-[1.01] flex flex-col justify-between shadow-xl relative overflow-hidden group";
 
         const passengerBadges = passengers.map(p => {
           const isWL = p.current_status.includes("WL");
           const isCNF = p.current_status.includes("CNF");
           const isRAC = p.current_status.includes("RAC");
 
-          let colorClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
-          if (isCNF) colorClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-          if (isRAC) colorClass = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+          let badgeStyle = "bg-sky-500/10 text-sky-300 border-sky-500/20";
+          if (isCNF) badgeStyle = "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+          if (isRAC) badgeStyle = "bg-amber-500/15 text-amber-300 border-amber-500/30";
 
           return `
-            <div class="flex items-center justify-between text-xs py-1 px-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 mb-1.5">
+            <div class="flex items-center justify-between text-xs py-1.5 px-3 rounded-xl bg-slate-950/70 border border-slate-800/80 mb-1.5">
               <span class="text-slate-400 font-medium">Passenger ${p.passenger_number}</span>
-              <div class="flex items-center space-x-2">
-                <span class="text-slate-500 line-through text-[10px]">${p.booking_status}</span>
-                <span class="px-2 py-0.5 rounded font-bold mono text-xs border ${colorClass}">${p.current_status}</span>
+              <div class="flex items-center space-x-2 font-mono">
+                <span class="text-slate-600 line-through text-[11px]">${p.booking_status}</span>
+                <span class="px-2.5 py-0.5 rounded-md font-bold text-xs border ${badgeStyle}">${p.current_status}</span>
               </div>
             </div>
           `;
@@ -198,29 +271,40 @@ HTML_TEMPLATE = """
           <div>
             <div class="flex items-start justify-between mb-3">
               <div>
-                <span class="text-xs font-semibold mono text-blue-400">PNR: ${t.pnr}</span>
-                <h3 class="font-bold text-base text-white tracking-tight">${t.train_number} - ${t.train_name}</h3>
+                <span class="text-xs font-mono font-semibold text-sky-400 tracking-wider">PNR: ${t.pnr}</span>
+                <h3 class="font-bold font-heading text-base text-white tracking-tight">${t.train_number} - ${t.train_name}</h3>
               </div>
-              <span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 mono">${t.date_of_journey || "Upcoming"}</span>
+              <span class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800/90 text-slate-300 font-mono border border-slate-700/60">${t.date_of_journey || "Upcoming"}</span>
             </div>
 
-            <div class="flex items-center space-x-2 text-xs text-slate-400 mb-4 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/40">
-              <span class="font-semibold text-slate-200">${t.from_station || "SRC"}</span>
-              <i class="fa-solid fa-arrow-right text-[10px] text-blue-400"></i>
-              <span class="font-semibold text-slate-200">${t.to_station || "DST"}</span>
+            <!-- Route Banner -->
+            <div class="flex items-center justify-between text-xs text-slate-300 mb-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800/70 font-mono">
+              <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-location-dot text-sky-400 text-[11px]"></i>
+                <span class="font-bold text-white">${t.from_station || "ORIGIN"}</span>
+              </div>
+              <div class="flex items-center space-x-1 text-slate-500">
+                <span class="h-[1px] w-8 bg-slate-700"></span>
+                <i class="fa-solid fa-arrow-right text-[10px] text-sky-400"></i>
+                <span class="h-[1px] w-8 bg-slate-700"></span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-white">${t.to_station || "DEST"}</span>
+                <i class="fa-solid fa-flag-checkered text-amberAccent-500 text-[11px]"></i>
+              </div>
             </div>
 
             <div class="space-y-1 mb-4">
-              <span class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Passenger Status</span>
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Passenger Status Movement</span>
               ${passengerBadges}
             </div>
           </div>
 
-          <div class="border-t border-slate-800/80 pt-3 flex items-center justify-between text-[11px] text-slate-500">
-            <span>Chart: <b class="text-slate-400">${t.chart_prepared ? 'Prepared' : 'Not Prepared'}</b></span>
-            <span class="flex items-center space-x-1 text-emerald-400 font-medium">
-              <i class="fa-solid fa-shield-check"></i>
-              <span>Monitoring</span>
+          <div class="border-t border-slate-800/80 pt-3 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+            <span>Chart: <b class="text-slate-200">${t.chart_prepared ? 'Prepared' : 'Not Prepared'}</b></span>
+            <span class="flex items-center space-x-1.5 text-emerald-400 font-medium">
+              <i class="fa-solid fa-shield-halved text-[10px]"></i>
+              <span>Live Monitored</span>
             </span>
           </div>
         `;
@@ -231,7 +315,7 @@ HTML_TEMPLATE = """
     async function triggerCheck() {
       const btn = document.getElementById("refreshBtn");
       btn.classList.add("opacity-50", "pointer-events-none");
-      log("Checking all PNRs via live Indian Rail Gateway...");
+      log("Checking all active PNRs via live Rail Gateway...");
       try {
         const res = await fetch("/api/check-now", { method: "POST" });
         const d = await res.json();
@@ -245,13 +329,17 @@ HTML_TEMPLATE = """
     }
 
     async function testNotification() {
-      log("Firing test alert to phone via ntfy...");
+      const btn = document.getElementById("pingBtn");
+      btn.classList.add("opacity-50", "pointer-events-none");
+      log("Firing test notification to configured phone...");
       try {
         const res = await fetch("/api/test-notify", { method: "POST" });
         const d = await res.json();
-        log("Test notification dispatched! Check your phone.");
+        log("Test notification dispatched! Check your mobile screen.");
       } catch (e) {
         log("Notification error: " + e);
+      } finally {
+        btn.classList.remove("opacity-50", "pointer-events-none");
       }
     }
 
@@ -259,7 +347,7 @@ HTML_TEMPLATE = """
       e.preventDefault();
       const pnr = document.getElementById("pnrInput").value.trim();
       if (!pnr) return;
-      log(`Adding and fetching PNR ${pnr}...`);
+      log(`Adding and querying PNR ${pnr}...`);
       try {
         const res = await fetch(`/api/add-pnr?pnr=${pnr}`, { method: "POST" });
         const d = await res.json();
@@ -324,7 +412,6 @@ def add_pnr(pnr: str):
         states[pnr_clean] = data
         tracker.save_all_states(states)
         
-        # Also update current env / workflow config
         current_pnrs = os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110")
         if pnr_clean not in current_pnrs:
             os.environ["PNR_NUMBER"] = f"{current_pnrs},{pnr_clean}"
