@@ -26,7 +26,7 @@ class PNRTracker:
         client: PNRClient,
         notifier: Notifier,
         state_file: str = DEFAULT_STATE_FILE,
-        notify_on_first_run: bool = True
+        notify_on_first_run: bool = False
     ):
         self.pnr = str(pnr).strip().replace("-", "")
         self.client = client
@@ -150,7 +150,7 @@ def main():
     parser.add_argument("--pnr", type=str, default=os.getenv("PNR_NUMBER"), help="10-digit PNR")
     parser.add_argument("--state-file", type=str, default=DEFAULT_STATE_FILE, help="Path to state JSON")
     parser.add_argument("--dry-run", action="store_true", help="Run without sending real WhatsApp message")
-    parser.add_argument("--no-first-alert", action="store_true", help="Do not send alert on first baseline run")
+    parser.add_argument("--alert-on-first-run", action="store_true", help="Send a message even on first run baseline")
     args = parser.parse_args()
 
     pnr = args.pnr or os.getenv("PNR_NUMBER")
@@ -164,7 +164,7 @@ def main():
         client=client,
         notifier=notifier,
         state_file=args.state_file,
-        notify_on_first_run=not args.no_first_alert
+        notify_on_first_run=args.alert_on_first_run
     )
 
     tracker.check_once()
