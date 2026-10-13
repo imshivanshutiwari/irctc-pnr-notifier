@@ -6,6 +6,7 @@ Tests:
 3. No-change scenario (no spurious alert)
 4. Promotion to RAC and CNF
 5. Message formatting integrity
+6. Multi-PNR concurrent tracking
 """
 
 import os
@@ -40,7 +41,7 @@ class TestPNRTracker(unittest.TestCase):
         client = PNRClient(mock_data=initial_mock)
         notifier = Notifier(dry_run=True)
         tracker = PNRTracker(
-            pnr="2456789012",
+            pnrs="2456789012",
             client=client,
             notifier=notifier,
             state_file=TEST_STATE_FILE,
@@ -49,13 +50,14 @@ class TestPNRTracker(unittest.TestCase):
 
         alerted, msg = tracker.check_once()
         self.assertTrue(alerted)
-        self.assertIn("Baseline recorded", msg)
+        self.assertIn("Baseline saved for PNR", msg)
         self.assertTrue(os.path.exists(TEST_STATE_FILE))
 
         # Check saved state
         with open(TEST_STATE_FILE, "r") as f:
             saved = json.load(f)
-            self.assertEqual(saved["passengers"][0]["current_status"], "RLWL 10")
+            pnr_state = saved.get("2456789012", saved)
+            self.assertEqual(pnr_state["passengers"][0]["current_status"], "RLWL 10")
 
     def test_waiting_list_drop_triggers_alert(self):
         # 1. First run: RLWL 10
@@ -70,7 +72,7 @@ class TestPNRTracker(unittest.TestCase):
         client = PNRClient(mock_data=baseline_mock)
         notifier = Notifier(dry_run=True)
         tracker = PNRTracker(
-            pnr="2456789012",
+            pnrs="2456789012",
             client=client,
             notifier=notifier,
             state_file=TEST_STATE_FILE,
@@ -91,12 +93,13 @@ class TestPNRTracker(unittest.TestCase):
         changed, msg = tracker.check_once()
 
         self.assertTrue(changed)
-        self.assertIn("Status changed for 1 passenger", msg)
+        self.assertIn("Status changed for PNR 2456789012", msg)
 
         # Check updated state
         with open(TEST_STATE_FILE, "r") as f:
             saved = json.load(f)
-            self.assertEqual(saved["passengers"][0]["current_status"], "RLWL 9")
+            pnr_state = saved.get("2456789012", saved)
+            self.assertEqual(pnr_state["passengers"][0]["current_status"], "RLWL 9")
 
     def test_no_change_does_not_alert(self):
         baseline_mock = {
@@ -108,7 +111,7 @@ class TestPNRTracker(unittest.TestCase):
         client = PNRClient(mock_data=baseline_mock)
         notifier = Notifier(dry_run=True)
         tracker = PNRTracker(
-            pnr="2456789012",
+            pnrs="2456789012",
             client=client,
             notifier=notifier,
             state_file=TEST_STATE_FILE,
@@ -119,7 +122,7 @@ class TestPNRTracker(unittest.TestCase):
         # Check again with same status
         changed, msg = tracker.check_once()
         self.assertFalse(changed)
-        self.assertEqual(msg, "No status change.")
+        self.assertIn("No change for PNR 2456789012", msg)
 
     def test_promotion_to_rac_and_cnf(self):
         baseline_mock = {
@@ -132,7 +135,7 @@ class TestPNRTracker(unittest.TestCase):
         client = PNRClient(mock_data=baseline_mock)
         notifier = Notifier(dry_run=True)
         tracker = PNRTracker(
-            pnr="2456789012",
+            pnrs="2456789012",
             client=client,
             notifier=notifier,
             state_file=TEST_STATE_FILE,
@@ -152,7 +155,7 @@ class TestPNRTracker(unittest.TestCase):
         changed, msg = tracker.check_once()
 
         self.assertTrue(changed)
-        self.assertIn("Status changed for 2 passenger(s)", msg)
+        self.assertIn("Status changed for PNR 2456789012", msg)
 
     def test_message_formatter_content(self):
         notifier = Notifier(dry_run=True)
@@ -174,6 +177,30 @@ class TestPNRTracker(unittest.TestCase):
         self.assertIn("RLWL 10 ➔ *RLWL 9*", msg)
         self.assertIn("WL Reduced!", msg)
         self.assertIn("CONFIRMED!", msg)
+
+    def test_multi_pnr_tracking(self):
+        mock_data = {
+            "train_number": "12791",
+            "passengers": [{"passenger_number": 1, "current_status": "RLWL 8"}]
+        }
+        client = PNRClient(mock_data=mock_data)
+        notifier = Notifier(dry_run=True)
+        tracker = PNRTracker(
+            pnrs="1111111111, 2222222222, 3333333333",
+            client=client,
+            notifier=notifier,
+            state_file=TEST_STATE_FILE,
+            notify_on_first_run=False
+        )
+        self.assertEqual(len(tracker.pnrs), 3)
+        alerted, msg = tracker.check_once()
+        self.assertFalse(alerted)
+
+        with open(TEST_STATE_FILE, "r") as f:
+            saved = json.load(f)
+            self.assertIn("1111111111", saved)
+            self.assertIn("2222222222", saved)
+            self.assertIn("3333333333", saved)
 
 if __name__ == "__main__":
     unittest.main()
