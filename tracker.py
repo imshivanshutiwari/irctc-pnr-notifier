@@ -11,6 +11,7 @@ import json
 import os
 import re
 import tempfile
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -211,7 +212,9 @@ class PNRTracker:
         summaries = []
         errors = []
 
-        for pnr in self.pnrs:
+        for i, pnr in enumerate(self.pnrs):
+            if i > 0:
+                time.sleep(1)
             alerted, summary = self.check_pnr(pnr, all_states)
             any_alerts = any_alerts or alerted
             summaries.append(summary)
