@@ -15,3 +15,4 @@ status_state.json
 .DS_Store
 irctc-pnr-notifier-upgrade.zip
 upgrade_extracted/
+irctc_skeleton/
