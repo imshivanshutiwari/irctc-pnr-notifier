@@ -78,6 +78,7 @@ class PNRClient:
             ""
         )
         doj = (
+            payload.get("Doj") or
             payload.get("date_of_journey") or
             payload.get("boardingDate") or
             payload.get("doj") or
@@ -87,7 +88,9 @@ class PNRClient:
         )
         from_stn = (
             payload.get("from_station") or
+            payload.get("SourceName") or
             payload.get("sourceStation") or
+            payload.get("From") or
             payload.get("from") or
             payload.get("boarding_station") or
             payload.get("boardingPoint") or
@@ -96,16 +99,19 @@ class PNRClient:
         )
         to_stn = (
             payload.get("to_station") or
+            payload.get("DestinationName") or
             payload.get("destinationStation") or
+            payload.get("To") or
             payload.get("to") or
             payload.get("reservation_upto") or
             payload.get("destination") or
             ""
         )
-        chart_status_raw = str(payload.get("chartStatus") or payload.get("chart_prepared") or payload.get("chartPrepared") or "").upper()
-        chart_prepared = "PREPARED" in chart_status_raw and "NOT" not in chart_status_raw
+        chart_status_raw = str(payload.get("ChartPrepared") or payload.get("chartStatus") or payload.get("chart_prepared") or payload.get("chartPrepared") or "").upper()
+        chart_prepared = "TRUE" in chart_status_raw or ("PREPARED" in chart_status_raw and "NOT" not in chart_status_raw)
 
         raw_passengers = (
+            payload.get("PassengerStatus") or
             payload.get("passengers") or
             payload.get("passenger_list") or
             payload.get("PassengerList") or
@@ -126,13 +132,13 @@ class PNRClient:
                 p.get("CurrentStatus") or
                 booking_status
             )
-            coach = str(p.get("currentCoachId") or "").strip()
-            berth = str(p.get("currentBerthNo") or "").strip()
+            coach = str(p.get("currentCoachId") or p.get("Coach") or "").strip()
+            berth = str(p.get("currentBerthNo") or p.get("Berth") or "").strip()
             if coach and berth and "CNF" in str(current_status).upper() and coach not in str(current_status):
                 current_status = f"{current_status} ({coach}/{berth})"
 
             passengers.append({
-                "passenger_number": p.get("passenger_number") or p.get("passengerSerialNumber") or p.get("number") or idx,
+                "passenger_number": p.get("passenger_number") or p.get("passengerSerialNumber") or p.get("Number") or p.get("number") or idx,
                 "booking_status": str(booking_status).strip().upper(),
                 "current_status": str(current_status).strip().upper()
             })
