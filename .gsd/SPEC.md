@@ -28,10 +28,10 @@ When travelers book train tickets on Indian Railways (IRCTC) with a waiting list
   - Journey Date
   - Passenger ID / Name
   - Previous Status vs New Status
-  - Confirmation status indicator (🎉 for CNF, ⚡ for WL drop)
+  - Confirmation status indicator (CNF for confirmed, WL drop for reduction)
 - **FR-4: 24/7 Cloud Runner**: Automate execution via GitHub Actions with a cron schedule (`0 */5 * * *`) so it runs without keeping the user's laptop powered on. Support `workflow_dispatch` for on-demand trigger.
 - **FR-5: State Persistence**: Persist current PNR state between runs so status changes are accurately tracked across scheduled intervals.
-- **FR-6: Test / Simulation Mode**: Provide a test mode that can simulate waiting list movements (`RLWL 10` → `RLWL 9` → `CNF`) and test WhatsApp connectivity without waiting 5 hours.
+- **FR-6: Test / Simulation Mode**: Provide a test mode that can simulate waiting list movements (`RLWL 10` -> `RLWL 9` -> `CNF`) and test WhatsApp connectivity without waiting 5 hours.
 
 ### 2.2 Non-Functional Requirements
 - **Cost**: 100% Free (GitHub Actions free minutes + RapidAPI free tier + CallMeBot free WhatsApp API).

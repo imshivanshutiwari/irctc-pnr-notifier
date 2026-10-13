@@ -174,7 +174,7 @@ class TestPNRTracker(unittest.TestCase):
 
         self.assertIn("1234567890", msg)
         self.assertIn("LUCKNOW SHATABDI", msg)
-        self.assertIn("RLWL 10 ➔ *RLWL 9*", msg)
+        self.assertIn("RLWL 10 -> *RLWL 9*", msg)
         self.assertIn("WL Reduced!", msg)
         self.assertIn("CONFIRMED!", msg)
 

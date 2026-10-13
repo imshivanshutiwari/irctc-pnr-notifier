@@ -305,8 +305,8 @@ def check_now():
 def test_notify():
     notifier = Notifier()
     success = notifier.send_alert(
-        "🚂 *RailPulse Test Alert*\n"
-        "━━━━━━━━━━━━━━━━━━━\n"
+        "*RailPulse Test Alert*\n"
+        "-------------------\n"
         "Your notification pipeline is 100% active and connected!\n"
         "You will receive instant alerts when waiting lists move."
     )

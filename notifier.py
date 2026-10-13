@@ -57,39 +57,38 @@ class Notifier:
         to_stn = train_info.get("to_station", "")
 
         lines = [
-            "🚂 *IRCTC WAITING LIST UPDATE!*",
-            f"━━━━━━━━━━━━━━━━━━━",
-            f"📍 *PNR:* `{pnr}`",
+            "*IRCTC WAITING LIST UPDATE*",
+            "-------------------",
+            f"*PNR:* `{pnr}`",
         ]
 
         if train_num or train_name:
-            lines.append(f"🚆 *Train:* {train_num} - {train_name}".strip())
+            lines.append(f"*Train:* {train_num} - {train_name}".strip())
         if doj:
-            lines.append(f"📅 *Journey Date:* {doj}")
+            lines.append(f"*Journey Date:* {doj}")
         if from_stn and to_stn:
-            lines.append(f"🛤️ *Route:* {from_stn} ➔ {to_stn}")
+            lines.append(f"*Route:* {from_stn} -> {to_stn}")
 
-        lines.append(f"━━━━━━━━━━━━━━━━━━━")
-        lines.append("⚡ *Status Changes:*")
+        lines.append("-------------------")
+        lines.append("*Status Changes:*")
 
         for change in changes:
             p_id = change.get("passenger", "Passenger")
             old_st = change.get("old_status", "N/A")
             new_st = change.get("new_status", "N/A")
             
-            # Add celebratory icon if confirmed or RAC
-            icon = "📈"
+            tag = "UPDATED"
             if "CNF" in new_st.upper():
-                icon = "🎉 *CONFIRMED!*"
+                tag = "*CONFIRMED!*"
             elif "RAC" in new_st.upper():
-                icon = "🎫 *RAC!*"
+                tag = "*RAC!*"
             elif "WL" in new_st.upper() and "WL" in old_st.upper():
-                icon = "🔻 *WL Reduced!*"
+                tag = "*WL Reduced!*"
 
-            lines.append(f"• *{p_id}:* {old_st} ➔ *{new_st}* ({icon})")
+            lines.append(f"- *{p_id}:* {old_st} -> *{new_st}* ({tag})")
 
-        lines.append(f"━━━━━━━━━━━━━━━━━━━")
-        lines.append("⏰ Check irctc.co.in for final chart confirmation.")
+        lines.append("-------------------")
+        lines.append("Check irctc.co.in for final chart confirmation.")
         
         return "\n".join(lines)
 
@@ -151,7 +150,7 @@ class Notifier:
             print(f"[Notifier] Failed to send Telegram message: {e}")
             return False
 
-    def send_ntfy(self, message: str, title: str = "IRCTC Waiting List Alert", tags: str = "train,tada") -> bool:
+    def send_ntfy(self, message: str, title: str = "IRCTC Waiting List Alert", tags: str = "train") -> bool:
         """
         Sends an instant push notification to phone via ntfy.sh (No account required).
         """
