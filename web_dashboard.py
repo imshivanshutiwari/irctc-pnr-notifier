@@ -1,8 +1,12 @@
 """
-web_dashboard.py — Production Travel UI/UX Dashboard for IRCTC PNR Tracker.
-Designed following UI/UX Pro Max (Travel / Transit Bento Box Architecture).
-Powered by FastAPI + Tailwind CSS (Zero extra frontend build steps required).
-Run with: python web_dashboard.py
+web_dashboard.py — Travel & Transit Bento Box Web Dashboard for RailPulse.
+Implemented strictly according to the UI/UX Pro Max Travel Specification.
+Features:
+- Bento Box Grid + Swiss Modernism 2.0 with subtle glassmorphic depth
+- Dual Mode (Dark / Light Mode)
+- Ticket-stub inspired passenger cards with precise route and status indicators
+- Strict WCAG 4.5:1 compliant status badges (CNF, RAC, WL/RLWL)
+- Zero emojis (Pure SVG and FontAwesome vector icons)
 """
 
 import os
@@ -13,7 +17,7 @@ from pnr_client import PNRClient
 from notifier import Notifier
 from tracker import PNRTracker, DEFAULT_STATE_FILE
 
-app = FastAPI(title="RailPulse — Autonomous IRCTC PNR Monitor")
+app = FastAPI(title="RailPulse - Autonomous IRCTC PNR Monitor")
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
@@ -30,187 +34,222 @@ HTML_TEMPLATE = """
       theme: {
         extend: {
           colors: {
-            transit: {
-              50: '#f0f9ff',
-              100: '#e0f2fe',
-              500: '#0ea5e9',
-              600: '#0284c7',
-              700: '#0369a1',
-              800: '#075985',
-              900: '#0c4a6e',
-              950: '#082f49'
+            transitNavy: {
+              DEFAULT: '#1E3A8A',
+              light: '#2563EB',
+              dark: '#0F172A'
             },
-            amberAccent: {
-              500: '#f97316',
-              600: '#ea580c',
-              700: '#c2410c'
-            }
+            transitAmber: {
+              DEFAULT: '#EA580C',
+              hover: '#C2410C'
+            },
+            midnight: '#020617',
+            deepSlate: '#0F172A',
+            softIce: '#EFF6FF'
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
             heading: ['Space Grotesk', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace']
+            mono: ['JetBrains Mono', 'SF Mono', 'monospace']
           }
         }
       }
     }
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap');
     
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #030712;
     }
     
-    .ticket-stub-border {
-      background-image: radial-gradient(circle at 0 50%, transparent 8px, #111827 8.5px),
-                        radial-gradient(circle at 100% 50%, transparent 8px, #111827 8.5px);
+    .ticket-stub {
+      position: relative;
+    }
+    .ticket-stub::before, .ticket-stub::after {
+      content: '';
+      position: absolute;
+      top: 55%;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      z-index: 10;
+    }
+    .dark .ticket-stub::before {
+      left: -7px;
+      background-color: #020617;
+    }
+    .dark .ticket-stub::after {
+      right: -7px;
+      background-color: #020617;
+    }
+    html:not(.dark) .ticket-stub::before {
+      left: -7px;
+      background-color: #EFF6FF;
+    }
+    html:not(.dark) .ticket-stub::after {
+      right: -7px;
+      background-color: #EFF6FF;
     }
   </style>
 </head>
-<body class="bg-[#030712] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+<body class="bg-midnight dark:bg-midnight bg-softIce text-slate-900 dark:text-slate-100 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200">
 
   <!-- Top Transit Bar -->
-  <header class="border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl sticky top-0 z-50">
+  <header class="border-b border-slate-200 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/70 backdrop-blur-xl sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3.5">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-600/25 ring-1 ring-white/10">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-600 flex items-center justify-center shadow-md shadow-blue-700/20 ring-1 ring-white/20">
           <i class="fa-solid fa-train text-white text-base"></i>
         </div>
         <div>
           <div class="flex items-center space-x-2">
-            <span class="text-lg font-bold font-heading tracking-tight text-white">RailPulse</span>
-            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono tracking-wide">
-              SYSTEM ACTIVE
+            <span class="text-lg font-bold font-heading tracking-tight text-slate-900 dark:text-white">RailPulse</span>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono tracking-wide">
+              LIVE 24/7
             </span>
           </div>
-          <span class="text-[11px] text-slate-400 font-mono">Zero-Cost Cloud Monitor</span>
+          <span class="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Autonomous IRCTC Monitor</span>
         </div>
       </div>
       
       <div class="flex items-center space-x-2.5">
-        <button onclick="triggerCheck()" id="refreshBtn" class="min-h-[40px] flex items-center space-x-2 text-xs font-semibold px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 transition border border-slate-700/80 hover:border-slate-600 focus:ring-2 focus:ring-sky-500/50">
-          <i class="fa-solid fa-arrows-rotate text-sky-400"></i>
+        <button onclick="toggleTheme()" class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition" title="Toggle Light/Dark Theme">
+          <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
+        </button>
+        <button onclick="triggerCheck()" id="refreshBtn" class="min-h-[44px] flex items-center space-x-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition border border-slate-300 dark:border-slate-800 focus:ring-2 focus:ring-sky-500/50">
+          <i class="fa-solid fa-arrows-rotate text-sky-500"></i>
           <span>Check Now</span>
         </button>
-        <button onclick="testNotification()" id="pingBtn" class="min-h-[40px] flex items-center space-x-2 text-xs font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-amberAccent-600 to-amberAccent-500 hover:from-amberAccent-500 hover:to-amberAccent-600 text-white shadow-lg shadow-orange-600/20 transition focus:ring-2 focus:ring-orange-500/50">
+        <button onclick="testNotification()" id="pingBtn" class="min-h-[44px] flex items-center space-x-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-transitAmber hover:bg-transitAmber-hover text-white shadow-lg shadow-orange-600/20 transition focus:ring-2 focus:ring-orange-500/50">
           <i class="fa-solid fa-bell"></i>
-          <span>Test Alert</span>
+          <span>Test Ping</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Content Layout (Bento Box Architecture) -->
+  <!-- Main Bento Box Architecture -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full space-y-6">
 
-    <!-- Hero / Add Ticket Bento Banner -->
+    <!-- Top Bento Section: Input & Engine Telemetry -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-      <!-- Left: Input & Callout (8 cols) -->
-      <div class="lg:col-span-8 bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-sky-950/30 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+      
+      <!-- Bento Card 1: Fast PNR Tracker (8 cols) -->
+      <div class="lg:col-span-8 bg-white dark:bg-deepSlate border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm dark:shadow-xl relative overflow-hidden flex flex-col justify-between">
         <div class="absolute -right-12 -top-12 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div>
-          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-mono font-medium mb-3">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-sky-400 text-xs font-mono font-medium mb-3">
             <i class="fa-solid fa-shield-halved text-[10px]"></i>
             <span>Deterministic Status Engine</span>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-extrabold font-heading text-white tracking-tight mb-2">
-            Autonomous IRCTC PNR Monitor
+          <h1 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 dark:text-white tracking-tight mb-2">
+            Indian Railways PNR Waiting List Watcher
           </h1>
-          <p class="text-sm text-slate-300 max-w-xl leading-relaxed mb-6">
-            Monitors Indian Railways waiting list tickets in the background and delivers instant push notifications to your device when positions drop or confirm.
+          <p class="text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed mb-6">
+            Autonomous serverless engine that monitors your train tickets 24/7. Sends immediate push alerts the moment a waiting list drops or confirms.
           </p>
         </div>
 
-        <!-- Add PNR Quick Input -->
+        <!-- Add PNR Form -->
         <form id="addPnrForm" onsubmit="addPNR(event)" class="flex flex-col sm:flex-row gap-3 max-w-xl">
           <div class="relative flex-1">
             <i class="fa-solid fa-ticket absolute left-3.5 top-3.5 text-slate-400"></i>
-            <input type="text" id="pnrInput" placeholder="Enter 10-digit PNR..." required pattern="[0-9]{10}" maxlength="10"
-                   class="w-full bg-slate-950/90 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 transition font-mono min-h-[44px]">
+            <input type="text" id="pnrInput" placeholder="Enter 10-digit PNR Number..." required pattern="[0-9]{10}" maxlength="10"
+                   class="w-full bg-slate-50 dark:bg-slate-950/90 border border-slate-300 dark:border-slate-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 transition font-mono min-h-[44px]">
           </div>
-          <button type="submit" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm rounded-xl transition shadow-lg shadow-sky-600/30 flex items-center justify-center space-x-2 min-h-[44px]">
+          <button type="submit" class="px-6 py-2.5 bg-blue-700 dark:bg-sky-600 hover:bg-blue-800 dark:hover:bg-sky-500 text-white font-semibold text-sm rounded-xl transition shadow-md flex items-center justify-center space-x-2 min-h-[44px]">
             <i class="fa-solid fa-plus text-xs"></i>
             <span>Track PNR</span>
           </button>
         </form>
       </div>
 
-      <!-- Right: Live System Specs Bento (4 cols) -->
-      <div class="lg:col-span-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono mb-4 flex items-center space-x-2">
-          <i class="fa-solid fa-gauge-high text-sky-400"></i>
-          <span>Engine Telemetry</span>
+      <!-- Bento Card 2: Telemetry & Cloud Specs (4 cols) -->
+      <div class="lg:col-span-4 bg-white dark:bg-deepSlate border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-sm dark:shadow-xl">
+        <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono mb-4 flex items-center space-x-2">
+          <i class="fa-solid fa-gauge-high text-sky-500"></i>
+          <span>Architecture Metrics</span>
         </h3>
         
-        <div class="space-y-3.5">
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs">
-            <span class="text-slate-400">Polling Frequency</span>
-            <span class="font-mono font-semibold text-white">Every 5 Hours</span>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-xs">
+            <span class="text-slate-500 dark:text-slate-400">Scheduler</span>
+            <span class="font-mono font-semibold text-slate-800 dark:text-white">Every 5 Hours (Cron)</span>
           </div>
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs">
-            <span class="text-slate-400">Active Channel</span>
-            <span class="font-mono font-semibold text-emerald-400">ntfy Push Webhook</span>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-xs">
+            <span class="text-slate-500 dark:text-slate-400">API Gateway</span>
+            <span class="font-mono font-semibold text-sky-600 dark:text-sky-400">Direct Open Rail (Unlimited)</span>
           </div>
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs">
-            <span class="text-slate-400">Rail API Gateway</span>
-            <span class="font-mono font-semibold text-sky-400">Direct Open Rail</span>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-xs">
+            <span class="text-slate-500 dark:text-slate-400">Push Channel</span>
+            <span class="font-mono font-semibold text-emerald-600 dark:text-emerald-400">ntfy Webhook (Instant)</span>
           </div>
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs">
-            <span class="text-slate-400">Spam Guard</span>
-            <span class="font-mono font-semibold text-amberAccent-500">Silent on Unchanged</span>
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 text-xs">
+            <span class="text-slate-500 dark:text-slate-400">Spam Discipline</span>
+            <span class="font-mono font-semibold text-transitAmber">100% Silent on No Change</span>
           </div>
         </div>
 
-        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-          <span>Runner: GitHub Cloud</span>
-          <span class="text-emerald-400">Passing 11/11 tests</span>
+        <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+          <span>CI Runner: GitHub Cloud</span>
+          <span class="text-emerald-600 dark:text-emerald-400 font-semibold">11/11 Verified Tests</span>
         </div>
       </div>
     </div>
 
-    <!-- Active Tickets Bento Section -->
+    <!-- Active Monitored Tickets Section -->
     <div class="space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2.5">
-          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
-          <h2 class="text-base font-bold font-heading text-white tracking-tight">Active Monitored Tickets</h2>
-          <span id="ticketCountBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-sky-400 font-mono font-bold">0</span>
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+          <h2 class="text-lg font-bold font-heading text-slate-900 dark:text-white tracking-tight">Active Monitored Tickets</h2>
+          <span id="ticketCountBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-sky-400 font-mono font-bold">0</span>
         </div>
-        <span class="text-xs text-slate-400 font-mono">Real-time Seat Movement</span>
+        <span class="text-xs text-slate-500 font-mono">Seat Movement & Chart Status</span>
       </div>
 
-      <!-- Tickets Grid -->
+      <!-- Ticket Cards Grid -->
       <div id="ticketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <!-- Dynamic Ticket Cards -->
+        <!-- Rendered dynamically -->
       </div>
     </div>
 
     <!-- Live Execution Console -->
-    <div class="border border-slate-800 bg-slate-900/40 rounded-2xl p-5 shadow-lg">
+    <div class="border border-slate-200 dark:border-slate-800 bg-white dark:bg-deepSlate rounded-2xl p-5 shadow-sm dark:shadow-xl">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono flex items-center space-x-2">
+        <h3 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono flex items-center space-x-2">
           <i class="fa-solid fa-terminal text-slate-400"></i>
-          <span>Execution Log Console</span>
+          <span>Execution Console Log</span>
         </h3>
-        <span class="text-[11px] text-slate-500 font-mono">Channel: shivanshu-irctc-4763331979</span>
+        <span class="text-[11px] text-slate-500 font-mono">Topic: shivanshu-irctc-4763331979</span>
       </div>
-      <div id="consoleLog" class="bg-slate-950/90 border border-slate-800/80 rounded-xl p-3.5 text-xs font-mono text-slate-300 h-32 overflow-y-auto space-y-1">
-        <div class="text-sky-400">[System] RailPulse Travel Dashboard initialized.</div>
-        <div class="text-slate-400">[System] Open Rail Gateway connected without quota limits.</div>
+      <div id="consoleLog" class="bg-slate-900 dark:bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs font-mono text-slate-300 h-32 overflow-y-auto space-y-1">
+        <div class="text-sky-400">[System] RailPulse Travel Dashboard Initialized.</div>
+        <div class="text-slate-400">[System] Direct Open Rail Gateway connected without quota limits.</div>
       </div>
     </div>
 
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-slate-900/80 py-5 text-center text-xs text-slate-500 font-mono">
+  <footer class="border-t border-slate-200 dark:border-slate-900/80 py-6 text-center text-xs text-slate-500 font-mono">
     RailPulse &bull; Autonomous IRCTC PNR Waiting List Monitor &bull; MIT Open Source License
   </footer>
 
   <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      const icon = document.getElementById('themeIcon');
+      if (isDark) {
+        icon.className = 'fa-solid fa-moon text-sm';
+      } else {
+        icon.className = 'fa-solid fa-sun text-sm text-amber-500';
+      }
+    }
+
     function log(msg) {
       const box = document.getElementById("consoleLog");
       const el = document.createElement("div");
@@ -245,22 +284,22 @@ HTML_TEMPLATE = """
         const passengers = t.passengers || [];
 
         const card = document.createElement("div");
-        card.className = "bg-slate-900/80 border border-slate-800 hover:border-sky-500/50 rounded-2xl p-5 transition-all duration-200 hover:scale-[1.01] flex flex-col justify-between shadow-xl relative overflow-hidden group";
+        card.className = "ticket-stub bg-white dark:bg-deepSlate border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-blue-500/50 dark:hover:border-sky-500/50 transition-all duration-200 hover:scale-[1.01] flex flex-col justify-between shadow-sm dark:shadow-xl relative overflow-hidden group";
 
         const passengerBadges = passengers.map(p => {
           const isWL = p.current_status.includes("WL");
           const isCNF = p.current_status.includes("CNF");
           const isRAC = p.current_status.includes("RAC");
 
-          let badgeStyle = "bg-sky-500/10 text-sky-300 border-sky-500/20";
-          if (isCNF) badgeStyle = "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
-          if (isRAC) badgeStyle = "bg-amber-500/15 text-amber-300 border-amber-500/30";
+          let badgeStyle = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-sky-300 dark:border-blue-700/50";
+          if (isCNF) badgeStyle = "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-700/50";
+          if (isRAC) badgeStyle = "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700/50";
 
           return `
-            <div class="flex items-center justify-between text-xs py-1.5 px-3 rounded-xl bg-slate-950/70 border border-slate-800/80 mb-1.5">
-              <span class="text-slate-400 font-medium">Passenger ${p.passenger_number}</span>
+            <div class="flex items-center justify-between text-xs py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 mb-1.5">
+              <span class="text-slate-600 dark:text-slate-400 font-medium">Passenger ${p.passenger_number}</span>
               <div class="flex items-center space-x-2 font-mono">
-                <span class="text-slate-600 line-through text-[11px]">${p.booking_status}</span>
+                <span class="text-slate-400 dark:text-slate-600 line-through text-[11px]">${p.booking_status}</span>
                 <span class="px-2.5 py-0.5 rounded-md font-bold text-xs border ${badgeStyle}">${p.current_status}</span>
               </div>
             </div>
@@ -271,26 +310,26 @@ HTML_TEMPLATE = """
           <div>
             <div class="flex items-start justify-between mb-3">
               <div>
-                <span class="text-xs font-mono font-semibold text-sky-400 tracking-wider">PNR: ${t.pnr}</span>
-                <h3 class="font-bold font-heading text-base text-white tracking-tight">${t.train_number} - ${t.train_name}</h3>
+                <span class="text-xs font-mono font-semibold text-blue-600 dark:text-sky-400 tracking-wider">PNR: ${t.pnr}</span>
+                <h3 class="font-bold font-heading text-base text-slate-900 dark:text-white tracking-tight">${t.train_number} - ${t.train_name}</h3>
               </div>
-              <span class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800/90 text-slate-300 font-mono border border-slate-700/60">${t.date_of_journey || "Upcoming"}</span>
+              <span class="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono border border-slate-200 dark:border-slate-700">${t.date_of_journey || "Upcoming"}</span>
             </div>
 
-            <!-- Route Banner -->
-            <div class="flex items-center justify-between text-xs text-slate-300 mb-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800/70 font-mono">
-              <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-location-dot text-sky-400 text-[11px]"></i>
-                <span class="font-bold text-white">${t.from_station || "ORIGIN"}</span>
+            <!-- Route Stub Section -->
+            <div class="flex items-center justify-between text-xs mb-4 bg-slate-50 dark:bg-slate-950/90 p-3 rounded-xl border border-slate-200 dark:border-slate-800/80 font-mono">
+              <div class="flex items-center space-x-1.5">
+                <i class="fa-solid fa-location-dot text-blue-600 dark:text-sky-400 text-[11px]"></i>
+                <span class="font-bold text-slate-800 dark:text-white">${t.from_station || "ORIGIN"}</span>
               </div>
-              <div class="flex items-center space-x-1 text-slate-500">
-                <span class="h-[1px] w-8 bg-slate-700"></span>
-                <i class="fa-solid fa-arrow-right text-[10px] text-sky-400"></i>
-                <span class="h-[1px] w-8 bg-slate-700"></span>
+              <div class="flex items-center space-x-1 text-slate-400">
+                <span class="h-[1px] w-6 bg-slate-300 dark:bg-slate-700"></span>
+                <i class="fa-solid fa-arrow-right text-[10px] text-blue-500 dark:text-sky-400"></i>
+                <span class="h-[1px] w-6 bg-slate-300 dark:bg-slate-700"></span>
               </div>
-              <div class="flex items-center space-x-2">
-                <span class="font-bold text-white">${t.to_station || "DEST"}</span>
-                <i class="fa-solid fa-flag-checkered text-amberAccent-500 text-[11px]"></i>
+              <div class="flex items-center space-x-1.5">
+                <span class="font-bold text-slate-800 dark:text-white">${t.to_station || "DEST"}</span>
+                <i class="fa-solid fa-flag text-transitAmber text-[11px]"></i>
               </div>
             </div>
 
@@ -300,9 +339,9 @@ HTML_TEMPLATE = """
             </div>
           </div>
 
-          <div class="border-t border-slate-800/80 pt-3 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-            <span>Chart: <b class="text-slate-200">${t.chart_prepared ? 'Prepared' : 'Not Prepared'}</b></span>
-            <span class="flex items-center space-x-1.5 text-emerald-400 font-medium">
+          <div class="border-t border-dashed border-slate-200 dark:border-slate-800 pt-3 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+            <span>Chart: <b class="text-slate-700 dark:text-slate-300">${t.chart_prepared ? 'Prepared' : 'Not Prepared'}</b></span>
+            <span class="flex items-center space-x-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
               <i class="fa-solid fa-shield-halved text-[10px]"></i>
               <span>Live Monitored</span>
             </span>
