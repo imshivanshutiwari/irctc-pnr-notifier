@@ -20,42 +20,62 @@ class PNRClient:
         self.api_host = api_host or os.getenv("RAPIDAPI_HOST", "irctc1.p.rapidapi.com")
         self.mock_data = mock_data
 
+    def _fetch_from_free_endpoint(self, pnr_clean: str) -> Dict[str, Any]:
+        """
+        Direct zero-key, unlimited free endpoint used by mobile rail apps.
+        """
+        url = f"https://api.confirmtkt.com/api/pnr/status/{pnr_clean}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*"
+        }
+        resp = requests.get(url, headers=headers, timeout=20)
+        if resp.status_code == 200:
+            return resp.json()
+        raise RuntimeError(f"Free rail endpoint returned {resp.status_code}: {resp.text[:100]}")
+
     def fetch_pnr_status(self, pnr: str) -> Dict[str, Any]:
         """
         Retrieves real-time PNR status and returns a normalized dictionary.
+        Supports automatic fallback between free open rail gateway and RapidAPI.
         """
         if self.mock_data is not None:
             return self._normalize_response(pnr, self.mock_data)
-
-        if not self.api_key:
-            raise ValueError("RAPIDAPI_KEY is not set. Set it in .env or provide mock_data.")
 
         # Clean PNR
         pnr_clean = str(pnr).strip().replace("-", "")
         if len(pnr_clean) != 10 or not pnr_clean.isdigit():
             raise ValueError(f"Invalid 10-digit PNR: {pnr}")
 
-        headers = {
-            "x-rapidapi-key": self.api_key,
-            "x-rapidapi-host": self.api_host
-        }
+        # Attempt 1: Free Unlimited Open Gateway (Zero quota limits)
+        try:
+            free_data = self._fetch_from_free_endpoint(pnr_clean)
+            if free_data and (free_data.get("PassengerStatus") or free_data.get("passengers")):
+                return self._normalize_response(pnr_clean, free_data)
+        except Exception as e:
+            print(f"[PNRClient] Free gateway notice ({e}), attempting RapidAPI fallback...")
 
-        if "irctc1.p.rapidapi.com" in self.api_host:
-            url = f"https://{self.api_host}/api/v3/getPNRStatus"
-            params = {"pnrNumber": pnr_clean}
-            response = requests.get(url, headers=headers, params=params, timeout=20)
-        else:
-            url = f"https://{self.api_host}/pnr-status/{pnr_clean}"
-            response = requests.get(url, headers=headers, timeout=20)
+        # Attempt 2: RapidAPI (if key is configured)
+        if self.api_key:
+            headers = {
+                "x-rapidapi-key": self.api_key,
+                "x-rapidapi-host": self.api_host
+            }
 
-        if response.status_code != 200:
-            raise RuntimeError(f"RapidAPI request failed with code {response.status_code}: {response.text}")
+            if "irctc1.p.rapidapi.com" in self.api_host:
+                url = f"https://{self.api_host}/api/v3/getPNRStatus"
+                params = {"pnrNumber": pnr_clean}
+                response = requests.get(url, headers=headers, params=params, timeout=20)
+            else:
+                url = f"https://{self.api_host}/pnr-status/{pnr_clean}"
+                response = requests.get(url, headers=headers, timeout=20)
 
-        data = response.json()
-        if data.get("status") is False and "message" in data:
-            raise RuntimeError(f"IRCTC API error: {data.get('message')}")
+            if response.status_code == 200:
+                data = response.json()
+                if not (data.get("status") is False and "message" in data):
+                    return self._normalize_response(pnr_clean, data)
 
-        return self._normalize_response(pnr_clean, data)
+        raise RuntimeError(f"Failed to fetch PNR status for {pnr_clean} across all providers.")
 
     def _normalize_response(self, pnr: str, raw: Dict[str, Any]) -> Dict[str, Any]:
         """
