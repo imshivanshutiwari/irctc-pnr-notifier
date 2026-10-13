@@ -27,29 +27,30 @@ Travelers who book Indian Railways tickets often face long waiting lists (`WL 10
 
 ```mermaid
 flowchart TD
-    subgraph Cloud["GitHub Actions Cloud (Every 5 Hours)"]
+    subgraph Cloud["GitHub Actions Cloud"]
         Cron["Cron Trigger / Manual Dispatch"] --> Engine["tracker.py Engine"]
     end
 
     subgraph RailAPI["Rail Gateway"]
-        Engine --> Gateway{"Open Rail Gateway<br>(api.confirmtkt.com)"}
+        Engine --> Gateway{"Open Rail Gateway"}
+        Gateway -->|Primary| OpenRail["api.confirmtkt.com"]
         Gateway -->|Fallback| RapidAPI["RapidAPI IRCTC"]
     end
 
-    subgraph State["Private State Management"]
-        Engine <--> Cache[("GitHub Actions Cache / Local JSON<br>(Zero Public Leaks)")]
+    subgraph State["State Management"]
+        Engine <--> Cache["Private Actions Cache / Local JSON"]
     end
 
-    subgraph Detection["Deterministic Transition Rules"]
-        Engine --> Classifier["Regex Classifier<br>(GNWL, RLWL, PQWL, RAC, CNF)"]
-        Classifier --> Diff{"Position Reduced<br>or Confirmed?"}
+    subgraph Detection["Transition Rules"]
+        Engine --> Classifier["Regex Classifier: GNWL, RLWL, RAC, CNF"]
+        Classifier --> Diff{"Position Reduced or Confirmed?"}
     end
 
-    subgraph Alerts["Instant Mobile Notifications"]
-        Diff -->|Yes (Improved)| Push["ntfy.sh (Instant Push)"]
-        Diff -->|Yes (Improved)| WA["WhatsApp (CallMeBot)"]
-        Diff -->|Yes (Improved)| TG["Telegram Bot"]
-        Diff -->|No Change| Silent["Silent (Zero Spam)"]
+    subgraph Alerts["Mobile Notifications"]
+        Diff -->|Status Improved| Push["ntfy.sh Push Alert"]
+        Diff -->|Status Improved| WA["WhatsApp via CallMeBot"]
+        Diff -->|Status Improved| TG["Telegram Bot"]
+        Diff -->|No Change| Silent["Silent: Zero Spam"]
     end
 ```
 
