@@ -5,8 +5,10 @@ Integrates live autonomous 24/7 PNR waiting list tracking directly into the port
 Zero emojis, zero em dashes.
 """
 
+import asyncio
 import os
 import uvicorn
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
@@ -14,7 +16,35 @@ from pnr_client import PNRClient
 from notifier import Notifier
 from tracker import PNRTracker
 
-app = FastAPI(title="RailPulse - Autonomous IRCTC PNR Monitor")
+# Autonomous background poller running every 5 hours (18,000 seconds)
+CHECK_INTERVAL_SECONDS = 18000
+
+async def background_pnr_poller():
+    """Autonomous continuous daemon checking PNR status every 5 hours."""
+    # Short initial warm-up delay before first check
+    await asyncio.sleep(10)
+    while True:
+        try:
+            print("[RailPulse Background Daemon] Executing scheduled PNR status check...")
+            client = PNRClient()
+            notifier = Notifier()
+            pnrs = os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110")
+            tracker = PNRTracker(pnrs=pnrs, client=client, notifier=notifier)
+            alerted, summary = tracker.check_once()
+            print(f"[RailPulse Background Daemon] Result: alerted={alerted}, summary={summary}")
+        except Exception as e:
+            print(f"[RailPulse Background Daemon] Check error: {e}")
+        await asyncio.sleep(CHECK_INTERVAL_SECONDS)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start autonomous background poller task on startup
+    task = asyncio.create_task(background_pnr_poller())
+    yield
+    # Cancel task on shutdown
+    task.cancel()
+
+app = FastAPI(title="RailPulse - Autonomous IRCTC PNR Monitor", lifespan=lifespan)
 
 # Mount static directory containing official IRCTC styles and assets
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
