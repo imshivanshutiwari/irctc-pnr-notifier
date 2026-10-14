@@ -1,0 +1,14 @@
+# RailPulse - Autonomous IRCTC PNR Waiting List Monitor
+
+> RailPulse is a 24/7 background service and web portal integrated into the IRCTC train search platform.
+
+## Overview
+- **System**: RailPulse IRCTC Autonomous PNR Waiting List Watcher
+- **Core Function**: Real-time waiting list seat progression tracking, confirmation status updates, chart preparation status alerts.
+- **Alert Channel**: Instant push notifications via ntfy webhook.
+- **Target URL**: http://localhost:8000/
+- **API Endpoints**:
+  - `GET /api/tickets`: Active monitored PNR tickets and seat movement status.
+  - `POST /api/check-now`: Immediate status query against live gateway.
+  - `POST /api/add-pnr?pnr={10-digit}`: Add new 10-digit PNR for automated 24/7 monitoring.
+  - `POST /api/test-notify`: Send test push notification to user device.

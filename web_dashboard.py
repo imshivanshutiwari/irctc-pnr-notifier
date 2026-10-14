@@ -7,9 +7,9 @@ Zero emojis, zero em dashes.
 
 import os
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from pnr_client import PNRClient
 from notifier import Notifier
 from tracker import PNRTracker
@@ -23,12 +23,48 @@ if os.path.isdir(STATIC_DIR):
 
 INDEX_PATH = os.path.join(STATIC_DIR, "index.html")
 STYLES_PATH = os.path.join(STATIC_DIR, "styles.css")
+ROBOTS_PATH = os.path.join(STATIC_DIR, "robots.txt")
+SITEMAP_PATH = os.path.join(STATIC_DIR, "sitemap.xml")
+LLMS_PATH = os.path.join(STATIC_DIR, "llms.txt")
+FAVICON_PATH = os.path.join(STATIC_DIR, "favicon.ico")
+NOT_FOUND_PATH = os.path.join(STATIC_DIR, "404.html")
+
+# Custom 404 Exception Handler
+@app.exception_handler(404)
+async def custom_404_handler(request: Request, exc):
+    if os.path.isfile(NOT_FOUND_PATH):
+        return FileResponse(NOT_FOUND_PATH, status_code=404, media_type="text/html")
+    return HTMLResponse("<h1>404 Not Found</h1>", status_code=404)
 
 @app.get("/")
 def index():
     if os.path.isfile(INDEX_PATH):
         return FileResponse(INDEX_PATH, media_type="text/html")
     return JSONResponse({"status": "error", "message": "static/index.html not found"})
+
+@app.get("/favicon.ico")
+def get_favicon():
+    if os.path.isfile(FAVICON_PATH):
+        return FileResponse(FAVICON_PATH, media_type="image/x-icon")
+    return JSONResponse({"status": "error", "message": "favicon not found"})
+
+@app.get("/robots.txt")
+def get_robots():
+    if os.path.isfile(ROBOTS_PATH):
+        return FileResponse(ROBOTS_PATH, media_type="text/plain")
+    return JSONResponse({"status": "error", "message": "robots.txt not found"})
+
+@app.get("/sitemap.xml")
+def get_sitemap():
+    if os.path.isfile(SITEMAP_PATH):
+        return FileResponse(SITEMAP_PATH, media_type="application/xml")
+    return JSONResponse({"status": "error", "message": "sitemap.xml not found"})
+
+@app.get("/llms.txt")
+def get_llms():
+    if os.path.isfile(LLMS_PATH):
+        return FileResponse(LLMS_PATH, media_type="text/plain")
+    return JSONResponse({"status": "error", "message": "llms.txt not found"})
 
 @app.get("/styles.css")
 def get_styles():

@@ -15,7 +15,7 @@ if '<link rel="stylesheet" href="/static/styles.css">' not in html:
         '<link rel="stylesheet" href="/static/styles.css"><link rel="stylesheet" href="/styles.css">'
     )
 
-# 2. Strip broken external JS bundles from original Angular build
+# 2. Strip broken external JS bundles and production source map references
 dead_scripts = [
     r'<script\s+src="runtime-es2015[^"]*"\s+type="module"></script>',
     r'<script\s+src="runtime-es5[^"]*"\s+nomodule=""\s+defer=""></script>',
@@ -30,35 +30,89 @@ dead_scripts = [
 for ds in dead_scripts:
     html = re.sub(ds, '', html, flags=re.I)
 
-# ---------------------------------------------------------------------------
-# 3. REPLACE TOP BAR:
-# Remove old Travel Advisory, A-/A/A+, static datetime, change language img.
-# Add RailPulse Project details and live running clock (date + time with seconds).
-# ---------------------------------------------------------------------------
+# Remove source map comments if any
+html = re.sub(r'/\*# sourceMappingURL=.*?\*/', '', html)
+html = re.sub(r'//# sourceMappingURL=.*', '', html)
+
+# 3. Enhanced SEO Head: Title, Meta Description, Canonical, OG Social Tags, Schema & Breadcrumbs
+SEO_HEAD_BLOCK = """
+  <title>IRCTC - Indian Railway Catering and Tourism Corporation | RailPulse PNR Monitor</title>
+  <meta name="description" content="Official Indian Railways IRCTC train booking, live seat availability check, and 24/7 automated PNR waiting list progression monitor with instant push alerts.">
+  <link rel="canonical" href="http://localhost:8000/">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  
+  <!-- Open Graph / Facebook / Twitter Social Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="http://localhost:8000/">
+  <meta property="og:title" content="IRCTC RailPulse - Live PNR Tracking & Train Search">
+  <meta property="og:description" content="Real-time 24/7 IRCTC waiting list progression and seat confirmation watcher.">
+  <meta property="og:image" content="http://localhost:8000/static/og-banner.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="IRCTC RailPulse - Live PNR Tracking">
+  <meta name="twitter:description" content="Instant push notification alerts on Indian Railways seat movement.">
+
+  <!-- Local Business / Organization & Breadcrumbs Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "http://localhost:8000/#organization",
+        "name": "Indian Railway Catering and Tourism Corporation",
+        "url": "http://localhost:8000/",
+        "logo": "http://localhost:8000/favicon.ico",
+        "description": "National railway portal of India providing e-ticketing and live travel management services."
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "http://localhost:8000/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Train Search & PNR Monitor",
+            "item": "http://localhost:8000/eticket/train-search"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+"""
+
+# Replace title and insert SEO block
+html = re.sub(r'<title>.*?</title>', '', html, flags=re.DOTALL)
+html = re.sub(r'<meta\s+name=["\']Description["\'][^>]*>', '', html, flags=re.I)
+html = html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n' + SEO_HEAD_BLOCK)
+
+# 4. Fill empty alt="" tags with descriptive accessibility text
+html = html.replace('alt=""', 'alt="IRCTC Railway Service Portal"')
+
+# 5. Top Bar: Project Info and Live Ticking Clock
 OLD_ADVISORY = "Travel Advisory: Passengers are advised to check the latest train running status, platform information, and coach position before commencing their journey."
 NEW_PROJECT_INFO = "RailPulse: Autonomous 24/7 IRCTC PNR Waiting List Watcher & Push Alert Engine &bull; Zero Spam &bull; Live Status Checks"
 
 html = html.replace(OLD_ADVISORY, NEW_PROJECT_INFO)
 
-# Replace the entire right side of the advisory bar:
-# Static timestamp "14-10-2026 | 00:09:02", font buttons A-, A, A+, and the language image.
 OLD_ADVISORY_RIGHT = html[html.find('class="advisory-right">'):html.find('</div><!----></div><', html.find('class="advisory-right">'))]
-
 NEW_ADVISORY_RIGHT = """class="advisory-right" style="display: flex; align-items: center; gap: 14px;">
   <div style="display: inline-flex; align-items: center; gap: 8px; font-family: monospace; font-size: 13px; font-weight: 700; color: #1e293b; background: rgba(255, 255, 255, 0.9); padding: 5px 12px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #cbd5e1;">
     <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #16a34a; box-shadow: 0 0 6px #22c55e;"></span>
     <span id="liveClockDisplay">Loading live time...</span>
   </div>
 """
-
 html = html.replace(OLD_ADVISORY_RIGHT, NEW_ADVISORY_RIGHT)
 
-# ---------------------------------------------------------------------------
-# GLOBAL CSS FIX BLOCK
-# ---------------------------------------------------------------------------
+# 6. GLOBAL CSS FIX BLOCK
 GLOBAL_FIX_CSS = """
 <style id="railpulse-global-fixes">
-/* ===== ISSUE 1, 2, 3: Type Scale, Colour Palette & Corner Radii System ===== */
+/* ===== Type Scale, Colour Palette & Corner Radii System ===== */
 :root {
   --rp-fs-xs:   12px;
   --rp-fs-sm:   13px;
@@ -92,7 +146,6 @@ GLOBAL_FIX_CSS = """
   --rp-radius-full: 9999px;
 }
 
-/* ===== Button Styles Unification ===== */
 button {
   font-family: inherit;
   cursor: pointer;
@@ -102,7 +155,6 @@ button {
 button:hover { opacity: 0.9; }
 button:focus-visible { outline: 2px solid var(--rp-brand-primary); outline-offset: 2px; }
 
-/* ===== Prevent text truncation on secondary actions and inputs ===== */
 .action-title,
 .select-placeholder,
 .action-info span {
@@ -112,7 +164,6 @@ button:focus-visible { outline: 2px solid var(--rp-brand-primary); outline-offse
   word-break: normal !important;
 }
 
-/* ===== Action buttons sizing and layout balance ===== */
 .quick-actions {
   display: flex !important;
   flex-direction: column !important;
@@ -148,7 +199,6 @@ button:focus-visible { outline: 2px solid var(--rp-brand-primary); outline-offse
   text-align: left !important;
 }
 
-/* ===== Standardize icon placement to Left across all form fields ===== */
 .journey-date-col .field-icon,
 .date-picker-icon,
 .cal-icon {
@@ -156,7 +206,6 @@ button:focus-visible { outline: 2px solid var(--rp-brand-primary); outline-offse
   margin-right: 8px !important;
 }
 
-/* ===== Full height vertical divider alignment ===== */
 .card-divider {
   align-self: stretch !important;
   height: auto !important;
@@ -165,7 +214,6 @@ button:focus-visible { outline: 2px solid var(--rp-brand-primary); outline-offse
   border-left: 1px solid var(--rp-border-light) !important;
 }
 
-/* ===== Search Trains CTA Prominence ===== */
 .search-btn {
   min-width: 200px !important;
   padding: 16px 28px !important;
@@ -176,24 +224,28 @@ button:focus-visible { outline: 2px solid var(--rp-brand-primary); outline-offse
   background-color: var(--rp-brand-primary) !important;
 }
 
-/* ===== From icon pin indicator distinction ===== */
 .field-icon {
   filter: hue-rotate(180deg) saturate(1.4);
 }
 </style>
 """
-
-# Inject global CSS into <head>
 html = html.replace('</head>', GLOBAL_FIX_CSS + '</head>')
 
-# ---------------------------------------------------------------------------
-# RAILPULSE SECTION
-# ---------------------------------------------------------------------------
+# 7. RAILPULSE SECTION
 RAILPULSE_SECTION = """
 <section id="railpulse-monitor" style="background: linear-gradient(135deg, #eef2fb 0%, #f5f0ea 100%); padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
   <div style="max-width: 1200px; margin: 0 auto;">
 
-    <!-- Hero headline -->
+    <!-- Breadcrumbs Navigation -->
+    <nav aria-label="Breadcrumb" style="margin-bottom: 16px; font-size: 12px; color: #64748b; font-weight: 500;">
+      <a href="/" style="color: #0b57d0; text-decoration: none;">Home</a>
+      <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+      <a href="/eticket/train-search" style="color: #0b57d0; text-decoration: none;">Train Search</a>
+      <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+      <span style="color: #0f172a; font-weight: 700;">Live PNR Monitor</span>
+    </nav>
+
+    <!-- Section Header (Clean H2 maintaining single H1 rule for hero) -->
     <div style="margin-bottom: 28px;">
       <h2 style="margin: 0 0 4px 0; font-size: 38px; font-weight: 800; color: #0f172a; letter-spacing: -1px; line-height: 1.15;">
         Your Tickets, <span style="color: #f37023;">Monitored Live</span>
@@ -209,7 +261,6 @@ RAILPULSE_SECTION = """
       <!-- Row 1: Direct Input-to-Action Grouping -->
       <div style="display: flex; flex-wrap: wrap; align-items: stretch; border-bottom: 1px solid #eef0f5;">
 
-        <!-- Primary Task Sub-region: Input + Direct Action -->
         <div style="flex: 3; display: flex; align-items: center; padding: 18px 24px; border-right: 1px solid #eef0f5; gap: 14px; min-width: 340px;">
           <div style="width: 36px; height: 36px; border-radius: 9999px; background: #eff6ff; border: 1px solid #bfdbfe; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0b57d0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -234,7 +285,6 @@ RAILPULSE_SECTION = """
           </div>
         </div>
 
-        <!-- Secondary Config Sub-region: Unified Settings Block -->
         <div style="flex: 2; display: flex; align-items: center; justify-content: space-around; padding: 14px 20px; background: #fafbfd; gap: 16px; min-width: 280px;">
           <div>
             <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px;">Scheduler</div>
@@ -308,7 +358,7 @@ RAILPULSE_SECTION = """
     <div id="ticketsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; align-items: stretch;">
     </div>
 
-    <!-- Event Log (Behind interactive details toggle) -->
+    <!-- Event Log -->
     <details style="background: #ffffff; border: 1px solid #dde3ee; border-radius: 14px; padding: 12px 18px; margin-top: 24px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
       <summary style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: #334155; user-select: none;">
         <span style="display: inline-flex; align-items: center; gap: 8px;">
@@ -340,12 +390,9 @@ if "</app-jp-input>" in html:
 else:
     html = html.replace("<app-footer", RAILPULSE_SECTION + "<app-footer")
 
-# ---------------------------------------------------------------------------
-# CLIENT SCRIPT WITH LIVE SECONDS TICKING CLOCK
-# ---------------------------------------------------------------------------
+# 8. CLIENT SCRIPT WITH LIVE SECONDS TICKING CLOCK
 CLIENT_SCRIPT = """
 <script>
-  // Live Clock ticking date and time till seconds
   function updateLiveClock() {
     var el = document.getElementById("liveClockDisplay");
     if (!el) return;
