@@ -109,6 +109,19 @@ NEW_ADVISORY_RIGHT = """class="advisory-right" style="display: flex; align-items
 """
 html = html.replace(OLD_ADVISORY_RIGHT, NEW_ADVISORY_RIGHT)
 
+# 5.1 Replace Header Logos with the two custom circular badges
+nb_key = 'class="navbar-brand"'
+nb_start = html.find(nb_key)
+if nb_start != -1:
+    nb_end = html.find('</div>', nb_start + 1000)
+    old_logos_block = html[nb_start:nb_end + 6]
+    new_logos_block = """class="navbar-brand" style="display: inline-flex; align-items: center; gap: 12px; margin-right: 20px;">
+  <img src="/static/logo1.png" alt="Indian Railways Vande Bharat Emblem" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
+  <img src="/static/logo2.png" alt="RailPulse Open Source Locomotive Emblem" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
+</div>"""
+    html = html.replace(old_logos_block, new_logos_block)
+
+
 # 6. GLOBAL CSS FIX BLOCK
 GLOBAL_FIX_CSS = """
 <style id="railpulse-global-fixes">
