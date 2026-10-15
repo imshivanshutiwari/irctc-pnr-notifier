@@ -1806,7 +1806,14 @@
         const quota = b.quota || "GNWL Quota";
         const coachClass = b.coach_class || "Sleeper (SL)";
         const shortClass = coachClass.includes('3A') ? '3A' : (coachClass.includes('2A') ? '2A' : (coachClass.includes('2S') ? '2S' : 'SL'));
-        const distKm = b.ticket_spots_gained ? (b.ticket_spots_gained * 35 + 280) : 451;
+        const distKm = b.distance_km || 733;
+        const viaRoute = b.via_route || "DIRECT";
+        const viaHi = b.via_hi || "वाया सीधी सेवा";
+        const resvFee = b.resv_fee || 20;
+        const sfCharge = b.superfast_charge ? String(b.superfast_charge) : "--";
+        const totalCashFare = b.total_fare || 435;
+        const fareWords = b.fare_words || "RUPEES FOUR HUNDRED THIRTY FIVE ONLY";
+        const zonalRailway = b.zonal_railway || "INDIAN RAILWAYS / CENTRAL RAILWAY";
 
         // Formulate passenger rows text representation for dot-matrix area
         let paxRosterHtml = '';
@@ -1877,7 +1884,7 @@
                 <div class="hole" style="left:1141px;top:470px"></div>
                 <div class="hole" style="left:1141px;top:610px"></div>
 
-                <div class="abs rail">INDIAN RAILWAYS / RAILPULSE TELEMATICS</div>
+                <div class="abs rail">${zonalRailway}</div>
                 <div class="abs" style="left:57px;top:318px;transform:rotate(-90deg);transform-origin:left top;top:520px;font-size:14px;font-weight:700;color:var(--t-blue);white-space:nowrap">
                   PRS PASSENGER RESERVATION SYSTEM
                 </div>
@@ -1949,12 +1956,12 @@
                 <div class="abs hi" style="left:175px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${fromHi}</div>
                 <div class="abs hi" style="left:340px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${toHi}</div>
                 <div class="abs hi" style="left:525px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">वाया</div>
-                <div class="abs hi" style="left:705px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${trainName}</div>
+                <div class="abs hi" style="left:595px;top:214px;font-size:17px;color:#6a6a8a;font-weight:400;white-space:nowrap">${viaHi}</div>
 
                 <div class="abs dm" style="left:112px;top:248px;font-size:18px">${shortClass}</div>
                 <div class="abs dm" style="left:242px;top:250px;font-size:16px">${fromStn}</div>
                 <div class="abs dm" style="left:429px;top:250px;font-size:16px">${toStn}</div>
-                <div class="abs dm" style="left:686px;top:250px;font-size:16px">DIRECT</div>
+                <div class="abs dm" style="left:605px;top:250px;font-size:14px;letter-spacing:1px">${viaRoute}</div>
                 <div class="abs dm" style="left:864px;top:250px;font-size:16px">${distKm}</div>
                 <div class="abs" style="left:604px;top:270px;font-size:13px;font-weight:700;color:var(--t-blue)"><span style="font-family:'Noto Sans Devanagari';color:var(--t-red)">तक आरक्षित</span> / RESV. UP TO</div>
 
@@ -1978,10 +1985,11 @@
 
                 <div class="abs dm" style="left:116px;top:333px;font-size:16px">${coachStr}</div>
                 <div class="abs dm" style="left:166px;top:333px;font-size:16px;white-space:nowrap;">${primaryCurrent}</div>
-                <div class="abs dm" style="left:290px;top:333px;font-size:16px">M</div>
-                <div class="abs dm" style="left:330px;top:333px;font-size:16px">28</div>
-                <div class="abs dm" style="left:606px;top:333px;font-size:16px">20</div>
-                <div class="abs dm" style="left:874px;top:333px;font-size:16px">${(paxList.length * 480).toFixed(0)}</div>
+                <div class="abs dm" style="left:286px;top:333px;font-size:16px">${isConfirmed ? 'M' : '--'}</div>
+                <div class="abs dm" style="left:326px;top:333px;font-size:16px">${isConfirmed ? 'AD' : '--'}</div>
+                <div class="abs dm" style="left:606px;top:333px;font-size:16px">${resvFee}</div>
+                <div class="abs dm" style="left:708px;top:333px;font-size:16px">${sfCharge}</div>
+                <div class="abs dm" style="left:874px;top:333px;font-size:16px">${totalCashFare}</div>
 
                 <!-- Multi-passenger status breakdown box inside ticket -->
                 <div class="abs dm" style="left:106px;top:370px;width:440px;background:rgba(255,255,255,0.7);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;">
@@ -1989,8 +1997,8 @@
                   ${paxRosterHtml}
                 </div>
 
-                <div class="abs dm" style="left:590px;top:360px;font-size:14px">Rs. RUPEES PAID IN CASH</div>
-                <div class="abs dm" style="left:596px;top:388px;font-size:14px">${quota} · ${shortClass}</div>
+                <div class="abs dm" style="left:590px;top:360px;font-size:12px;letter-spacing:0.5px;max-width:320px;line-height:1.2;">${fareWords}</div>
+                <div class="abs dm" style="left:596px;top:392px;font-size:13px">${quota} · ${shortClass} · ${trainNo}</div>
 
                 <!-- Footer Lines -->
                 <div class="abs dm" style="left:172px;top:490px;font-size:15px">${trainName.toUpperCase()} · ${fromStn} TO ${toStn}</div>
@@ -2015,7 +2023,7 @@
 
                 <!-- Bottom Banner -->
                 <div class="abs bn">
-                  <div class="dm" style="position:absolute;left:30px;top:6px;font-size:13px">CATG COMP NO - 1800-111-321 · CRIS TELEMETRY</div>
+                  <div class="dm" style="position:absolute;left:30px;top:6px;font-size:13px">CATG COMP NO - 139 · ALL INDIA RAILWAY HELPLINE · CRIS</div>
                   <div class="big">BHARAT NIRMAN</div>
                   <div class="tag">IT'S IN EVERYBODY'S INTEREST. IT'S EVERYBODY'S RIGHT.</div>
                 </div>

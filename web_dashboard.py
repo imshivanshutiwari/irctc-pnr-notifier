@@ -64,7 +64,14 @@ TRAIN_SCHEDULE_DIRECTORY = {
         "coach_class": "Sleeper (SL)",
         "quota": "RLGN Quota",
         "dep_day": "Saturday",
-        "arr_day": "Sunday"
+        "arr_day": "Sunday",
+        "distance_km": 733,
+        "via_route": "ET-JBP-KTE-STA",
+        "via_hi": "वाया इटारसी, जबलपुर, सतना",
+        "resv_fee": 20,
+        "superfast_charge": 30,
+        "fare_per_pax": 435,
+        "zonal_railway": "INDIAN RAILWAYS / SOUTH CENTRAL RAILWAY"
     },
     "14233": {
         "train_name": "SARYU EXP",
@@ -80,7 +87,14 @@ TRAIN_SCHEDULE_DIRECTORY = {
         "coach_class": "2S / SL",
         "quota": "GNWL Quota",
         "dep_day": "Sunday",
-        "arr_day": "Sunday"
+        "arr_day": "Sunday",
+        "distance_km": 165,
+        "via_route": "PFM-PBH-SLN",
+        "via_hi": "वाया फाफामऊ, प्रतापगढ़, सुल्तानपुर",
+        "resv_fee": 15,
+        "superfast_charge": 0,
+        "fare_per_pax": 85,
+        "zonal_railway": "INDIAN RAILWAYS / NORTHERN RAILWAY"
     },
     "12252": {
         "train_name": "WAINGANGA EXP",
@@ -96,9 +110,54 @@ TRAIN_SCHEDULE_DIRECTORY = {
         "coach_class": "3A AC 3 Tier",
         "quota": "PQWL Quota",
         "dep_day": "Sunday",
-        "arr_day": "Monday"
+        "arr_day": "Monday",
+        "distance_km": 1018,
+        "via_route": "BSP-R-DURG-G-NGP",
+        "via_hi": "वाया बिलासपुर, रायपुर, नागपुर",
+        "resv_fee": 40,
+        "superfast_charge": 45,
+        "fare_per_pax": 1445,
+        "zonal_railway": "INDIAN RAILWAYS / SOUTH EAST CENTRAL RAILWAY"
     }
 }
+
+def num_to_indian_words(num: int) -> str:
+    """Converts numeric Indian Rupees fare to authentic PRS uppercase words string."""
+    ones = ["", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN",
+            "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN"]
+    tens = ["", "", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY"]
+
+    if num <= 0:
+        return "RUPEES ZERO ONLY"
+
+    def two_digits(n):
+        if n < 20:
+            return ones[n]
+        return (tens[n // 10] + (" " + ones[n % 10] if n % 10 else "")).strip()
+
+    def three_digits(n):
+        res = ""
+        if n >= 100:
+            res += ones[n // 100] + " HUNDRED "
+            n %= 100
+        if n > 0:
+            res += two_digits(n)
+        return res.strip()
+
+    parts = []
+    if num >= 10000000:
+        parts.append(two_digits(num // 10000000) + " CRORE")
+        num %= 10000000
+    if num >= 100000:
+        parts.append(two_digits(num // 100000) + " LAKH")
+        num %= 100000
+    if num >= 1000:
+        parts.append(two_digits(num // 1000) + " THOUSAND")
+        num %= 1000
+    if num > 0:
+        parts.append(three_digits(num))
+
+    return "RUPEES " + " ".join(parts).strip() + " ONLY"
 
 async def background_pnr_poller():
     """Autonomous continuous daemon checking PNR status every 5 hours."""
@@ -275,6 +334,25 @@ def get_status_overview():
 
         ticket_data["ticket_spots_gained"] = ticket_spots
         ticket_data["has_progressed"] = ticket_spots > 0
+
+        pax_count = len(passengers) or 1
+        dist_km = schedule.get("distance_km", 733)
+        resv_fee = schedule.get("resv_fee", 20)
+        sf_ch = schedule.get("superfast_charge", 0)
+        fare_per_pax = schedule.get("fare_per_pax", 435)
+        total_fare = fare_per_pax * pax_count
+        fare_words = num_to_indian_words(total_fare)
+
+        ticket_data["distance_km"] = dist_km
+        ticket_data["via_route"] = schedule.get("via_route", "DIRECT")
+        ticket_data["via_hi"] = schedule.get("via_hi", "वाया सीधी सेवा")
+        ticket_data["resv_fee"] = resv_fee * pax_count
+        ticket_data["superfast_charge"] = sf_ch * pax_count
+        ticket_data["fare_per_pax"] = fare_per_pax
+        ticket_data["total_fare"] = total_fare
+        ticket_data["fare_words"] = fare_words
+        ticket_data["zonal_railway"] = schedule.get("zonal_railway", "INDIAN RAILWAYS / CENTRAL RAILWAY")
+
         enriched[pnr] = ticket_data
 
     now_utc = datetime.datetime.now(datetime.timezone.utc)
