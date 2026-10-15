@@ -2310,6 +2310,48 @@
         alert('Failed to connect to backend.');
       }
     }
+
+    // Anti-Inspect and Code Copy Protection
+    (function protectCodebase() {
+      // 1. Disable Right Click context menu
+      document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+        return false;
+      }, false);
+
+      // 2. Disable DevTools and Source Code Keyboard Shortcuts
+      document.addEventListener('keydown', function (e) {
+        // F12 key
+        if (e.key === 'F12' || e.keyCode === 123) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl+Shift+I (DevTools), Ctrl+Shift+J (Console), Ctrl+Shift+C (Inspect Element)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl+U (View Source)
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
+          e.preventDefault();
+          return false;
+        }
+        // Ctrl+S (Save Page)
+        if (e.ctrlKey && (e.key === 'S' || e.key === 's' || e.keyCode === 83)) {
+          e.preventDefault();
+          return false;
+        }
+      }, false);
+
+      // 3. DevTools Detector & Debugger Trap
+      setInterval(function () {
+        const start = performance.now();
+        (function () { return true; }["constructor"]("debugger")());
+        if (performance.now() - start > 100) {
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#24211E;color:#D9A65B;font-family:sans-serif;font-size:18px;letter-spacing:1px;text-transform:uppercase;">Developer Tools Access Restricted</div>';
+        }
+      }, 1000);
+    })();
   </script>
 </body>
 </html>
