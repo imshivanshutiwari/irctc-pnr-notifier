@@ -1759,10 +1759,20 @@
       return nameOrCode;
     }
 
-    // Dynamic scaled PRS ticket renderer
+    // Dynamic scaled PRS ticket renderer with state diffing to prevent DOM blinking
+    let lastRenderedTicketsJson = null;
+
     function renderTickets(tickets) {
       const container = document.getElementById('booking-container');
       if (!container) return;
+
+      const ticketsJson = JSON.stringify(tickets);
+      if (ticketsJson === lastRenderedTicketsJson && container.hasChildNodes()) {
+        return; // Data has not changed; skip DOM re-render entirely to prevent blinking
+      }
+      lastRenderedTicketsJson = ticketsJson;
+
+      const isFirstLoad = !container.hasChildNodes();
       container.innerHTML = '';
 
       let allCount = 0;
@@ -1832,7 +1842,8 @@
         const stateAttr = isCharted ? 'charted' : (hasProg ? 'progressing' : 'all');
 
         const article = document.createElement('article');
-        article.className = `booking-card animate-entrance delay-${Math.min(4 + idx, 7)} ${isConfirmed ? 'is-confirmed' : ''}`;
+        const entranceAnim = isFirstLoad ? `animate-entrance delay-${Math.min(4 + idx, 7)}` : '';
+        article.className = `booking-card ${entranceAnim} ${isConfirmed ? 'is-confirmed' : ''}`.trim();
         article.id = `card-${pnrStr}`;
         article.setAttribute('data-state', stateAttr);
 
