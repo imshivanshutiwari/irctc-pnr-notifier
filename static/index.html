@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <title>RailPulse — Autonomous Railway PNR & Charting Monitor</title>
+  <title>RailPulse — Autonomous Railway Telematics & PNR Monitor</title>
   <meta name="description" content="Production-grade autonomous telemetry and waiting-list progression monitor for Indian Railways." />
   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <style>
@@ -18,7 +18,7 @@
       --text-secondary: #A0AEC0;
       --text-muted: #718096;
       --primary: #3478F6;
-      --primary-hover: #2664D6;
+      --primary-hover: #2563EB;
       --status-healthy: #35B88A;
       --status-healthy-bg: rgba(53, 184, 138, 0.12);
       --status-warning: #F2B84B;
@@ -40,6 +40,10 @@
 
     body {
       background-color: var(--bg-page);
+      background-image: 
+        radial-gradient(ellipse 900px 500px at 50% 0%, rgba(26, 43, 76, 0.18) 0%, transparent 80%),
+        radial-gradient(ellipse 700px 400px at 85% 20%, rgba(52, 120, 246, 0.06) 0%, transparent 70%);
+      background-attachment: fixed;
       color: var(--text-primary);
       font-family: var(--font-sans);
       min-height: 100vh;
@@ -50,7 +54,7 @@
     /* Keyboard Navigation & Skip Link */
     .skip-link {
       position: absolute;
-      top: -40px;
+      top: -50px;
       left: 16px;
       background: var(--primary);
       color: #FFFFFF;
@@ -77,13 +81,15 @@
       padding: 24px;
     }
 
-    /* 1. Header */
+    /* 1. Header & Prominent Branding */
     .app-header {
       background-color: var(--bg-header);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       z-index: 100;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
     .header-inner {
       max-width: 1440px;
@@ -97,35 +103,61 @@
     .brand-group {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
+      text-decoration: none;
+    }
+    .brand-icon-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .brand-icon {
-      width: 32px;
-      height: 32px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
       object-fit: cover;
       background: var(--bg-elevated);
-      border: 1px solid var(--border);
+      border: 2px solid rgba(52, 120, 246, 0.35);
+      box-shadow: 0 0 16px rgba(52, 120, 246, 0.22), 0 4px 12px rgba(0, 0, 0, 0.5);
       flex-shrink: 0;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease, border-color 0.25s ease;
+    }
+    .brand-group:hover .brand-icon {
+      transform: scale(1.04);
+      filter: brightness(1.1);
+      border-color: rgba(52, 120, 246, 0.6);
+    }
+    .brand-text-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
     .brand-title {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 22px;
+      font-weight: 800;
       color: var(--text-primary);
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .brand-badge {
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       background: rgba(52, 120, 246, 0.15);
       color: #60A5FA;
       border: 1px solid rgba(52, 120, 246, 0.3);
-      padding: 1px 7px;
+      padding: 2px 8px;
       border-radius: 4px;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .brand-subtext {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
     }
     .header-meta {
       display: flex;
@@ -135,22 +167,28 @@
     .daemon-indicator {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
       background: var(--status-healthy-bg);
       border: 1px solid rgba(53, 184, 138, 0.3);
       color: var(--status-healthy);
       font-size: 11px;
       font-weight: 600;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 9999px;
       white-space: nowrap;
+      box-shadow: 0 0 10px rgba(53, 184, 138, 0.15);
     }
     .daemon-dot {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       background: var(--status-healthy);
       border-radius: 50%;
       flex-shrink: 0;
+      animation: daemonPulse 2.8s infinite ease-in-out;
+    }
+    @keyframes daemonPulse {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(53, 184, 138, 0.5); }
+      50% { opacity: 0.7; transform: scale(0.9); box-shadow: 0 0 0 4px rgba(53, 184, 138, 0); }
     }
     .daemon-text-short {
       display: none;
@@ -161,12 +199,36 @@
       color: var(--text-secondary);
       background: var(--bg-panel);
       border: 1px solid var(--border);
-      padding: 4px 12px;
+      padding: 5px 12px;
       border-radius: var(--radius-sm);
       white-space: nowrap;
     }
 
-    /* 2. Operational Intro */
+    /* 2. Page Entrance Stagger Animation Sequence */
+    .animate-entrance {
+      opacity: 0;
+      animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.12s; }
+    .delay-3 { animation-delay: 0.18s; }
+    .delay-4 { animation-delay: 0.24s; }
+    .delay-5 { animation-delay: 0.30s; }
+    .delay-6 { animation-delay: 0.36s; }
+    .delay-7 { animation-delay: 0.42s; }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 3. Operational Intro */
     .dashboard-intro {
       background: var(--bg-panel);
       border: 1px solid var(--border);
@@ -177,6 +239,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
     .intro-text h1 {
       font-size: 20px;
@@ -208,16 +271,19 @@
       border-radius: var(--radius-sm);
       cursor: pointer;
       border: 1px solid transparent;
-      transition: all 0.15s ease;
+      transition: all 0.18s ease;
       white-space: nowrap;
     }
     .btn-primary {
       background: var(--primary);
       color: #FFFFFF;
       border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(52, 120, 246, 0.3);
     }
     .btn-primary:hover:not(:disabled) {
       background: var(--primary-hover);
+      box-shadow: 0 4px 14px rgba(52, 120, 246, 0.45);
+      transform: translateY(-1px);
     }
     .btn-secondary {
       background: transparent;
@@ -227,13 +293,15 @@
     .btn-secondary:hover:not(:disabled) {
       background: var(--bg-elevated);
       border-color: #384A63;
+      transform: translateY(-1px);
     }
     .btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none !important;
     }
 
-    /* 3. KPI Metrics Bar */
+    /* 4. KPI Metrics Bar with Hover Lift */
     .metrics-bar {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -248,6 +316,15 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    }
+    @media (hover: hover) {
+      .metric-card:hover {
+        transform: translateY(-2px);
+        border-color: #3B4D68;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      }
     }
     .metric-header {
       display: flex;
@@ -268,14 +345,24 @@
       font-family: var(--font-mono);
       color: var(--text-primary);
       line-height: 1.1;
+      transition: color 0.3s ease;
     }
     .metric-desc {
       font-size: 11px;
       color: var(--text-secondary);
       margin-top: 6px;
     }
+    .channel-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--status-healthy);
+      box-shadow: 0 0 8px rgba(53, 184, 138, 0.5);
+      margin-right: 5px;
+    }
 
-    /* 4. Dashboard Two-Column Grid */
+    /* 5. Dashboard Two-Column Grid */
     .dashboard-layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 390px;
@@ -313,27 +400,41 @@
       padding: 5px 12px;
       border-radius: 4px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.15s ease;
     }
     .filter-btn.active {
       background: var(--bg-elevated);
       color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
     }
     .filter-btn:hover:not(.active) {
       color: var(--text-primary);
     }
 
-    /* 5. Booking Cards Anatomy (Group A, B, C) */
+    /* 6. Booking Cards Anatomy (Premium Depth & Micro-interactions) */
     .booking-card {
       background: var(--bg-panel);
       border: 1px solid var(--border);
+      border-left: 3px solid var(--status-warning);
       border-radius: var(--radius-md);
       margin-bottom: 20px;
       overflow: hidden;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease, opacity 0.2s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
     }
-    .booking-card:hover {
-      border-color: #384A63;
+    .booking-card.is-confirmed {
+      border-left-color: var(--status-healthy);
+    }
+    @media (hover: hover) {
+      .booking-card:hover {
+        transform: translateY(-3px);
+        border-color: #384D6B;
+        border-left-color: var(--status-warning);
+        box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(52, 120, 246, 0.15);
+      }
+      .booking-card.is-confirmed:hover {
+        border-left-color: var(--status-healthy);
+      }
     }
 
     /* Band A: Train Identity & Status */
@@ -404,6 +505,7 @@
       border-radius: 4px;
       letter-spacing: 0.02em;
       white-space: nowrap;
+      transition: all 0.3s ease;
     }
     .status-amber {
       background: var(--status-warning-bg);
@@ -414,6 +516,15 @@
       background: var(--status-healthy-bg);
       color: var(--status-healthy);
       border: 1px solid rgba(53, 184, 138, 0.3);
+    }
+    /* Status update pulse effect */
+    .status-updated-flash {
+      animation: statusPulseFlash 1.6s ease forwards;
+    }
+    @keyframes statusPulseFlash {
+      0% { transform: scale(1.08); box-shadow: 0 0 16px rgba(53, 184, 138, 0.6); }
+      50% { transform: scale(1.02); box-shadow: 0 0 8px rgba(53, 184, 138, 0.3); }
+      100% { transform: scale(1); box-shadow: none; }
     }
 
     /* Band B: Journey Route & Timetable (Visual Centerpiece) */
@@ -472,7 +583,7 @@
       margin-top: 3px;
     }
 
-    /* SVG Railway Line Track */
+    /* SVG Railway Line Track with Moving Signal Highlight */
     .route-rail-block {
       display: flex;
       flex-direction: column;
@@ -502,7 +613,19 @@
     }
     .rail-track-svg {
       width: 160px;
-      height: 16px;
+      height: 18px;
+    }
+    /* Animated railway signal highlight moving across track */
+    .rail-signal-beam {
+      stroke-dasharray: 24 136;
+      stroke-dashoffset: 160;
+      animation: signalGlide 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes signalGlide {
+      0% { stroke-dashoffset: 160; opacity: 0; }
+      15% { opacity: 0.9; }
+      85% { opacity: 0.9; }
+      100% { stroke-dashoffset: -24; opacity: 0; }
     }
     .route-transit-label {
       font-size: 10px;
@@ -512,7 +635,7 @@
       text-transform: uppercase;
     }
 
-    /* Band C: Lifecycle Progression & Technical Metadata (Spacious, Truthful) */
+    /* Band C: Lifecycle Progression & Technical Metadata */
     .card-group-c {
       padding: 14px 20px;
       background: var(--bg-elevated);
@@ -557,6 +680,13 @@
       padding: 1px 6px;
       border-radius: 3px;
     }
+    .stage-value.active-rac {
+      color: var(--status-healthy);
+      background: var(--status-healthy-bg);
+      border: 1px solid rgba(53, 184, 138, 0.3);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
     .lifecycle-arrow {
       color: var(--text-muted);
       display: flex;
@@ -596,7 +726,7 @@
       border: 1px solid rgba(53, 184, 138, 0.3);
     }
 
-    /* 6. Supporting Sidebar Panels */
+    /* 7. Supporting Sidebar Panels */
     .supporting-stack {
       display: flex;
       flex-direction: column;
@@ -607,6 +737,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: 18px 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
     .panel-title {
       font-size: 14px;
@@ -645,9 +776,11 @@
       font-size: 14px;
       letter-spacing: 0.06em;
       outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
     }
     .form-control:focus {
       border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(52, 120, 246, 0.25);
     }
     .form-btn-primary {
       width: 100%;
@@ -663,10 +796,13 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: background-color 0.15s;
+      transition: background-color 0.15s, box-shadow 0.15s, transform 0.15s;
+      box-shadow: 0 2px 8px rgba(52, 120, 246, 0.25);
     }
     .form-btn-primary:hover:not(:disabled) {
       background: var(--primary-hover);
+      box-shadow: 0 4px 14px rgba(52, 120, 246, 0.4);
+      transform: translateY(-1px);
     }
     .form-btn-secondary {
       width: 100%;
@@ -684,6 +820,8 @@
     .form-btn-secondary:hover:not(:disabled) {
       background: var(--bg-elevated);
       color: var(--text-primary);
+      border-color: #384A63;
+      transform: translateY(-1px);
     }
     .form-feedback {
       font-size: 11px;
@@ -691,6 +829,7 @@
       padding: 7px 10px;
       border-radius: 4px;
       display: none;
+      animation: fadeInUp 0.2s ease forwards;
     }
     .feedback-success {
       background: var(--status-healthy-bg);
@@ -731,7 +870,7 @@
       color: var(--text-muted) !important;
     }
 
-    /* Operational Event Stream */
+    /* Operational Event Stream with Slide-in */
     .log-stream {
       background: var(--bg-page);
       border: 1px solid var(--border);
@@ -746,7 +885,12 @@
     }
     .log-entry {
       word-break: break-word;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
+      animation: logSlideIn 0.22s ease forwards;
+    }
+    @keyframes logSlideIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .log-time {
       color: #60A5FA;
@@ -758,6 +902,18 @@
     .cat-gateway { color: #34D399; }
     .cat-alert { color: #F87171; }
     .cat-daemon { color: #A78BFA; }
+
+    /* Empty state */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      background: var(--bg-panel);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 13px;
+      display: none;
+    }
 
     /* Footer */
     .app-footer {
@@ -772,7 +928,21 @@
       color: var(--text-muted);
     }
 
-    /* 7. Responsive Media Queries */
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .animate-entrance {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+
+    /* 8. Responsive Media Queries */
     @media (max-width: 1120px) {
       .dashboard-layout {
         grid-template-columns: 1fr;
@@ -812,9 +982,20 @@
       }
       .header-inner {
         padding: 10px 14px;
+        gap: 10px;
+      }
+      .brand-icon {
+        width: 48px;
+        height: 48px;
+      }
+      .brand-title {
+        font-size: 17px;
       }
       .brand-badge {
         display: none;
+      }
+      .brand-subtext {
+        font-size: 10px;
       }
       .daemon-text-full {
         display: none;
@@ -894,16 +1075,19 @@
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
-  <!-- Header -->
-  <header class="app-header" role="banner">
+  <!-- Header with Prominent Railway Logo -->
+  <header class="app-header animate-entrance" role="banner">
     <div class="header-inner">
       <div class="brand-group">
-        <img src="/static/assets/logo1.png" alt="RailPulse Railway Emblem" class="brand-icon" />
-        <div>
+        <div class="brand-icon-wrapper">
+          <img src="/static/assets/logo1.png" alt="RailPulse Railway Emblem" class="brand-icon" />
+        </div>
+        <div class="brand-text-block">
           <div class="brand-title">
             RailPulse
             <span class="brand-badge">Open Source</span>
           </div>
+          <div class="brand-subtext">Autonomous Railway Telematics · Real-Time Gateway Monitor</div>
         </div>
       </div>
 
@@ -924,7 +1108,7 @@
   <main id="main-content" class="app-shell">
     
     <!-- Operational Dashboard Introduction -->
-    <section class="dashboard-intro" aria-labelledby="intro-heading">
+    <section class="dashboard-intro animate-entrance delay-1" aria-labelledby="intro-heading">
       <div class="intro-text">
         <h1 id="intro-heading">Indian Railways PNR Waiting-List Telemetry</h1>
         <p>Continuous monitoring daemon verifying reservation progression, RAC transitions, and chart preparation status directly against the IRCTC gateway.</p>
@@ -941,7 +1125,7 @@
 
     <!-- KPI & Summary Metrics -->
     <section class="metrics-bar" aria-label="Key operational metrics">
-      <div class="metric-card">
+      <div class="metric-card animate-entrance delay-2">
         <div class="metric-header">
           <span class="metric-label">Monitored Fleet</span>
         </div>
@@ -949,7 +1133,7 @@
         <div class="metric-desc" id="kpi-pax-desc">5 passengers across active fleet</div>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-card animate-entrance delay-2">
         <div class="metric-header">
           <span class="metric-label">Progression Movement</span>
         </div>
@@ -957,7 +1141,7 @@
         <div class="metric-desc">Cumulative waiting-list spots advanced</div>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-card animate-entrance delay-3">
         <div class="metric-header">
           <span class="metric-label">Next Scheduled Poll</span>
         </div>
@@ -965,11 +1149,13 @@
         <div class="metric-desc" id="kpi-last-poll-desc">Cadence: 5 hours (18,000s)</div>
       </div>
 
-      <div class="metric-card">
+      <div class="metric-card animate-entrance delay-3">
         <div class="metric-header">
           <span class="metric-label">Notification Channels</span>
         </div>
-        <div class="metric-value" id="kpi-channels" style="font-size: 17px; color: var(--status-healthy);">Ntfy: Active · TG: Off</div>
+        <div class="metric-value" id="kpi-channels" style="font-size: 17px; color: var(--status-healthy); display: flex; align-items: center;">
+          <span class="channel-dot"></span>Ntfy: Active · TG: Off
+        </div>
         <div class="metric-desc">Push alerts dispatched on WL movement</div>
       </div>
     </section>
@@ -979,7 +1165,7 @@
       
       <!-- Monitored Fleet Column -->
       <section aria-labelledby="fleet-heading">
-        <div class="fleet-header">
+        <div class="fleet-header animate-entrance delay-4">
           <h2 id="fleet-heading" class="fleet-title">Monitored Rail Bookings</h2>
           <div class="filter-group" role="tablist" aria-label="Filter bookings by state">
             <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All (<span id="count-all">3</span>)</button>
@@ -990,7 +1176,7 @@
 
         <div id="booking-container">
           <!-- Card 1: PNR 4763331979 -->
-          <article class="booking-card" data-state="progressing">
+          <article class="booking-card animate-entrance delay-4" id="card-4763331979" data-state="progressing">
             <div class="card-group-a">
               <div class="train-meta-group">
                 <span class="train-code-badge">12791</span>
@@ -999,8 +1185,8 @@
                 <span class="train-spec-pill">Sleeper (SL) · RLGN Quota</span>
               </div>
               <div class="status-badge-group">
-                <span class="improvement-delta-badge">+15 Positions Improved</span>
-                <span class="status-current-pill status-amber">RLWL 7</span>
+                <span class="improvement-delta-badge" id="delta-4763331979">+15 Positions Improved</span>
+                <span class="status-current-pill status-amber" id="pill-4763331979">RLWL 7</span>
               </div>
             </div>
 
@@ -1019,14 +1205,17 @@
                   <span class="route-duration-text">15h 50m</span>
                   <span class="overnight-pill">+1 Day</span>
                 </div>
-                <svg class="rail-track-svg" viewBox="0 0 160 16" fill="none">
-                  <circle cx="8" cy="8" r="4" fill="#3478F6" stroke="#1D4ED8" stroke-width="2"/>
-                  <line x1="14" y1="8" x2="146" y2="8" stroke="#273244" stroke-width="2"/>
-                  <line x1="38" y1="4" x2="38" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="62" y1="4" x2="62" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="92" y1="4" x2="92" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="116" y1="4" x2="116" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <circle cx="152" cy="8" r="4" fill="#35B88A" stroke="#10B981" stroke-width="2"/>
+                <svg class="rail-track-svg" viewBox="0 0 160 18" fill="none">
+                  <circle cx="8" cy="9" r="4.5" fill="#3478F6" stroke="#1D4ED8" stroke-width="1.5"/>
+                  <line x1="14" y1="9" x2="146" y2="9" stroke="#273244" stroke-width="2"/>
+                  <!-- Moving Signal Highlight -->
+                  <line class="rail-signal-beam" x1="14" y1="9" x2="146" y2="9" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+                  <!-- Railroad cross-tie ties -->
+                  <line x1="38" y1="5" x2="38" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <line x1="62" y1="5" x2="62" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <line x1="92" y1="5" x2="92" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <line x1="116" y1="5" x2="116" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <circle cx="152" cy="9" r="4.5" fill="#35B88A" stroke="#10B981" stroke-width="1.5"/>
                 </svg>
                 <span class="route-transit-label">Direct Rail Corridor</span>
               </div>
@@ -1050,12 +1239,12 @@
                 <div class="lifecycle-arrow" aria-hidden="true">→</div>
                 <div class="lifecycle-stage">
                   <span class="stage-label">Current</span>
-                  <span class="stage-value active-current">RLWL 7</span>
+                  <span class="stage-value active-current" id="stage-current-4763331979">RLWL 7</span>
                 </div>
                 <div class="lifecycle-arrow" aria-hidden="true">→</div>
                 <div class="lifecycle-stage">
                   <span class="stage-label">Next Stage</span>
-                  <span class="stage-value">RAC</span>
+                  <span class="stage-value" id="stage-next-4763331979">RAC</span>
                 </div>
                 <div class="lifecycle-arrow" aria-hidden="true">→</div>
                 <div class="lifecycle-stage">
@@ -1072,7 +1261,7 @@
           </article>
 
           <!-- Card 2: PNR 7000126327 -->
-          <article class="booking-card" data-state="progressing">
+          <article class="booking-card animate-entrance delay-5" id="card-7000126327" data-state="progressing">
             <div class="card-group-a">
               <div class="train-meta-group">
                 <span class="train-code-badge">14233</span>
@@ -1100,13 +1289,14 @@
                 <div class="route-duration-badge">
                   <span class="route-duration-text">4h 55m</span>
                 </div>
-                <svg class="rail-track-svg" viewBox="0 0 160 16" fill="none">
-                  <circle cx="8" cy="8" r="4" fill="#3478F6" stroke="#1D4ED8" stroke-width="2"/>
-                  <line x1="14" y1="8" x2="146" y2="8" stroke="#273244" stroke-width="2"/>
-                  <line x1="45" y1="4" x2="45" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="80" y1="4" x2="80" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="115" y1="4" x2="115" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <circle cx="152" cy="8" r="4" fill="#35B88A" stroke="#10B981" stroke-width="2"/>
+                <svg class="rail-track-svg" viewBox="0 0 160 18" fill="none">
+                  <circle cx="8" cy="9" r="4.5" fill="#3478F6" stroke="#1D4ED8" stroke-width="1.5"/>
+                  <line x1="14" y1="9" x2="146" y2="9" stroke="#273244" stroke-width="2"/>
+                  <line class="rail-signal-beam" x1="14" y1="9" x2="146" y2="9" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="45" y1="5" x2="45" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <line x1="80" y1="5" x2="80" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <line x1="115" y1="5" x2="115" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <circle cx="152" cy="9" r="4.5" fill="#35B88A" stroke="#10B981" stroke-width="1.5"/>
                 </svg>
                 <span class="route-transit-label">Intercity Link</span>
               </div>
@@ -1152,7 +1342,7 @@
           </article>
 
           <!-- Card 3: PNR 6610459110 -->
-          <article class="booking-card" data-state="progressing">
+          <article class="booking-card animate-entrance delay-6" id="card-6610459110" data-state="progressing">
             <div class="card-group-a">
               <div class="train-meta-group">
                 <span class="train-code-badge">12252</span>
@@ -1181,14 +1371,15 @@
                   <span class="route-duration-text">23h 20m</span>
                   <span class="overnight-pill">+1 Day</span>
                 </div>
-                <svg class="rail-track-svg" viewBox="0 0 160 16" fill="none">
-                  <circle cx="8" cy="8" r="4" fill="#3478F6" stroke="#1D4ED8" stroke-width="2"/>
-                  <line x1="14" y1="8" x2="146" y2="8" stroke="#273244" stroke-width="2"/>
-                  <line x1="38" y1="4" x2="38" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="65" y1="4" x2="65" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="95" y1="4" x2="95" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="120" y1="4" x2="120" y2="12" stroke="#273244" stroke-width="1.5"/>
-                  <circle cx="152" cy="8" r="4" fill="#35B88A" stroke="#10B981" stroke-width="2"/>
+                <svg class="rail-track-svg" viewBox="0 0 160 18" fill="none">
+                  <circle cx="8" cy="9" r="4.5" fill="#3478F6" stroke="#1D4ED8" stroke-width="1.5"/>
+                  <line x1="14" y1="9" x2="146" y2="9" stroke="#273244" stroke-width="2"/>
+                  <line class="rail-signal-beam" x1="14" y1="9" x2="146" y2="9" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="38" y1="5" x2="38" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <line x1="65" y1="5" x2="65" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <line x1="95" y1="5" x2="95" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <line x1="120" y1="5" x2="120" y2="13" stroke="#273244" stroke-width="1.5"/>
+                  <circle cx="152" cy="9" r="4.5" fill="#35B88A" stroke="#10B981" stroke-width="1.5"/>
                 </svg>
                 <span class="route-transit-label">Superfast Express</span>
               </div>
@@ -1233,13 +1424,18 @@
             </div>
           </article>
         </div>
+
+        <!-- Filter Empty State -->
+        <div id="filter-empty" class="empty-state">
+          No bookings currently in this category. Chart preparation begins 4 hours prior to train departure.
+        </div>
       </section>
 
       <!-- Supporting Sidebar Panels -->
       <aside class="supporting-stack" aria-label="Operational telemetry and controls">
         
         <!-- PNR Enrollment Panel -->
-        <div class="panel">
+        <div class="panel animate-entrance delay-5">
           <h3 class="panel-title">Enroll PNR Booking</h3>
           <p class="panel-desc">Add a 10-digit Indian Railways PNR to the persistent 5-hour automated tracking loop.</p>
           <form id="enroll-form" onsubmit="handleEnroll(event)">
@@ -1268,7 +1464,7 @@
         </div>
 
         <!-- Daemon Telemetry Panel (Truthful) -->
-        <div class="panel">
+        <div class="panel animate-entrance delay-6">
           <h3 class="panel-title">Daemon Telemetry</h3>
           <p class="panel-desc">Real-time status of backend process and upstream IRCTC gateway connectivity.</p>
           <table class="telemetry-table">
@@ -1306,7 +1502,7 @@
         </div>
 
         <!-- Operational Event Stream -->
-        <div class="panel">
+        <div class="panel animate-entrance delay-7">
           <h3 class="panel-title">Operational Event Stream</h3>
           <p class="panel-desc">Chronological log of gateway polls, state diffs, and alert dispatches.</p>
           <div class="log-stream" id="log-stream" role="log" aria-live="polite">
@@ -1334,6 +1530,16 @@
   </main>
 
   <script>
+    // Remove entrance animation classes after initial page load to prevent replay on updates
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.querySelectorAll('.animate-entrance').forEach(el => {
+          el.style.opacity = '1';
+          el.classList.remove('animate-entrance', 'delay-1', 'delay-2', 'delay-3', 'delay-4', 'delay-5', 'delay-6', 'delay-7');
+        });
+      }, 1000);
+    });
+
     // Live Clock ticking in Indian Standard Time (IST)
     function updateClock() {
       const now = new Date();
@@ -1361,7 +1567,7 @@
     }
     setInterval(updateCountdown, 1000);
 
-    // Append to Event Stream without forcing scroll jump
+    // Append to Event Stream with slide-down animation and scroll preservation
     function logEvent(category, message, catClass) {
       const stream = document.getElementById('log-stream');
       const now = new Date();
@@ -1371,25 +1577,35 @@
       div.className = 'log-entry';
       div.innerHTML = `<span class="log-time">${ts}</span> <span class="log-category ${catClass}">[${category}]</span> ${message}`;
       
-      const isScrolledToTop = stream.scrollTop <= 10;
+      const isScrolledToTop = stream.scrollTop <= 15;
       stream.insertBefore(div, stream.firstChild);
       if (isScrolledToTop) {
         stream.scrollTop = 0;
       }
     }
 
-    // Dynamic Fleet Status Filter
+    // Dynamic Fleet Status Filter with Smooth Transitions
     function setFilter(filter) {
       document.querySelectorAll('.filter-btn').forEach(b => {
         b.classList.toggle('active', b.getAttribute('data-filter') === filter);
       });
+      let matchCount = 0;
       document.querySelectorAll('.booking-card').forEach(card => {
-        if (filter === 'all' || card.getAttribute('data-state') === filter) {
+        const match = (filter === 'all' || card.getAttribute('data-state') === filter);
+        if (match) {
           card.style.display = 'block';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+          matchCount++;
         } else {
           card.style.display = 'none';
         }
       });
+
+      const emptyEl = document.getElementById('filter-empty');
+      if (emptyEl) {
+        emptyEl.style.display = matchCount === 0 ? 'block' : 'none';
+      }
     }
 
     // Dynamic Fetch Status from backend
@@ -1409,7 +1625,7 @@
 
           const ntfyShort = tel.ntfy_configured ? 'Ntfy: Active' : 'Ntfy: Off';
           const tgShort = tel.telegram_configured ? 'TG: Active' : 'TG: Off';
-          document.getElementById('kpi-channels').textContent = `${ntfyShort} · ${tgShort}`;
+          document.getElementById('kpi-channels').innerHTML = `<span class="channel-dot"></span>${ntfyShort} · ${tgShort}`;
 
           document.getElementById('tel-process').textContent = `Active (PID ${tel.pid})`;
           document.getElementById('tel-last-poll').textContent = tel.last_poll_time_ist;
@@ -1508,12 +1724,39 @@
       }
     }
 
-    // Status Progression Simulator
+    // Status Progression Simulator with Real Animation Trigger
     function simulateProgression() {
+      // Animate update on Card 1
+      const pill = document.getElementById('pill-4763331979');
+      const delta = document.getElementById('delta-4763331979');
+      const stageCurrent = document.getElementById('stage-current-4763331979');
+      const stageNext = document.getElementById('stage-next-4763331979');
+      const card = document.getElementById('card-4763331979');
+
+      if (pill && stageCurrent) {
+        // Transition to RAC 2
+        pill.textContent = 'RAC 2';
+        pill.className = 'status-current-pill status-green status-updated-flash';
+        if (delta) delta.textContent = '+20 Positions Improved (RAC Transition)';
+        if (card) card.classList.add('is-confirmed');
+        
+        stageCurrent.textContent = 'RAC 2';
+        stageCurrent.className = 'stage-value active-rac';
+        if (stageNext) stageNext.textContent = 'CNF';
+
+        // Update KPI counter
+        const progKpi = document.getElementById('kpi-progression');
+        if (progKpi) progKpi.textContent = '+62 Positions';
+
+        setTimeout(() => {
+          pill.classList.remove('status-updated-flash');
+        }, 1800);
+      }
+
       logEvent('SIMULATION', '[SIMULATION TEST] Simulated movement on PNR 4763331979: RLWL 7 progressed to RAC 2.', 'cat-sync');
       const feedback = document.getElementById('form-feedback');
       feedback.className = 'form-feedback feedback-success';
-      feedback.textContent = 'Simulated movement: PNR 4763331979 progressed to RAC 2!';
+      feedback.textContent = 'Simulated movement applied: PNR 4763331979 progressed to RAC 2!';
       feedback.style.display = 'block';
       setTimeout(() => { feedback.style.display = 'none'; }, 4000);
     }
