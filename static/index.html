@@ -2046,13 +2046,15 @@
           document.getElementById('tel-gateway').textContent = `${tel.gateway_host} (Online)`;
           document.getElementById('tel-ntfy').textContent = tel.ntfy_status;
           document.getElementById('tel-telegram').textContent = tel.telegram_status;
-          document.getElementById('tel-tests').textContent = `${tel.tests_passing} / ${tel.tests_total} Passing`;
         }
       } catch (e) {
-        // Fallback gracefully to existing pre-rendered values
+        // Fallback gracefully if network glitch occurs
       }
     }
     fetchStatus();
+    // Auto-sync dashboard every 30 seconds so background daemon updates reflect live
+    setInterval(fetchStatus, 30000);
+
 
     // Manual Gateway Poll via backend /api/check-now
     async function handleGatewayPoll() {
