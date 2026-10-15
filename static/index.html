@@ -1759,25 +1759,88 @@
       }
     }
 
-    // Dynamic Hindi Station Name Map for authentic PRS look
+    // Comprehensive Hindi Station Name Map for authentic PRS look
     const HINDI_STATIONS = {
-      "NGP": "नागपुर",
-      "PRYJ": "प्रयागराज",
-      "AY": "अयोध्या कैंट",
+      "NGP": "नागपुर जंक्शन",
+      "PRYJ": "प्रयागराज जंक्शन",
+      "PRG": "प्रयाग",
+      "AY": "अयोध्या",
+      "AYC": "अयोध्या कैंट",
       "KRBA": "कोरबा",
-      "KCG": "हैदराबाद",
-      "SC": "सिकंदराबाद",
+      "KCG": "हैदराबाद काचेगुड़ा",
+      "HYB": "हैदराबाद डेक्कन",
+      "SC": "सिकंदराबाद जंक्शन",
       "DNR": "दानापुर",
       "NDLS": "नई दिल्ली",
-      "CNB": "कानपुर",
-      "BJU": "बरौनी"
+      "DLI": "दिल्ली",
+      "NZM": "हज़रत निज़ामुद्दीन",
+      "ANVT": "आनंद विहार टर्मिनल",
+      "CNB": "कानपुर सेंट्रल",
+      "BJU": "बरौनी जंक्शन",
+      "BSB": "वाराणसी जंक्शन",
+      "BSBS": "बनारस",
+      "LKO": "लखनऊ चारबाग",
+      "LJN": "लखनऊ जंक्शन",
+      "HWH": "हावड़ा जंक्शन",
+      "SDAH": "सियालदह",
+      "CSMT": "छत्रपति शिवाजी महाराज टर्मिनस",
+      "DR": "दादर",
+      "MMCT": "मुंबई सेंट्रल",
+      "BCT": "मुंबई सेंट्रल",
+      "BDTS": "बांद्रा टर्मिनस",
+      "PNBE": "पटना जंक्शन",
+      "GKP": "गोरखपुर जंक्शन",
+      "JAT": "जम्मू तवी",
+      "CDG": "चंडीगढ़",
+      "AGC": "आगरा कैंट",
+      "GWL": "ग्वालियर जंक्शन",
+      "VGLJ": "वीरांगना लक्ष्मीबाई झाँसी",
+      "BPL": "भोपाल जंक्शन",
+      "RKMP": "रानी कमलापति",
+      "ET": "इटारसी जंक्शन",
+      "JBP": "जबलपुर जंक्शन",
+      "KTE": "कटनी जंक्शन",
+      "STA": "सतना जंक्शन",
+      "MZP": "मिर्ज़ापुर",
+      "DDU": "पं. दीनदयाल उपाध्याय जंक्शन",
+      "R": "रायपुर जंक्शन",
+      "BSP": "बिलासपुर जंक्शन",
+      "DURG": "दुर्ग जंक्शन",
+      "G": "गोंदिया जंक्शन",
+      "BXR": "बक्सर",
+      "ARA": "आरा जंक्शन",
+      "PUNE": "पुणे जंक्शन",
+      "ADI": "अहमदाबाद जंक्शन",
+      "BRC": "वडोदरा जंक्शन",
+      "ST": "सूरत",
+      "JP": "जयपुर जंक्शन",
+      "AII": "अजमेर जंक्शन",
+      "JU": "जोधपुर जंक्शन",
+      "UJN": "उज्जैन जंक्शन",
+      "INDB": "इंदौर जंक्शन",
+      "GHY": "गुवाहाटी",
+      "MAS": "एम.जी.आर. चेन्नई सेंट्रल",
+      "MS": "चेन्नई एग्मोर",
+      "SBC": "के.एस.आर. बेंगलुरु",
+      "YPR": "यशवंतपुर जंक्शन",
+      "TVC": "तिरुवनंतपुरम सेंट्रल",
+      "ERS": "एर्नाकुलम जंक्शन",
+      "PURI": "पुरी",
+      "BBS": "भुवनेश्वर",
+      "VSKP": "विशाखापट्टनम",
+      "BZA": "विजयवाड़ा जंक्शन",
+      "RNC": "रांची जंक्शन",
+      "TATA": "टाटानगर जंक्शन",
+      "DHN": "धनबाद जंक्शन",
+      "ASN": "आसनसोल जंक्शन"
     };
 
     function getHindiName(nameOrCode) {
       if (!nameOrCode) return "";
-      const upper = nameOrCode.toUpperCase().trim();
+      const upper = String(nameOrCode).toUpperCase().trim();
+      if (HINDI_STATIONS[upper]) return HINDI_STATIONS[upper];
       for (const [code, hi] of Object.entries(HINDI_STATIONS)) {
-        if (upper.includes(code) || upper.includes(hi)) return hi;
+        if (upper === code || upper.includes(code)) return hi;
       }
       return nameOrCode;
     }
@@ -1821,21 +1884,26 @@
         const seatStr = isConfirmed ? primaryCurrent : "--";
         const trainNo = String(b.train_number || '--');
         const trainName = String(b.train_name || 'EXP');
-        const fromStn = b.from_code || b.from_station || "--";
-        const toStn = b.to_code || b.to_station || "--";
-        const fromHi = getHindiName(fromStn);
-        const toHi = getHindiName(toStn);
+
+        // Authentic station codes, English names, and Hindi translations
+        const fromCode = b.from_code || "--";
+        const toCode = b.to_code || "--";
+        const fromName = b.from_name || b.from_station || fromCode;
+        const toName = b.to_name || b.to_station || toCode;
+        const fromHi = b.from_hi || getHindiName(fromCode) || getHindiName(fromName);
+        const toHi = b.to_hi || getHindiName(toCode) || getHindiName(toName);
+
         const doj = b.date_of_journey || "--";
         const quota = b.quota && b.quota !== "--" ? b.quota : "PRS TELEMETRY";
         const coachClass = b.coach_class || "--";
-        const shortClass = coachClass.includes('3A') ? '3A' : (coachClass.includes('2A') ? '2A' : (coachClass.includes('2S') ? '2S' : (coachClass.includes('SL') ? 'SL' : '--')));
+        const shortClass = coachClass.includes('3A') ? '3A' : (coachClass.includes('2A') ? '2A' : (coachClass.includes('2S') ? '2S' : (coachClass.includes('SL') ? 'SL' : (coachClass.includes('CC') ? 'CC' : coachClass))));
         const distKm = "--";
         const viaRoute = "--";
         const viaHi = "--";
         const resvFee = "--";
         const sfCharge = "--";
-        const totalCashFare = "--";
-        const fareWords = "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *";
+        const totalCashFare = b.total_fare && b.total_fare !== "--" ? b.total_fare : (b.fare ? b.fare : "--");
+        const fareWords = b.fare_words || "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *";
         const zonalRailway = "INDIAN RAILWAYS / भारतीय रेल";
 
         // Formulate passenger rows text representation for dot-matrix area
@@ -1883,7 +1951,7 @@
             <div class="ticket-card-title-group">
               <span class="ticket-pnr-badge">PNR ${pnrStr}</span>
               <span class="ticket-train-title">${trainNo} ${trainName}</span>
-              <span style="font-size:12px;color:var(--text-secondary);">${b.route_name || (fromStn + ' → ' + toStn)}</span>
+              <span style="font-size:12px;color:var(--text-secondary);">${b.route_name || (fromName + ' (' + fromCode + ') → ' + toName + ' (' + toCode + ')')}</span>
             </div>
             <div class="ticket-card-status-badges">
               <span class="improvement-delta-badge" id="delta-${pnrStr}">${deltaText}</span>
@@ -1989,8 +2057,8 @@
                 <div class="abs hi" style="left:595px;top:214px;font-size:17px;color:#6a6a8a;font-weight:400;white-space:nowrap">${viaHi}</div>
 
                 <div class="abs dm" style="left:112px;top:248px;font-size:18px">${shortClass}</div>
-                <div class="abs dm" style="left:242px;top:250px;font-size:16px">${fromStn}</div>
-                <div class="abs dm" style="left:429px;top:250px;font-size:16px">${toStn}</div>
+                <div class="abs dm" style="left:242px;top:250px;font-size:16px">${fromCode}</div>
+                <div class="abs dm" style="left:429px;top:250px;font-size:16px">${toCode}</div>
                 <div class="abs dm" style="left:605px;top:250px;font-size:14px;letter-spacing:1px">${viaRoute}</div>
                 <div class="abs dm" style="left:864px;top:250px;font-size:16px">${distKm}</div>
                 <div class="abs" style="left:604px;top:270px;font-size:13px;font-weight:700;color:var(--t-blue)"><span style="font-family:'Noto Sans Devanagari';color:var(--t-red)">तक आरक्षित</span> / RESV. UP TO</div>
@@ -2023,7 +2091,7 @@
                 <div class="abs dm" style="left:588px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
                 <div class="abs dm" style="left:652px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
                 <div class="abs dm" style="left:716px;top:333px;width:84px;text-align:center;font-size:16px">--</div>
-                <div class="abs dm" style="left:800px;top:333px;width:146px;text-align:center;font-size:17px;font-weight:700;">--</div>
+                <div class="abs dm" style="left:800px;top:333px;width:146px;text-align:center;font-size:17px;font-weight:700;">${totalCashFare}</div>
 
                 <!-- Multi-passenger status breakdown box inside ticket -->
                 <div class="abs dm" style="left:80px;top:370px;width:430px;background:rgba(255,255,255,0.85);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;z-index:12;">
@@ -2035,8 +2103,8 @@
                 <div class="abs dm" style="left:520px;top:392px;font-size:13px;font-weight:700;z-index:12;">${quota} · ${shortClass} · ${trainNo} ${trainName}</div>
 
                 <!-- Footer Lines -->
-                <div class="abs dm" style="left:172px;top:490px;font-size:15px">${trainName.toUpperCase()} · ${fromStn} TO ${toStn}</div>
-                <div class="abs dm" style="left:548px;top:490px;font-size:14px">SCHEDULE: REFER LIVE NTES / IRCTC TIMETABLE</div>
+                <div class="abs dm" style="left:172px;top:490px;font-size:15px">${trainName.toUpperCase()} · ${fromName} (${fromCode}) TO ${toName} (${toCode})</div>
+                <div class="abs dm" style="left:548px;top:490px;font-size:14px">${b.dep_time && b.dep_time !== '--' ? `DEP ${b.dep_time} · ARR ${b.arr_time}` : 'SCHEDULE: REFER LIVE NTES / IRCTC TIMETABLE'}</div>
                 <div class="abs dm" style="left:110px;top:518px;font-size:14px;white-space:nowrap">${trainNo} ${doj} · TRACKED VIA RAILPULSE ENGINE</div>
                 <div class="abs dm" style="left:200px;top:544px;font-size:14px">VALID WITH ORIGINAL GOVERNMENT ISSUED ID FOR RAILWAY TRAVEL</div>
 

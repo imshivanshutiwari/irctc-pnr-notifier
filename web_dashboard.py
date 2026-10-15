@@ -18,6 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from pnr_client import PNRClient
 from notifier import Notifier
 from tracker import PNRTracker
+from stations import get_station_info
 
 # Autonomous background poller running every 5 hours (18,000 seconds)
 CHECK_INTERVAL_SECONDS = 18000
@@ -299,16 +300,27 @@ def get_status_overview():
         if data.get("chart_prepared"):
             charted_count += 1
         
-        # Real route information from PNR record
-        from_stn = data.get('from_station', '')
-        to_stn = data.get('to_station', '')
-        ticket_data["route_name"] = f"{from_stn} – {to_stn}" if from_stn and to_stn else "DIRECT ROUTE"
-        ticket_data["from_code"] = from_stn[:4].upper() if from_stn else "DEP"
-        ticket_data["from_name"] = from_stn
-        ticket_data["to_code"] = to_stn[:4].upper() if to_stn else "ARR"
-        ticket_data["to_name"] = to_stn
-        ticket_data["dep_time"] = "--"
-        ticket_data["arr_time"] = "--"
+        # Real route information directly from PNR record & stations lookup
+        from_code = data.get("from_code") or ""
+        from_name = data.get("from_name") or data.get("from_station") or ""
+        to_code = data.get("to_code") or ""
+        to_name = data.get("to_name") or data.get("to_station") or ""
+
+        from_code, from_name, from_hi = get_station_info(from_code, from_name)
+        to_code, to_name, to_hi = get_station_info(to_code, to_name)
+
+        ticket_data["from_code"] = from_code
+        ticket_data["to_code"] = to_code
+        ticket_data["from_name"] = from_name
+        ticket_data["to_name"] = to_name
+        ticket_data["from_station"] = from_name
+        ticket_data["to_station"] = to_name
+        ticket_data["from_hi"] = from_hi
+        ticket_data["to_hi"] = to_hi
+        ticket_data["route_name"] = f"{from_name} ({from_code}) → {to_name} ({to_code})"
+
+        ticket_data["dep_time"] = data.get("dep_time") or "--"
+        ticket_data["arr_time"] = data.get("arr_time") or "--"
         ticket_data["duration"] = "--"
         ticket_data["is_overnight"] = False
 
@@ -333,6 +345,9 @@ def get_status_overview():
                     total_spots_gained += diff
                     progressed_count += 1
 
+        if detected_quota == "--" and data.get("quota"):
+            detected_quota = f"{data.get('quota')} Quota"
+
         ticket_data["coach_class"] = data.get("coach_class", "--")
         ticket_data["quota"] = detected_quota
         ticket_data["dep_day"] = "--"
@@ -340,15 +355,22 @@ def get_status_overview():
         ticket_data["ticket_spots_gained"] = ticket_spots
         ticket_data["has_progressed"] = ticket_spots > 0
 
-        # Strictly authentic markers - No fake or synthetic numbers
+        # Real ticket fare directly from API
+        api_fare = data.get("fare")
+        if api_fare and str(api_fare).isdigit() and int(api_fare) > 0:
+            ticket_data["total_fare"] = str(api_fare)
+            ticket_data["fare_words"] = f"RUPEES {api_fare} ONLY · IRCTC OFFICIAL PRS FARE"
+        else:
+            ticket_data["total_fare"] = "--"
+            ticket_data["fare_words"] = "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *"
+
+        # Strictly authentic markers
         ticket_data["distance_km"] = "--"
         ticket_data["via_route"] = "--"
         ticket_data["via_hi"] = "--"
         ticket_data["resv_fee"] = "--"
         ticket_data["superfast_charge"] = "--"
         ticket_data["fare_per_pax"] = "--"
-        ticket_data["total_fare"] = "--"
-        ticket_data["fare_words"] = "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *"
         ticket_data["zonal_railway"] = "INDIAN RAILWAYS / भारतीय रेल"
 
         enriched[pnr] = ticket_data

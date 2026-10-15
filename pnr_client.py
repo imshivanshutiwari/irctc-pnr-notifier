@@ -8,6 +8,7 @@ Supports:
 import os
 import requests
 from typing import Dict, Any, Optional
+from stations import get_station_info
 
 class PNRClient:
     def __init__(
@@ -106,27 +107,48 @@ class PNRClient:
             payload.get("journeyDate") or
             ""
         )
-        from_stn = (
-            payload.get("from_station") or
-            payload.get("SourceName") or
-            payload.get("sourceStation") or
+        # Station codes from API
+        raw_from_code = str(
             payload.get("From") or
-            payload.get("from") or
-            payload.get("boarding_station") or
-            payload.get("boardingPoint") or
-            payload.get("source") or
+            payload.get("BoardingPoint") or
+            payload.get("sourceStation") or
+            payload.get("from_code") or
             ""
-        )
-        to_stn = (
-            payload.get("to_station") or
-            payload.get("DestinationName") or
-            payload.get("destinationStation") or
+        ).strip().upper()
+        raw_to_code = str(
             payload.get("To") or
-            payload.get("to") or
-            payload.get("reservation_upto") or
-            payload.get("destination") or
+            payload.get("ReservationUpto") or
+            payload.get("destinationStation") or
+            payload.get("to_code") or
             ""
-        )
+        ).strip().upper()
+
+        # Station names from API
+        raw_from_name = str(
+            payload.get("BoardingStationName") or
+            payload.get("SourceName") or
+            payload.get("source_station_name") or
+            payload.get("from_station") or
+            raw_from_code
+        ).strip()
+        raw_to_name = str(
+            payload.get("ReservationUptoName") or
+            payload.get("DestinationName") or
+            payload.get("destination_station_name") or
+            payload.get("to_station") or
+            raw_to_code
+        ).strip()
+
+        # Get authentic station code, full English name, and authentic Hindi name
+        from_code, from_name, from_hi = get_station_info(raw_from_code, raw_from_name)
+        to_code, to_name, to_hi = get_station_info(raw_to_code, raw_to_name)
+
+        coach_class = str(payload.get("Class") or payload.get("journeyClass") or payload.get("coach_class") or "").strip().upper()
+        quota = str(payload.get("Quota") or payload.get("quota") or "").strip().upper()
+        fare = str(payload.get("TicketFare") or payload.get("BookingFare") or payload.get("fare") or "").strip()
+        dep_time = str(payload.get("DepartureTime") or payload.get("dep_time") or "").strip()
+        arr_time = str(payload.get("ArrivalTime") or payload.get("arr_time") or "").strip()
+
         chart_status_raw = str(payload.get("ChartPrepared") or payload.get("chartStatus") or payload.get("chart_prepared") or payload.get("chartPrepared") or "").upper()
         chart_prepared = "TRUE" in chart_status_raw or ("PREPARED" in chart_status_raw and "NOT" not in chart_status_raw)
 
@@ -168,8 +190,19 @@ class PNRClient:
             "train_number": str(train_number),
             "train_name": str(train_name),
             "date_of_journey": str(doj),
-            "from_station": str(from_stn),
-            "to_station": str(to_stn),
+            "from_station": from_name,
+            "to_station": to_name,
+            "from_name": from_name,
+            "to_name": to_name,
+            "from_code": from_code,
+            "to_code": to_code,
+            "from_hi": from_hi,
+            "to_hi": to_hi,
+            "coach_class": coach_class,
+            "quota": quota,
+            "fare": fare,
+            "dep_time": dep_time,
+            "arr_time": arr_time,
             "chart_prepared": bool(chart_prepared),
             "passengers": passengers
         }
