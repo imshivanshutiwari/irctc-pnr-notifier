@@ -1079,6 +1079,27 @@
       color: var(--status-healthy);
       border: 1px solid rgba(118, 184, 138, 0.3);
     }
+    .btn-delete-pnr {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(217, 120, 104, 0.12);
+      color: #E08272;
+      border: 1px solid rgba(217, 120, 104, 0.35);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+    .btn-delete-pnr:hover {
+      background: #D97868;
+      color: #FFFFFF;
+      border-color: #D97868;
+      transform: translateY(-1px);
+    }
 
     /* 7. Supporting Sidebar Panels */
     .supporting-stack {
@@ -1868,6 +1889,13 @@
               <span class="improvement-delta-badge" id="delta-${pnrStr}">${deltaText}</span>
               <span class="status-current-pill ${isConfirmed ? 'status-green' : 'status-amber'}" id="pill-${pnrStr}">${primaryCurrent}</span>
               <span class="chart-pill ${isCharted ? 'prepared' : 'unprepared'}">${isCharted ? 'Chart Prepared' : 'Chart Not Prepared'}</span>
+              <button class="btn-delete-pnr" onclick="handleDeletePnr('${pnrStr}')" title="Delete PNR ${pnrStr} from fleet tracking">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                <span>Delete</span>
+              </button>
             </div>
           </div>
 
@@ -2178,6 +2206,7 @@
           feedback.style.display = 'block';
           input.value = '';
           logEvent('ENROLL', `PNR ${pnr}: Enrolled into background tracking`, 'cat-sync');
+          lastRenderedTicketsJson = null; // Force DOM re-render of new ticket
           fetchStatus();
         } else {
           feedback.className = 'form-feedback feedback-error';
@@ -2193,6 +2222,26 @@
         btn.disabled = false;
         btn.innerHTML = '<span>Enroll in Monitoring Loop</span>';
         setTimeout(() => { feedback.style.display = 'none'; }, 5000);
+      }
+    }
+
+    // Delete PNR via backend /api/delete-pnr
+    async function handleDeletePnr(pnr) {
+      if (!confirm(`Are you sure you want to remove PNR ${pnr} from active tracking?`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/delete-pnr?pnr=${pnr}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status === 'success') {
+          logEvent('DELETE', `PNR ${pnr} removed from fleet monitoring.`, 'cat-alert');
+          lastRenderedTicketsJson = null; // Force DOM re-render
+          fetchStatus();
+        } else {
+          alert(data.message || 'Could not delete PNR.');
+        }
+      } catch (err) {
+        alert('Failed to connect to backend.');
       }
     }
   </script>
