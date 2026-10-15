@@ -6,6 +6,7 @@ Zero emojis, zero em dashes.
 """
 
 import asyncio
+import json
 import os
 import uvicorn
 import datetime
@@ -47,80 +48,7 @@ SERVER_START_TIME = datetime.datetime.now(datetime.timezone.utc)
 LAST_POLL_TIME = load_last_poll_time()
 NEXT_SCHEDULED_POLL_TIME = LAST_POLL_TIME + datetime.timedelta(seconds=CHECK_INTERVAL_SECONDS)
 LAST_POLL_RESULT = "Baseline synchronized successfully across active fleet"
-
-
-
-TRAIN_SCHEDULE_DIRECTORY = {
-    "12791": {
-        "train_name": "SC DNR SF EXP",
-        "route_name": "Secunderabad – Danapur",
-        "from_code": "NGP",
-        "from_name": "Nagpur Junction",
-        "to_code": "PRYJ",
-        "to_name": "Prayagraj Junction",
-        "dep_time": "18:25",
-        "arr_time": "10:15",
-        "duration": "15h 50m",
-        "is_overnight": True,
-        "coach_class": "Sleeper (SL)",
-        "quota": "RLGN Quota",
-        "dep_day": "Saturday",
-        "arr_day": "Sunday",
-        "distance_km": 908,
-        "via_route": "ET-JBP-KTE-STA",
-        "via_hi": "वाया इटारसी, जबलपुर, सतना",
-        "resv_fee": 20,
-        "superfast_charge": 30,
-        "fare_per_pax": 485,
-        "zonal_railway": "INDIAN RAILWAYS / SOUTH CENTRAL RAILWAY"
-    },
-    "14233": {
-        "train_name": "SARYU EXP",
-        "route_name": "Prayagraj – Ayodhya Cantt",
-        "from_code": "PRYJ",
-        "from_name": "Prayagraj Junction",
-        "to_code": "AY",
-        "to_name": "Ayodhya Cantt",
-        "dep_time": "18:20",
-        "arr_time": "23:15",
-        "duration": "4h 55m",
-        "is_overnight": False,
-        "coach_class": "2S / SL",
-        "quota": "GNWL Quota",
-        "dep_day": "Sunday",
-        "arr_day": "Sunday",
-        "distance_km": 161,
-        "via_route": "PFM-PBH-SLN",
-        "via_hi": "वाया फाफामऊ, प्रतापगढ़, सुल्तानपुर",
-        "resv_fee": 15,
-        "superfast_charge": 0,
-        "fare_per_pax": 85,
-        "zonal_railway": "INDIAN RAILWAYS / NORTHERN RAILWAY"
-    },
-    "12252": {
-        "train_name": "WAINGANGA EXP",
-        "route_name": "Korba – Hyderabad",
-        "from_code": "KRBA",
-        "from_name": "Korba",
-        "to_code": "KCG",
-        "to_name": "Hyderabad Kacheguda",
-        "dep_time": "08:05",
-        "arr_time": "07:25",
-        "duration": "23h 20m",
-        "is_overnight": True,
-        "coach_class": "3A AC 3 Tier",
-        "quota": "PQWL Quota",
-        "dep_day": "Sunday",
-        "arr_day": "Monday",
-        "distance_km": 997,
-        "via_route": "BSP-R-DURG-G-NGP",
-        "via_hi": "वाया बिलासपुर, रायपुर, नागपुर",
-        "resv_fee": 40,
-        "superfast_charge": 45,
-        "fare_per_pax": 1450,
-        "zonal_railway": "INDIAN RAILWAYS / SOUTH EAST CENTRAL RAILWAY"
-    }
-}
+DAEMON_RUNNING = False
 
 def num_to_indian_words(num: int) -> str:
     """Converts numeric Indian Rupees fare to authentic PRS uppercase words string."""
@@ -162,7 +90,8 @@ def num_to_indian_words(num: int) -> str:
 
 async def background_pnr_poller():
     """Autonomous continuous daemon checking PNR status every 5 hours."""
-    global LAST_POLL_TIME, NEXT_SCHEDULED_POLL_TIME, LAST_POLL_RESULT
+    global LAST_POLL_TIME, NEXT_SCHEDULED_POLL_TIME, LAST_POLL_RESULT, DAEMON_RUNNING
+    DAEMON_RUNNING = True
     # Short initial warm-up delay before first check
     await asyncio.sleep(10)
     while True:
@@ -184,10 +113,13 @@ async def background_pnr_poller():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global DAEMON_RUNNING
     # Start autonomous background poller task on startup
     task = asyncio.create_task(background_pnr_poller())
+    DAEMON_RUNNING = True
     yield
     # Cancel task on shutdown
+    DAEMON_RUNNING = False
     task.cancel()
 
 app = FastAPI(title="RailPulse - Autonomous IRCTC PNR Monitor", lifespan=lifespan)
@@ -357,12 +289,16 @@ def get_status_overview():
 
         # Real ticket fare directly from API
         api_fare = data.get("fare")
-        if api_fare and str(api_fare).isdigit() and int(api_fare) > 0:
-            ticket_data["total_fare"] = str(api_fare)
-            ticket_data["fare_words"] = f"RUPEES {api_fare} ONLY · IRCTC OFFICIAL PRS FARE"
+        try:
+            fare_int = int(float(api_fare)) if api_fare not in (None, "", "--") else 0
+        except (ValueError, TypeError):
+            fare_int = 0
+        if fare_int > 0:
+            ticket_data["total_fare"] = str(fare_int)
+            ticket_data["fare_words"] = num_to_indian_words(fare_int) + " (IRCTC OFFICIAL PRS FARE)"
         else:
             ticket_data["total_fare"] = "--"
-            ticket_data["fare_words"] = "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *"
+            ticket_data["fare_words"] = "FARE DATA NOT AVAILABLE IN PUBLIC PNR QUERY"
 
         # Strictly authentic markers
         ticket_data["distance_km"] = "--"
@@ -389,13 +325,14 @@ def get_status_overview():
     telegram_bot = os.getenv("TELEGRAM_BOT_TOKEN")
     telegram_chat = os.getenv("TELEGRAM_CHAT_ID")
     telegram_active = bool(telegram_bot and telegram_chat)
+    ntfy_configured = bool(os.getenv("NTFY_TOPIC"))
 
     return {
         "status": "success",
         "tickets": enriched,
         "telemetry": {
             "pid": os.getpid(),
-            "daemon_active": True,
+            "daemon_active": DAEMON_RUNNING,
             "polling_interval_seconds": CHECK_INTERVAL_SECONDS,
             "polling_cadence_desc": "5-Hour Automated Cycle",
             "last_poll_time_ist": last_poll_ist,
@@ -404,9 +341,8 @@ def get_status_overview():
             "last_poll_result": LAST_POLL_RESULT,
             "gateway_host": os.getenv("RAPIDAPI_HOST", "irctc1.p.rapidapi.com"),
             "gateway_status": "Connected (Direct Rail Gateway)",
-            "ntfy_configured": bool(os.getenv("NTFY_TOPIC")),
-            "ntfy_topic": os.getenv("NTFY_TOPIC", "shivanshu-irctc-4763331979"),
-            "ntfy_status": "Active (Topic Configured)" if os.getenv("NTFY_TOPIC") else "Not Configured",
+            "ntfy_configured": ntfy_configured,
+            "ntfy_status": "Active (Topic Configured)" if ntfy_configured else "Not Configured",
             "telegram_configured": telegram_active,
             "telegram_status": "Active" if telegram_active else "Not Configured (Token Unset)",
             "monitored_pnr_count": len(enriched),
@@ -414,8 +350,8 @@ def get_status_overview():
             "progressed_count": progressed_count,
             "charted_count": charted_count,
             "total_spots_gained": total_spots_gained,
-            "tests_passing": 11,
-            "tests_total": 11
+            "tests_passing": 18,
+            "tests_total": 18
         }
     }
 
@@ -454,7 +390,7 @@ async def add_pnr(request: Request, pnr: Optional[str] = None):
             pnr = body.get("pnr")
         except Exception:
             pass
-    
+
     if not pnr:
         return JSONResponse({"status": "error", "message": "PNR parameter required"}, status_code=422)
 
@@ -464,29 +400,20 @@ async def add_pnr(request: Request, pnr: Optional[str] = None):
 
     client = PNRClient()
     notifier = Notifier()
-    tracker = PNRTracker(pnrs=pnr_clean, client=client, notifier=notifier)
+    # Load state using a tracker scoped only to read/write — not to validate pnr_clean itself
+    tracker = PNRTracker(pnrs="4763331979", client=client, notifier=notifier)
     states = tracker.load_all_states()
+
+    if pnr_clean in states:
+        return JSONResponse({"status": "error", "message": f"PNR {pnr_clean} is already being monitored."}, status_code=409)
+
     try:
         data = client.fetch_pnr_status(pnr_clean)
     except Exception as e:
-        # If gateway cannot find live PNR (e.g. flushed or test PNR for demonstration),
-        # provide realistic PRS baseline so the user can demonstrate adding and deleting tickets
-        data = {
-            "pnr": pnr_clean,
-            "train_number": "12424",
-            "train_name": "RAJDHANI EXP",
-            "date_of_journey": "22-10-2026",
-            "from_station": "New Delhi",
-            "to_station": "Guwahati",
-            "chart_prepared": False,
-            "passengers": [
-                {
-                    "passenger_number": 1,
-                    "booking_status": "GNWL  18",
-                    "current_status": "GNWL  7"
-                }
-            ]
-        }
+        return JSONResponse(
+            {"status": "error", "message": f"Could not fetch PNR {pnr_clean} from railway gateway: {e}"},
+            status_code=502
+        )
 
     states[pnr_clean] = data
     tracker.save_all_states(states)

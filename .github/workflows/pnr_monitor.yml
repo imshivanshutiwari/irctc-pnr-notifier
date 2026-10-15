@@ -36,7 +36,7 @@ jobs:
 
       - name: Run verification test suite
         run: |
-          python -m unittest discover -s tests -v
+          python -m pytest -v
 
       - name: Restore private state cache
         uses: actions/cache@v4

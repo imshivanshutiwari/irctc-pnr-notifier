@@ -202,5 +202,70 @@ class TestPNRTracker(unittest.TestCase):
             self.assertIn("2222222222", saved)
             self.assertIn("3333333333", saved)
 
+    def test_invalid_pnr_rejected_at_construction(self):
+        with self.assertRaises(ValueError):
+            PNRTracker(pnrs="123")
+        with self.assertRaises(ValueError):
+            PNRTracker(pnrs="ABCDE12345")
+        with self.assertRaises(ValueError):
+            PNRTracker(pnrs="12345678901")
+
+    def test_empty_passenger_list_does_not_alert(self):
+        """Upstream returning empty passengers must not produce a spurious alert and must retain previous state."""
+        baseline_mock = {
+            "train_number": "12952",
+            "passengers": [
+                {"passenger_number": 1, "booking_status": "RLWL 5", "current_status": "RLWL 5"}
+            ]
+        }
+        client = PNRClient(mock_data=baseline_mock)
+        notifier = Notifier(dry_run=True)
+        tracker = PNRTracker(
+            pnrs="2456789012",
+            client=client,
+            notifier=notifier,
+            state_file=TEST_STATE_FILE,
+            notify_on_first_run=False
+        )
+        tracker.check_once()
+
+        # Upstream returns empty passenger list
+        empty_mock = {"train_number": "12952", "passengers": []}
+        tracker.client = PNRClient(mock_data=empty_mock)
+        with self.assertRaises(RuntimeError) as ctx:
+            tracker.check_once()
+
+        self.assertIn("No valid passenger data", str(ctx.exception))
+        # Ensure previous state was not overwritten by empty response
+        with open(TEST_STATE_FILE, "r") as f:
+            saved = json.load(f)
+            self.assertEqual(saved["2456789012"]["passengers"][0]["current_status"], "RLWL 5")
+
+    def test_degraded_status_does_not_trigger_alert(self):
+        """WL position getting worse (higher number) must not trigger an alert."""
+        baseline_mock = {
+            "train_number": "12952",
+            "passengers": [{"passenger_number": 1, "booking_status": "GNWL 5", "current_status": "GNWL 5"}]
+        }
+        client = PNRClient(mock_data=baseline_mock)
+        notifier = Notifier(dry_run=True)
+        tracker = PNRTracker(
+            pnrs="2456789012",
+            client=client,
+            notifier=notifier,
+            state_file=TEST_STATE_FILE,
+            notify_on_first_run=False
+        )
+        tracker.check_once()
+
+        worse_mock = {
+            "train_number": "12952",
+            "passengers": [{"passenger_number": 1, "booking_status": "GNWL 5", "current_status": "GNWL 8"}]
+        }
+        tracker.client = PNRClient(mock_data=worse_mock)
+        alerted, msg = tracker.check_once()
+        self.assertFalse(alerted)
+
+
 if __name__ == "__main__":
     unittest.main()

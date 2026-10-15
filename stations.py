@@ -120,13 +120,21 @@ def get_station_info(code: str, name: str = "") -> Tuple[str, str, str]:
         final_name = clean_name if clean_name and len(clean_name) > len(std_name) else std_name
         return clean_code, final_name, std_hi
 
-    # Case 2: Code might be embedded in name, or name matches known station
+    # Case 2: Exact match on lowercase name
     name_lower = clean_name.lower()
-    for needle, mapped_code in NAME_TO_CODE.items():
-        if needle == name_lower or needle in name_lower:
-            std_name, std_hi = STATION_MAP[mapped_code]
-            final_code = clean_code if clean_code else mapped_code
-            return final_code, (clean_name or std_name), std_hi
+    if name_lower in NAME_TO_CODE:
+        mapped_code = NAME_TO_CODE[name_lower]
+        std_name, std_hi = STATION_MAP[mapped_code]
+        final_code = clean_code if clean_code else mapped_code
+        return final_code, (clean_name or std_name), std_hi
+
+    # Case 2b: Word-boundary or substantial substring match (min 4 chars) to avoid false collisions
+    if len(name_lower) >= 4:
+        for needle, mapped_code in NAME_TO_CODE.items():
+            if len(needle) >= 4 and (needle in name_lower or name_lower in needle):
+                std_name, std_hi = STATION_MAP[mapped_code]
+                final_code = clean_code if clean_code else mapped_code
+                return final_code, (clean_name or std_name), std_hi
 
     # Case 3: If code was empty but name is short uppercase code
     if not clean_code and clean_name.isupper() and len(clean_name) <= 5:

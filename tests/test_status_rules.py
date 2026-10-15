@@ -70,5 +70,30 @@ class TestStatusRules(unittest.TestCase):
             PNRTracker(pnrs="123")
 
 
+class TestStationsModule(unittest.TestCase):
+    def test_known_code_lookup(self):
+        from stations import get_station_info
+        code, name, hi = get_station_info("NDLS")
+        self.assertEqual(code, "NDLS")
+        self.assertEqual(name, "New Delhi")
+        self.assertIn("दिल्ली", hi)
+
+    def test_unknown_code_returns_passthrough(self):
+        from stations import get_station_info
+        code, name, hi = get_station_info("XYZ", "Some Unknown Place")
+        self.assertEqual(code, "XYZ")
+        self.assertEqual(name, "Some Unknown Place")
+
+    def test_name_lookup_falls_back_correctly(self):
+        from stations import get_station_info
+        code, name, hi = get_station_info("", "Nagpur Junction")
+        self.assertIn("नागपुर", hi)
+
+    def test_junction_suffix_fallback_transliteration(self):
+        from stations import get_station_info
+        code, name, hi = get_station_info("ZZZZ", "Bidar Junction")
+        self.assertIn("जंक्शन", hi)
+
+
 if __name__ == "__main__":
     unittest.main()
