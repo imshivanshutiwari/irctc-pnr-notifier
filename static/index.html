@@ -13,23 +13,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Arimo:wght@400;700&family=Special+Elite&family=DotGothic16&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-page: #0B0F17;
-      --bg-header: #0A0E16;
-      --bg-panel: #141B27;
-      --bg-elevated: #182233;
-      --border: #273244;
-      --border-subtle: #1E2838;
-      --text-primary: #F3F5F8;
-      --text-secondary: #A0AEC0;
-      --text-muted: #718096;
-      --primary: #3478F6;
-      --primary-hover: #2563EB;
-      --status-healthy: #35B88A;
-      --status-healthy-bg: rgba(53, 184, 138, 0.12);
-      --status-warning: #F2B84B;
-      --status-warning-bg: rgba(242, 184, 75, 0.12);
-      --status-error: #F06464;
-      --status-error-bg: rgba(240, 100, 100, 0.12);
+      /* Exact Warm Charcoal Palette */
+      --bg-page: #24211E;
+      --bg-header: #1E1B18;
+      --bg-panel: #302B26;
+      --bg-elevated: #3A332C;
+      --border: #494037;
+      --border-subtle: #3A332C;
+      --text-primary: #F4EBDD;
+      --text-secondary: #B9ADA0;
+      --text-muted: #8F8477;
+      --primary: #D9A65B;
+      --primary-hover: #E5B66F;
+      --primary-glow: rgba(217, 166, 91, 0.12);
+      --status-healthy: #76B88A;
+      --status-healthy-bg: rgba(118, 184, 138, 0.14);
+      --status-warning: #E2B86B;
+      --status-warning-bg: rgba(226, 184, 107, 0.14);
+      --status-error: #D97868;
+      --status-error-bg: rgba(217, 120, 104, 0.14);
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       --radius-sm: 6px;
@@ -46,8 +48,8 @@
     body {
       background-color: var(--bg-page);
       background-image: 
-        radial-gradient(ellipse 900px 500px at 50% 0%, rgba(26, 43, 76, 0.18) 0%, transparent 80%),
-        radial-gradient(ellipse 700px 400px at 85% 20%, rgba(52, 120, 246, 0.06) 0%, transparent 70%);
+        radial-gradient(ellipse 900px 500px at 50% 0%, rgba(217, 166, 91, 0.05) 0%, transparent 80%),
+        radial-gradient(ellipse 700px 400px at 85% 20%, rgba(217, 166, 91, 0.03) 0%, transparent 70%);
       background-attachment: fixed;
       color: var(--text-primary);
       font-family: var(--font-sans);
@@ -123,15 +125,15 @@
       border-radius: 50%;
       object-fit: cover;
       background: var(--bg-elevated);
-      border: 2px solid rgba(52, 120, 246, 0.35);
-      box-shadow: 0 0 16px rgba(52, 120, 246, 0.22), 0 4px 12px rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(217, 166, 91, 0.4);
+      box-shadow: 0 0 16px rgba(217, 166, 91, 0.18), 0 4px 12px rgba(0, 0, 0, 0.5);
       flex-shrink: 0;
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease, border-color 0.25s ease;
     }
     .brand-group:hover .brand-icon {
       transform: scale(1.04);
       filter: brightness(1.1);
-      border-color: rgba(52, 120, 246, 0.6);
+      border-color: rgba(217, 166, 91, 0.7);
     }
     .brand-text-block {
       display: flex;
@@ -150,9 +152,9 @@
     .brand-badge {
       font-size: 10px;
       font-weight: 700;
-      background: rgba(52, 120, 246, 0.15);
-      color: #60A5FA;
-      border: 1px solid rgba(52, 120, 246, 0.3);
+      background: rgba(217, 166, 91, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(217, 166, 91, 0.3);
       padding: 2px 8px;
       border-radius: 4px;
       letter-spacing: 0.05em;
@@ -174,14 +176,14 @@
       align-items: center;
       gap: 8px;
       background: var(--status-healthy-bg);
-      border: 1px solid rgba(53, 184, 138, 0.3);
+      border: 1px solid rgba(118, 184, 138, 0.3);
       color: var(--status-healthy);
       font-size: 11px;
       font-weight: 600;
       padding: 5px 12px;
       border-radius: 9999px;
       white-space: nowrap;
-      box-shadow: 0 0 10px rgba(53, 184, 138, 0.15);
+      box-shadow: 0 0 10px rgba(118, 184, 138, 0.15);
     }
     .daemon-dot {
       width: 8px;
@@ -192,8 +194,8 @@
       animation: daemonPulse 2.8s infinite ease-in-out;
     }
     @keyframes daemonPulse {
-      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(53, 184, 138, 0.5); }
-      50% { opacity: 0.7; transform: scale(0.9); box-shadow: 0 0 0 4px rgba(53, 184, 138, 0); }
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(118, 184, 138, 0.5); }
+      50% { opacity: 0.7; transform: scale(0.9); box-shadow: 0 0 0 4px rgba(118, 184, 138, 0); }
     }
     .daemon-text-short {
       display: none;
@@ -281,13 +283,13 @@
     }
     .btn-primary {
       background: var(--primary);
-      color: #FFFFFF;
+      color: #1E1B18;
       border-color: var(--primary);
-      box-shadow: 0 2px 8px rgba(52, 120, 246, 0.3);
+      box-shadow: 0 2px 8px rgba(217, 166, 91, 0.25);
     }
     .btn-primary:hover:not(:disabled) {
       background: var(--primary-hover);
-      box-shadow: 0 4px 14px rgba(52, 120, 246, 0.45);
+      box-shadow: 0 4px 14px rgba(217, 166, 91, 0.4);
       transform: translateY(-1px);
     }
     .btn-secondary {
@@ -297,7 +299,7 @@
     }
     .btn-secondary:hover:not(:disabled) {
       background: var(--bg-elevated);
-      border-color: #384A63;
+      border-color: #5A4F44;
       transform: translateY(-1px);
     }
     .btn:disabled {
@@ -327,7 +329,7 @@
     @media (hover: hover) {
       .metric-card:hover {
         transform: translateY(-2px);
-        border-color: #3B4D68;
+        border-color: #5A4F44;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
       }
     }
@@ -363,7 +365,7 @@
       height: 7px;
       border-radius: 50%;
       background: var(--status-healthy);
-      box-shadow: 0 0 8px rgba(53, 184, 138, 0.5);
+      box-shadow: 0 0 8px rgba(118, 184, 138, 0.5);
       margin-right: 5px;
     }
 
@@ -430,7 +432,7 @@
 
     .booking-card {
       position: relative;
-      background: #141B27;
+      background: var(--bg-panel);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       margin-bottom: 24px;
@@ -440,8 +442,8 @@
     }
     .booking-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(52, 120, 246, 0.2);
-      border-color: #384D6B;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(217, 166, 91, 0.25);
+      border-color: #5A4F44;
     }
     .booking-card.is-confirmed {
       border-left: 3px solid var(--status-healthy);
@@ -453,7 +455,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 10px 16px;
-      background: #182233;
+      background: var(--bg-elevated);
       border-bottom: 1px solid var(--border);
       flex-wrap: wrap;
       gap: 10px;
@@ -467,9 +469,9 @@
       font-family: var(--font-mono);
       font-weight: 700;
       font-size: 13px;
-      color: #93C5FD;
-      background: rgba(52, 120, 246, 0.15);
-      border: 1px solid rgba(52, 120, 246, 0.3);
+      color: var(--primary);
+      background: rgba(217, 166, 91, 0.15);
+      border: 1px solid rgba(217, 166, 91, 0.3);
       padding: 3px 8px;
       border-radius: 4px;
       letter-spacing: 0.05em;
@@ -485,12 +487,12 @@
       gap: 8px;
     }
 
-    /* Responsive Scaled Ticket Wrapper */
+    /* Responsive Scaled Ticket Wrapper (Complements Cream Paper) */
     .ticket-scaler-wrap {
       width: 100%;
       overflow: hidden;
       position: relative;
-      background: #0f1522;
+      background: #282420;
       display: flex;
       justify-content: center;
       padding: 12px 0;
@@ -777,9 +779,9 @@
     @media (hover: hover) {
       .booking-card:hover {
         transform: translateY(-3px);
-        border-color: #384D6B;
+        border-color: #5A4F44;
         border-left-color: var(--status-warning);
-        box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(52, 120, 246, 0.15);
+        box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--primary-glow);
       }
       .booking-card.is-confirmed:hover {
         border-left-color: var(--status-healthy);
@@ -807,11 +809,11 @@
       font-family: var(--font-mono);
       font-weight: 700;
       font-size: 12px;
-      color: #60A5FA;
-      background: rgba(52, 120, 246, 0.12);
+      color: var(--primary);
+      background: rgba(217, 166, 91, 0.14);
       padding: 2px 7px;
       border-radius: 4px;
-      border: 1px solid rgba(52, 120, 246, 0.25);
+      border: 1px solid rgba(217, 166, 91, 0.3);
     }
     .train-name-label {
       font-size: 13px;
@@ -841,7 +843,7 @@
       font-weight: 600;
       color: var(--status-healthy);
       background: var(--status-healthy-bg);
-      border: 1px solid rgba(53, 184, 138, 0.3);
+      border: 1px solid rgba(118, 184, 138, 0.3);
       padding: 2px 8px;
       border-radius: 4px;
       white-space: nowrap;
@@ -859,20 +861,20 @@
     .status-amber {
       background: var(--status-warning-bg);
       color: var(--status-warning);
-      border: 1px solid rgba(242, 184, 75, 0.3);
+      border: 1px solid rgba(226, 184, 107, 0.3);
     }
     .status-green {
       background: var(--status-healthy-bg);
       color: var(--status-healthy);
-      border: 1px solid rgba(53, 184, 138, 0.3);
+      border: 1px solid rgba(118, 184, 138, 0.3);
     }
     /* Status update pulse effect */
     .status-updated-flash {
       animation: statusPulseFlash 1.6s ease forwards;
     }
     @keyframes statusPulseFlash {
-      0% { transform: scale(1.08); box-shadow: 0 0 16px rgba(53, 184, 138, 0.6); }
-      50% { transform: scale(1.02); box-shadow: 0 0 8px rgba(53, 184, 138, 0.3); }
+      0% { transform: scale(1.08); box-shadow: 0 0 16px rgba(118, 184, 138, 0.6); }
+      50% { transform: scale(1.02); box-shadow: 0 0 8px rgba(118, 184, 138, 0.3); }
       100% { transform: scale(1); box-shadow: none; }
     }
 
@@ -912,9 +914,9 @@
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 700;
-      color: #93C5FD;
-      background: rgba(52, 120, 246, 0.1);
-      border: 1px solid rgba(52, 120, 246, 0.25);
+      color: var(--primary);
+      background: rgba(217, 166, 91, 0.12);
+      border: 1px solid rgba(217, 166, 91, 0.3);
       padding: 1px 6px;
       border-radius: 3px;
     }
@@ -956,7 +958,7 @@
       font-weight: 700;
       color: var(--status-warning);
       background: var(--status-warning-bg);
-      border: 1px solid rgba(242, 184, 75, 0.3);
+      border: 1px solid rgba(226, 184, 107, 0.3);
       padding: 1px 5px;
       border-radius: 3px;
     }
@@ -1020,19 +1022,19 @@
       color: var(--text-secondary);
     }
     .stage-value.active-booking {
-      color: #93C5FD;
+      color: var(--primary);
     }
     .stage-value.active-current {
       color: var(--status-warning);
       background: var(--status-warning-bg);
-      border: 1px solid rgba(242, 184, 75, 0.3);
+      border: 1px solid rgba(226, 184, 107, 0.3);
       padding: 1px 6px;
       border-radius: 3px;
     }
     .stage-value.active-rac {
       color: var(--status-healthy);
       background: var(--status-healthy-bg);
-      border: 1px solid rgba(53, 184, 138, 0.3);
+      border: 1px solid rgba(118, 184, 138, 0.3);
       padding: 1px 6px;
       border-radius: 3px;
     }
@@ -1072,7 +1074,7 @@
     .chart-pill.prepared {
       background: var(--status-healthy-bg);
       color: var(--status-healthy);
-      border: 1px solid rgba(53, 184, 138, 0.3);
+      border: 1px solid rgba(118, 184, 138, 0.3);
     }
 
     /* 7. Supporting Sidebar Panels */
@@ -1129,28 +1131,28 @@
     }
     .form-control:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(52, 120, 246, 0.25);
+      box-shadow: 0 0 0 3px var(--primary-glow);
     }
     .form-btn-primary {
       width: 100%;
       height: 38px;
       background: var(--primary);
-      color: #FFFFFF;
+      color: #1E1B18;
       border: none;
       border-radius: var(--radius-sm);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
       transition: background-color 0.15s, box-shadow 0.15s, transform 0.15s;
-      box-shadow: 0 2px 8px rgba(52, 120, 246, 0.25);
+      box-shadow: 0 2px 8px rgba(217, 166, 91, 0.25);
     }
     .form-btn-primary:hover:not(:disabled) {
       background: var(--primary-hover);
-      box-shadow: 0 4px 14px rgba(52, 120, 246, 0.4);
+      box-shadow: 0 4px 14px rgba(217, 166, 91, 0.4);
       transform: translateY(-1px);
     }
     .form-btn-secondary {
@@ -1169,7 +1171,7 @@
     .form-btn-secondary:hover:not(:disabled) {
       background: var(--bg-elevated);
       color: var(--text-primary);
-      border-color: #384A63;
+      border-color: #5A4F44;
       transform: translateY(-1px);
     }
     .form-feedback {
@@ -1183,12 +1185,12 @@
     .feedback-success {
       background: var(--status-healthy-bg);
       color: var(--status-healthy);
-      border: 1px solid rgba(53, 184, 138, 0.3);
+      border: 1px solid rgba(118, 184, 138, 0.3);
     }
     .feedback-error {
       background: var(--status-error-bg);
       color: var(--status-error);
-      border: 1px solid rgba(240, 100, 100, 0.3);
+      border: 1px solid rgba(217, 120, 104, 0.3);
     }
 
     /* Daemon Telemetry Table */
@@ -1242,15 +1244,15 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .log-time {
-      color: #60A5FA;
+      color: var(--primary);
     }
     .log-category {
       font-weight: 600;
     }
-    .cat-sync { color: #FCD34D; }
-    .cat-gateway { color: #34D399; }
-    .cat-alert { color: #F87171; }
-    .cat-daemon { color: #A78BFA; }
+    .cat-sync { color: #E2B86B; }
+    .cat-gateway { color: #76B88A; }
+    .cat-alert { color: #D97868; }
+    .cat-daemon { color: #D9A65B; }
 
     /* Empty state */
     .empty-state {
