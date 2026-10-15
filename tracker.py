@@ -84,6 +84,9 @@ class PNRTracker:
         else:
             raw_list = [str(p).strip().replace("-", "") for p in raw_target if str(p).strip()]
 
+        if not raw_list:
+            raise ValueError("At least one PNR must be specified.")
+
         invalid = [p for p in raw_list if len(p) != 10 or not p.isdigit()]
         if invalid:
             raise ValueError("Every PNR must contain exactly 10 digits.")

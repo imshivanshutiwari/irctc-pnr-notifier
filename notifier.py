@@ -33,12 +33,12 @@ class Notifier:
         ntfy_topic: Optional[str] = None,
         dry_run: bool = False
     ):
-        self.whatsapp_phone = whatsapp_phone or os.getenv("WHATSAPP_PHONE")
-        self.callmebot_api_key = callmebot_api_key or os.getenv("CALLMEBOT_API_KEY")
-        self.telegram_bot_token = telegram_bot_token or os.getenv("TELEGRAM_BOT_TOKEN")
-        self.telegram_chat_id = telegram_chat_id or os.getenv("TELEGRAM_CHAT_ID")
-        self.ntfy_topic = ntfy_topic or os.getenv("NTFY_TOPIC")
-        self.dry_run = dry_run or os.getenv("DRY_RUN", "false").lower() == "true"
+        self.whatsapp_phone = whatsapp_phone if whatsapp_phone is not None else os.getenv("WHATSAPP_PHONE")
+        self.callmebot_api_key = callmebot_api_key if callmebot_api_key is not None else os.getenv("CALLMEBOT_API_KEY")
+        self.telegram_bot_token = telegram_bot_token if telegram_bot_token is not None else os.getenv("TELEGRAM_BOT_TOKEN")
+        self.telegram_chat_id = telegram_chat_id if telegram_chat_id is not None else os.getenv("TELEGRAM_CHAT_ID")
+        self.ntfy_topic = ntfy_topic if ntfy_topic is not None else os.getenv("NTFY_TOPIC")
+        self.dry_run = dry_run or (os.getenv("DRY_RUN", "false").lower() == "true")
 
     def format_alert_message(
         self,

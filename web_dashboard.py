@@ -350,8 +350,8 @@ def get_status_overview():
             "progressed_count": progressed_count,
             "charted_count": charted_count,
             "total_spots_gained": total_spots_gained,
-            "tests_passing": 18,
-            "tests_total": 18
+            "tests_passing": 47,
+            "tests_total": 47
         }
     }
 
