@@ -65,12 +65,12 @@ TRAIN_SCHEDULE_DIRECTORY = {
         "quota": "RLGN Quota",
         "dep_day": "Saturday",
         "arr_day": "Sunday",
-        "distance_km": 733,
+        "distance_km": 908,
         "via_route": "ET-JBP-KTE-STA",
         "via_hi": "वाया इटारसी, जबलपुर, सतना",
         "resv_fee": 20,
         "superfast_charge": 30,
-        "fare_per_pax": 435,
+        "fare_per_pax": 485,
         "zonal_railway": "INDIAN RAILWAYS / SOUTH CENTRAL RAILWAY"
     },
     "14233": {
@@ -88,7 +88,7 @@ TRAIN_SCHEDULE_DIRECTORY = {
         "quota": "GNWL Quota",
         "dep_day": "Sunday",
         "arr_day": "Sunday",
-        "distance_km": 165,
+        "distance_km": 161,
         "via_route": "PFM-PBH-SLN",
         "via_hi": "वाया फाफामऊ, प्रतापगढ़, सुल्तानपुर",
         "resv_fee": 15,
@@ -111,12 +111,12 @@ TRAIN_SCHEDULE_DIRECTORY = {
         "quota": "PQWL Quota",
         "dep_day": "Sunday",
         "arr_day": "Monday",
-        "distance_km": 1018,
+        "distance_km": 997,
         "via_route": "BSP-R-DURG-G-NGP",
         "via_hi": "वाया बिलासपुर, रायपुर, नागपुर",
         "resv_fee": 40,
         "superfast_charge": 45,
-        "fare_per_pax": 1445,
+        "fare_per_pax": 1450,
         "zonal_railway": "INDIAN RAILWAYS / SOUTH EAST CENTRAL RAILWAY"
     }
 }

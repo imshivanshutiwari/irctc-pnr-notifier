@@ -421,13 +421,13 @@
 
     /* 6. Authentic Indian Railways PRS Ticket Styles */
     :root {
-      --t-blue: #1f4aa8;
-      --t-red: #c0392b;
+      --t-blue: #163f96;
+      --t-red: #b32d20;
       --t-blue1: #a9c8ec;
       --t-blue2: #cfe0f3;
       --t-blue2b: #bcd5ee;
       --t-yellow: #f6c21c;
-      --t-ink: #324364;
+      --t-ink: #071530;
       --t-bg: #fbfbf8;
     }
 
@@ -524,15 +524,15 @@
       font-family: 'DotGothic16', 'Special Elite', 'Courier New', monospace;
       color: var(--t-ink);
       letter-spacing: 0.5px;
-      filter: blur(0.2px);
-      opacity: 0.92;
-      text-shadow: 0 0 1px rgba(50, 67, 100, 0.4);
-      font-weight: 600;
+      opacity: 1;
+      font-weight: 700;
+      z-index: 10;
     }
     .ticket-box .hi {
       font-family: 'Noto Sans Devanagari', sans-serif;
       color: var(--t-red);
-      font-weight: 600;
+      font-weight: 700;
+      z-index: 10;
     }
     .ticket-box .lbl {
       font-weight: 700;
@@ -540,6 +540,7 @@
       line-height: 15px;
       color: var(--t-blue);
       text-align: center;
+      z-index: 10;
     }
     .ticket-box .lbl .h {
       display: block;
@@ -733,8 +734,9 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      opacity: 0.5;
+      opacity: 0.08;
       pointer-events: none;
+      z-index: 1;
     }
     .ticket-box .paper {
       inset: 0;
@@ -1834,7 +1836,7 @@
           const a = i * Math.PI / 8;
           spokes += `<line x1='50' y1='50' x2='${50 + 40 * Math.cos(a)}' y2='${50 + 40 * Math.sin(a)}' stroke='#b9a8d6' stroke-width='3'/>`;
         }
-        const wmSvg = `<svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='#efe9f7' stroke='#b9a8d6' stroke-width='5'/>${spokes}<circle cx='50' cy='50' r='9' fill='#b9a8d6'/></svg>`;
+        const wmSvg = `<svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='none' stroke='#927eb8' stroke-width='3'/>${spokes}<circle cx='50' cy='50' r='8' fill='#927eb8'/></svg>`;
 
         let wmCircles = '';
         for (let r = 0; r < 4; r++) {
@@ -1939,7 +1941,7 @@
                 <div class="abs dm" style="left:104px;top:122px;font-size:19px;letter-spacing:1px;">${pnrStr}</div>
                 <div class="abs dm" style="left:342px;top:122px;font-size:16px">${trainNo}</div>
                 <div class="abs dm" style="left:420px;top:122px;font-size:16px;white-space:nowrap">${doj}</div>
-                <div class="abs dm" style="left:524px;top:122px;font-size:16px">${distKm}</div>
+                <div class="abs dm" style="left:500px;top:122px;width:70px;text-align:center;font-size:16px">${distKm}</div>
                 <div class="abs dm" style="left:620px;top:122px;font-size:16px">${paxList.length}</div>
                 <div class="abs dm" style="left:670px;top:122px;font-size:16px">0</div>
                 <div class="abs ticketno" style="left:728px;top:96px">${ticketNo}</div>
@@ -1965,40 +1967,44 @@
                 <div class="abs dm" style="left:864px;top:250px;font-size:16px">${distKm}</div>
                 <div class="abs" style="left:604px;top:270px;font-size:13px;font-weight:700;color:var(--t-blue)"><span style="font-family:'Noto Sans Devanagari';color:var(--t-red)">तक आरक्षित</span> / RESV. UP TO</div>
 
-                <!-- Info Block 3: Passenger & Fare Details -->
-                <div class="abs line" style="left:80px;top:294px;width:866px;height:1px"></div>
-                <div class="abs lbl" style="left:100px;top:300px;width:60px"><span class="h">कोच</span>COACH</div>
-                <div class="abs lbl" style="left:172px;top:300px;width:100px"><span class="h">सीट/बर्थ</span>SEAT/BERTH</div>
-                <div class="abs lbl" style="left:266px;top:300px;width:50px"><span class="h">लिंग</span>SEX</div>
-                <div class="abs lbl" style="left:316px;top:300px;width:50px"><span class="h">आयु</span>AGE</div>
-                <div class="abs lbl" style="left:382px;top:300px;width:100px"><span class="h">यात्रा प्राधिकार</span>T.AUTHORITY</div>
-                <div class="abs lbl" style="left:515px;top:300px;width:60px"><span class="h">रियायत</span>CONC</div>
-                <div class="abs lbl" style="left:588px;top:300px;width:60px"><span class="h">आ.शु.</span>R.FEE</div>
-                <div class="abs lbl" style="left:652px;top:300px;width:60px"><span class="h">श. प्र.</span>S.CH.</div>
-                <div class="abs lbl" style="left:703px;top:300px;width:60px"><span class="h">सु. प्र.</span>SF.CH</div>
-                <div class="abs lbl" style="left:766px;top:300px;width:80px"><span class="h">वाउचर रू.</span>VOUCH. Rs.</div>
-                <div class="abs lbl" style="left:852px;top:300px;width:90px"><span class="h">कु. नकद रू.</span>T.CASH Rs.</div>
+                <!-- Info Block 3: All 11 Passenger & Fare Columns -->
+                <div class="abs line" style="left:80px;top:294px;width:866px;height:1px;z-index:6"></div>
+                <div class="abs lbl" style="left:80px;top:300px;width:68px"><span class="h">कोच</span>COACH</div>
+                <div class="abs lbl" style="left:148px;top:300px;width:110px"><span class="h">सीट/बर्थ</span>SEAT/BERTH</div>
+                <div class="abs lbl" style="left:258px;top:300px;width:48px"><span class="h">लिंग</span>SEX</div>
+                <div class="abs lbl" style="left:306px;top:300px;width:48px"><span class="h">आयु</span>AGE</div>
+                <div class="abs lbl" style="left:354px;top:300px;width:106px"><span class="h">यात्रा प्राधिकार</span>T.AUTHORITY</div>
+                <div class="abs lbl" style="left:460px;top:300px;width:64px"><span class="h">रियायत</span>CONC</div>
+                <div class="abs lbl" style="left:524px;top:300px;width:64px"><span class="h">आ.शु.</span>R.FEE</div>
+                <div class="abs lbl" style="left:588px;top:300px;width:64px"><span class="h">श. प्र.</span>S.CH.</div>
+                <div class="abs lbl" style="left:652px;top:300px;width:64px"><span class="h">सु. प्र.</span>SF.CH</div>
+                <div class="abs lbl" style="left:716px;top:300px;width:84px"><span class="h">वाउचर रू.</span>VOUCH. Rs.</div>
+                <div class="abs lbl" style="left:800px;top:300px;width:146px"><span class="h">कु. नकद रू.</span>T.CASH Rs.</div>
 
                 <!-- Fare & Watermark Layer -->
-                <div class="abs" style="left:590px;top:336px;width:250px;height:48px;background:#e8cdcf;opacity:0.7"></div>
+                <div class="abs" style="left:520px;top:334px;width:426px;height:48px;background:rgba(232, 205, 207, 0.4);z-index:2;pointer-events:none;"></div>
                 <div class="abs" style="inset:0;pointer-events:none;z-index:1;">${wmCircles}</div>
 
-                <div class="abs dm" style="left:116px;top:333px;font-size:16px">${coachStr}</div>
-                <div class="abs dm" style="left:166px;top:333px;font-size:16px;white-space:nowrap;">${primaryCurrent}</div>
-                <div class="abs dm" style="left:286px;top:333px;font-size:16px">${isConfirmed ? 'M' : '--'}</div>
-                <div class="abs dm" style="left:326px;top:333px;font-size:16px">${isConfirmed ? 'AD' : '--'}</div>
-                <div class="abs dm" style="left:606px;top:333px;font-size:16px">${resvFee}</div>
-                <div class="abs dm" style="left:708px;top:333px;font-size:16px">${sfCharge}</div>
-                <div class="abs dm" style="left:874px;top:333px;font-size:16px">${totalCashFare}</div>
+                <div class="abs dm" style="left:80px;top:333px;width:68px;text-align:center;font-size:16px">${coachStr}</div>
+                <div class="abs dm" style="left:148px;top:333px;width:110px;text-align:center;font-size:16px;white-space:nowrap;">${primaryCurrent}</div>
+                <div class="abs dm" style="left:258px;top:333px;width:48px;text-align:center;font-size:16px">M</div>
+                <div class="abs dm" style="left:306px;top:333px;width:48px;text-align:center;font-size:16px">28</div>
+                <div class="abs dm" style="left:354px;top:333px;width:106px;text-align:center;font-size:14px">NORMAL</div>
+                <div class="abs dm" style="left:460px;top:333px;width:64px;text-align:center;font-size:14px">NIL</div>
+                <div class="abs dm" style="left:524px;top:333px;width:64px;text-align:center;font-size:16px">${resvFee}</div>
+                <div class="abs dm" style="left:588px;top:333px;width:64px;text-align:center;font-size:16px">0</div>
+                <div class="abs dm" style="left:652px;top:333px;width:64px;text-align:center;font-size:16px">${sfCharge}</div>
+                <div class="abs dm" style="left:716px;top:333px;width:84px;text-align:center;font-size:16px">0</div>
+                <div class="abs dm" style="left:800px;top:333px;width:146px;text-align:center;font-size:17px;font-weight:700;">${totalCashFare}</div>
 
                 <!-- Multi-passenger status breakdown box inside ticket -->
-                <div class="abs dm" style="left:106px;top:370px;width:440px;background:rgba(255,255,255,0.7);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;">
+                <div class="abs dm" style="left:80px;top:370px;width:430px;background:rgba(255,255,255,0.85);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;z-index:12;">
                   <div style="font-weight:700;margin-bottom:3px;color:var(--t-blue);border-bottom:1px solid #7a8cb0;padding-bottom:2px;">PASSENGER STATUS ROSTER:</div>
                   ${paxRosterHtml}
                 </div>
 
-                <div class="abs dm" style="left:590px;top:360px;font-size:12px;letter-spacing:0.5px;max-width:320px;line-height:1.2;">${fareWords}</div>
-                <div class="abs dm" style="left:596px;top:392px;font-size:13px">${quota} · ${shortClass} · ${trainNo}</div>
+                <div class="abs dm" style="left:520px;top:362px;font-size:13px;letter-spacing:0.5px;max-width:420px;line-height:1.3;font-weight:700;z-index:12;">${fareWords}</div>
+                <div class="abs dm" style="left:520px;top:392px;font-size:13px;font-weight:700;z-index:12;">${quota} · ${shortClass} · ${trainNo} ${trainName}</div>
 
                 <!-- Footer Lines -->
                 <div class="abs dm" style="left:172px;top:490px;font-size:15px">${trainName.toUpperCase()} · ${fromStn} TO ${toStn}</div>
