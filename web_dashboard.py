@@ -115,6 +115,7 @@ ROBOTS_PATH = os.path.join(STATIC_DIR, "robots.txt")
 SITEMAP_PATH = os.path.join(STATIC_DIR, "sitemap.xml")
 LLMS_PATH = os.path.join(STATIC_DIR, "llms.txt")
 FAVICON_PATH = os.path.join(STATIC_DIR, "favicon.ico")
+FAVICON_PNG_PATH = os.path.join(STATIC_DIR, "favicon.png")
 NOT_FOUND_PATH = os.path.join(STATIC_DIR, "404.html")
 
 # Custom 404 Exception Handler
@@ -135,6 +136,12 @@ def get_favicon():
     if os.path.isfile(FAVICON_PATH):
         return FileResponse(FAVICON_PATH, media_type="image/x-icon")
     return JSONResponse({"status": "error", "message": "favicon not found"})
+
+@app.get("/favicon.png")
+def get_favicon_png():
+    if os.path.isfile(FAVICON_PNG_PATH):
+        return FileResponse(FAVICON_PNG_PATH, media_type="image/png")
+    return JSONResponse({"status": "error", "message": "favicon.png not found"})
 
 @app.get("/robots.txt")
 def get_robots():
