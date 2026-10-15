@@ -44,7 +44,9 @@ def save_last_poll_time(dt: datetime.datetime):
 
 SERVER_START_TIME = datetime.datetime.now(datetime.timezone.utc)
 LAST_POLL_TIME = load_last_poll_time()
+NEXT_SCHEDULED_POLL_TIME = LAST_POLL_TIME + datetime.timedelta(seconds=CHECK_INTERVAL_SECONDS)
 LAST_POLL_RESULT = "Baseline synchronized successfully across active fleet"
+
 
 
 TRAIN_SCHEDULE_DIRECTORY = {
@@ -100,7 +102,7 @@ TRAIN_SCHEDULE_DIRECTORY = {
 
 async def background_pnr_poller():
     """Autonomous continuous daemon checking PNR status every 5 hours."""
-    global LAST_POLL_TIME, LAST_POLL_RESULT
+    global LAST_POLL_TIME, NEXT_SCHEDULED_POLL_TIME, LAST_POLL_RESULT
     # Short initial warm-up delay before first check
     await asyncio.sleep(10)
     while True:
@@ -112,6 +114,7 @@ async def background_pnr_poller():
             tracker = PNRTracker(pnrs=pnrs, client=client, notifier=notifier)
             alerted, summary = tracker.check_once()
             LAST_POLL_TIME = datetime.datetime.now(datetime.timezone.utc)
+            NEXT_SCHEDULED_POLL_TIME = LAST_POLL_TIME + datetime.timedelta(seconds=CHECK_INTERVAL_SECONDS)
             LAST_POLL_RESULT = summary or "Scheduled fleet check completed"
             save_last_poll_time(LAST_POLL_TIME)
             print(f"[RailPulse Background Daemon] Result: alerted={alerted}, summary={summary}")
@@ -279,9 +282,11 @@ def get_status_overview():
     now_ist = now_utc.astimezone(ist_tz)
     last_poll_ist = LAST_POLL_TIME.astimezone(ist_tz).strftime("%H:%M:%S IST")
 
-    # Precise remaining seconds until next 5-hour scheduled poll
-    elapsed_seconds = max(0, int((now_utc - LAST_POLL_TIME).total_seconds()))
-    seconds_until_next_poll = max(0, CHECK_INTERVAL_SECONDS - (elapsed_seconds % CHECK_INTERVAL_SECONDS))
+    # Calculate remaining seconds based on the actual scheduled background cycle, not manual checks
+    remaining_to_scheduled = int((NEXT_SCHEDULED_POLL_TIME - now_utc).total_seconds())
+    if remaining_to_scheduled < 0:
+        remaining_to_scheduled = CHECK_INTERVAL_SECONDS
+    seconds_until_next_poll = remaining_to_scheduled
 
     telegram_bot = os.getenv("TELEGRAM_BOT_TOKEN")
     telegram_chat = os.getenv("TELEGRAM_CHAT_ID")
@@ -329,7 +334,7 @@ def check_now():
     alerted, summary = tracker.check_once()
     LAST_POLL_TIME = datetime.datetime.now(datetime.timezone.utc)
     LAST_POLL_RESULT = summary
-    save_last_poll_time(LAST_POLL_TIME)
+    # Do NOT advance NEXT_SCHEDULED_POLL_TIME here so manual queries don't delay or reset the scheduled 5h cadence!
     return {"status": "success", "alerted": alerted, "message": summary}
 
 @app.post("/api/test-notify")

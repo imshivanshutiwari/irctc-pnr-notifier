@@ -48,9 +48,10 @@
     body {
       background-color: var(--bg-page);
       background-image: 
-        radial-gradient(ellipse 900px 500px at 50% 0%, rgba(217, 166, 91, 0.05) 0%, transparent 80%),
-        radial-gradient(ellipse 700px 400px at 85% 20%, rgba(217, 166, 91, 0.03) 0%, transparent 70%);
+        radial-gradient(ellipse 800px 600px at 15% 10%, rgba(217, 166, 91, 0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 900px 700px at 85% 45%, rgba(138, 98, 56, 0.08) 0%, transparent 75%);
       background-attachment: fixed;
+      background-repeat: no-repeat;
       color: var(--text-primary);
       font-family: var(--font-sans);
       min-height: 100vh;
@@ -1560,9 +1561,6 @@
             <button type="submit" class="form-btn-primary" id="btn-submit-enroll">
               <span>Enroll in Monitoring Loop</span>
             </button>
-            <button type="button" class="form-btn-secondary" onclick="simulateProgression()">
-              <span>Simulate Status Progression</span>
-            </button>
             <div id="form-feedback" class="form-feedback" role="alert"></div>
           </form>
         </div>
@@ -2171,44 +2169,6 @@
         btn.innerHTML = '<span>Enroll in Monitoring Loop</span>';
         setTimeout(() => { feedback.style.display = 'none'; }, 5000);
       }
-    }
-
-    // Status Progression Simulator with Real Animation Trigger
-    function simulateProgression() {
-      // Animate update on Card 1
-      const pill = document.getElementById('pill-4763331979');
-      const delta = document.getElementById('delta-4763331979');
-      const card = document.getElementById('card-4763331979');
-
-      if (pill) {
-        // Transition to RAC 2
-        pill.textContent = 'RAC 2';
-        pill.className = 'status-current-pill status-green status-updated-flash';
-        if (delta) delta.textContent = '+20 Positions Improved (RAC Transition)';
-        if (card) {
-          card.classList.add('is-confirmed');
-          const stamp = card.querySelector('.watermark-stamp');
-          if (stamp) {
-            stamp.textContent = 'RAC CONFIRMED';
-            stamp.style.color = 'rgba(46, 125, 50, 0.16)';
-          }
-        }
-        
-        // Update KPI counter
-        const progKpi = document.getElementById('kpi-progression');
-        if (progKpi) progKpi.textContent = '+62 Positions';
-
-        setTimeout(() => {
-          pill.classList.remove('status-updated-flash');
-        }, 1800);
-      }
-
-      logEvent('SIMULATION', '[SIMULATION TEST] Simulated movement on PNR 4763331979: RLWL 7 progressed to RAC 2.', 'cat-sync');
-      const feedback = document.getElementById('form-feedback');
-      feedback.className = 'form-feedback feedback-success';
-      feedback.textContent = 'Simulated movement applied: PNR 4763331979 progressed to RAC 2!';
-      feedback.style.display = 'block';
-      setTimeout(() => { feedback.style.display = 'none'; }, 4000);
     }
   </script>
 </body>
