@@ -1810,33 +1810,33 @@
         if (hasProg) progCount++;
 
         const pnrStr = String(b.pnr || '');
-        const ticketNo = pnrStr.replace(/\D/g, '').padEnd(8, '0').slice(0, 8);
-        const paxList = Array.isArray(b.passengers) && b.passengers.length > 0 ? b.passengers : [{ passenger_number: 1, booking_status: "RLWL 15", current_status: "RLWL 7" }];
+        const ticketNo = "--";
+        const paxList = Array.isArray(b.passengers) && b.passengers.length > 0 ? b.passengers : [{ passenger_number: 1, booking_status: "WL", current_status: "WL" }];
         const primaryPax = paxList[0];
         const primaryCurrent = primaryPax.current_status || "UNKNOWN";
         const isConfirmed = primaryCurrent.includes('CNF');
 
-        // Formulate fare and coach details
-        const coachStr = isConfirmed ? (primaryCurrent.match(/[A-Z0-9]+\s*\/\s*\d+/) ? primaryCurrent.split('/')[0].trim() : "B1") : "--";
-        const seatStr = isConfirmed ? primaryCurrent : primaryCurrent;
-        const trainNo = String(b.train_number || '12791');
+        // Formulate coach and seat details (only if confirmed, otherwise authentic unallocated marker)
+        const coachStr = isConfirmed ? (primaryCurrent.match(/[A-Z0-9]+\s*\/\s*\d+/) ? primaryCurrent.split('/')[0].trim() : "--") : "--";
+        const seatStr = isConfirmed ? primaryCurrent : "--";
+        const trainNo = String(b.train_number || '--');
         const trainName = String(b.train_name || 'EXP');
-        const fromStn = b.from_code || b.from_station || "DEP";
-        const toStn = b.to_code || b.to_station || "ARR";
+        const fromStn = b.from_code || b.from_station || "--";
+        const toStn = b.to_code || b.to_station || "--";
         const fromHi = getHindiName(fromStn);
         const toHi = getHindiName(toStn);
-        const doj = b.date_of_journey || "17-10-2026";
-        const quota = b.quota || "GNWL Quota";
-        const coachClass = b.coach_class || "Sleeper (SL)";
-        const shortClass = coachClass.includes('3A') ? '3A' : (coachClass.includes('2A') ? '2A' : (coachClass.includes('2S') ? '2S' : 'SL'));
-        const distKm = b.distance_km || 733;
-        const viaRoute = b.via_route || "DIRECT";
-        const viaHi = b.via_hi || "वाया सीधी सेवा";
-        const resvFee = b.resv_fee || 20;
-        const sfCharge = b.superfast_charge ? String(b.superfast_charge) : "--";
-        const totalCashFare = b.total_fare || 435;
-        const fareWords = b.fare_words || "RUPEES FOUR HUNDRED THIRTY FIVE ONLY";
-        const zonalRailway = b.zonal_railway || "INDIAN RAILWAYS / CENTRAL RAILWAY";
+        const doj = b.date_of_journey || "--";
+        const quota = b.quota && b.quota !== "--" ? b.quota : "PRS TELEMETRY";
+        const coachClass = b.coach_class || "--";
+        const shortClass = coachClass.includes('3A') ? '3A' : (coachClass.includes('2A') ? '2A' : (coachClass.includes('2S') ? '2S' : (coachClass.includes('SL') ? 'SL' : '--')));
+        const distKm = "--";
+        const viaRoute = "--";
+        const viaHi = "--";
+        const resvFee = "--";
+        const sfCharge = "--";
+        const totalCashFare = "--";
+        const fareWords = "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *";
+        const zonalRailway = "INDIAN RAILWAYS / भारतीय रेल";
 
         // Formulate passenger rows text representation for dot-matrix area
         let paxRosterHtml = '';
@@ -1971,9 +1971,9 @@
                 <div class="abs dm" style="left:420px;top:122px;font-size:16px;white-space:nowrap">${doj}</div>
                 <div class="abs dm" style="left:500px;top:122px;width:70px;text-align:center;font-size:16px">${distKm}</div>
                 <div class="abs dm" style="left:620px;top:122px;font-size:16px">${paxList.length}</div>
-                <div class="abs dm" style="left:670px;top:122px;font-size:16px">0</div>
-                <div class="abs ticketno" style="left:728px;top:96px">${ticketNo}</div>
-                <div class="abs dm" style="left:822px;top:122px;font-size:14px;opacity:0.5">${ticketNo}</div>
+                <div class="abs dm" style="left:670px;top:122px;font-size:16px">--</div>
+                <div class="abs ticketno" style="left:728px;top:96px">--</div>
+                <div class="abs dm" style="left:822px;top:122px;font-size:14px;opacity:0.5">--</div>
 
                 <!-- Info Block 2: Class & Route -->
                 <div class="abs blue2"></div>
@@ -2015,15 +2015,15 @@
 
                 <div class="abs dm" style="left:80px;top:333px;width:68px;text-align:center;font-size:16px">${coachStr}</div>
                 <div class="abs dm" style="left:148px;top:333px;width:110px;text-align:center;font-size:16px;white-space:nowrap;">${primaryCurrent}</div>
-                <div class="abs dm" style="left:258px;top:333px;width:48px;text-align:center;font-size:16px">M</div>
-                <div class="abs dm" style="left:306px;top:333px;width:48px;text-align:center;font-size:16px">28</div>
-                <div class="abs dm" style="left:354px;top:333px;width:106px;text-align:center;font-size:14px">NORMAL</div>
-                <div class="abs dm" style="left:460px;top:333px;width:64px;text-align:center;font-size:14px">NIL</div>
-                <div class="abs dm" style="left:524px;top:333px;width:64px;text-align:center;font-size:16px">${resvFee}</div>
-                <div class="abs dm" style="left:588px;top:333px;width:64px;text-align:center;font-size:16px">0</div>
-                <div class="abs dm" style="left:652px;top:333px;width:64px;text-align:center;font-size:16px">${sfCharge}</div>
-                <div class="abs dm" style="left:716px;top:333px;width:84px;text-align:center;font-size:16px">0</div>
-                <div class="abs dm" style="left:800px;top:333px;width:146px;text-align:center;font-size:17px;font-weight:700;">${totalCashFare}</div>
+                <div class="abs dm" style="left:258px;top:333px;width:48px;text-align:center;font-size:16px">--</div>
+                <div class="abs dm" style="left:306px;top:333px;width:48px;text-align:center;font-size:16px">--</div>
+                <div class="abs dm" style="left:354px;top:333px;width:106px;text-align:center;font-size:14px">--</div>
+                <div class="abs dm" style="left:460px;top:333px;width:64px;text-align:center;font-size:14px">--</div>
+                <div class="abs dm" style="left:524px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
+                <div class="abs dm" style="left:588px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
+                <div class="abs dm" style="left:652px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
+                <div class="abs dm" style="left:716px;top:333px;width:84px;text-align:center;font-size:16px">--</div>
+                <div class="abs dm" style="left:800px;top:333px;width:146px;text-align:center;font-size:17px;font-weight:700;">--</div>
 
                 <!-- Multi-passenger status breakdown box inside ticket -->
                 <div class="abs dm" style="left:80px;top:370px;width:430px;background:rgba(255,255,255,0.85);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;z-index:12;">
@@ -2036,15 +2036,16 @@
 
                 <!-- Footer Lines -->
                 <div class="abs dm" style="left:172px;top:490px;font-size:15px">${trainName.toUpperCase()} · ${fromStn} TO ${toStn}</div>
-                <div class="abs dm" style="left:548px;top:490px;font-size:15px">SCH DEP ${b.dep_time || '18:25'} ARR ${b.arr_time || '10:15'}</div>
+                <div class="abs dm" style="left:548px;top:490px;font-size:14px">SCHEDULE: REFER LIVE NTES / IRCTC TIMETABLE</div>
                 <div class="abs dm" style="left:110px;top:518px;font-size:14px;white-space:nowrap">${trainNo} ${doj} · TRACKED VIA RAILPULSE ENGINE</div>
                 <div class="abs dm" style="left:200px;top:544px;font-size:14px">VALID WITH ORIGINAL GOVERNMENT ISSUED ID FOR RAILWAY TRAVEL</div>
 
                 <!-- Ad & Official Government Column -->
                 <div class="abs ad">
-                  <div class="q" style="top:110px;text-align:left;padding-left:8px">“I GOT THE<br>RIGHT<br>TO HAVE<br>FINANCIAL<br>ASSISTANCE.</div>
-                  <div class="q r" style="top:270px">DID YOU<br>CLAIM<br>YOUR<br>RIGHT?”</div>
-                  <div class="small" style="top:470px;font-size:12px">Ministry of Information &amp;<br>Broadcasting<br>Government of India</div>
+                  <div class="q" style="top:180px;text-align:center;font-size:13px;line-height:1.6;color:#5a6885;letter-spacing:1px;font-weight:700;">
+                    CENTRE FOR<br>RAILWAY<br>INFORMATION<br>SYSTEMS<br>(CRIS)
+                  </div>
+                  <div class="small" style="top:470px;font-size:12px">Ministry of Railways<br>Government of India</div>
                 </div>
 
                 <div class="abs" style="left:1130px;top:170px;transform:rotate(90deg);transform-origin:left top;font-size:13px;color:var(--t-blue);white-space:nowrap">

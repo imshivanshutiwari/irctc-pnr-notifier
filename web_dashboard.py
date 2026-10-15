@@ -299,30 +299,31 @@ def get_status_overview():
         if data.get("chart_prepared"):
             charted_count += 1
         
-        train_num = str(data.get("train_number", "")).strip()
-        schedule = TRAIN_SCHEDULE_DIRECTORY.get(train_num, {})
-        
-        ticket_data["route_name"] = schedule.get("route_name", f"{data.get('from_station', 'DEP')} – {data.get('to_station', 'ARR')}")
-        ticket_data["from_code"] = schedule.get("from_code", data.get("from_station", "DEP")[:4].upper())
-        ticket_data["from_name"] = schedule.get("from_name", data.get("from_station", "Origin"))
-        ticket_data["to_code"] = schedule.get("to_code", data.get("to_station", "ARR")[:4].upper())
-        ticket_data["to_name"] = schedule.get("to_name", data.get("to_station", "Destination"))
-        ticket_data["dep_time"] = schedule.get("dep_time", "12:00")
-        ticket_data["arr_time"] = schedule.get("arr_time", "18:00")
-        ticket_data["duration"] = schedule.get("duration", "6h 00m")
-        ticket_data["is_overnight"] = schedule.get("is_overnight", False)
-        ticket_data["coach_class"] = schedule.get("coach_class", "Standard Rail")
-        ticket_data["quota"] = schedule.get("quota", "General Quota")
-        ticket_data["dep_day"] = schedule.get("dep_day", "Scheduled")
-        ticket_data["arr_day"] = schedule.get("arr_day", "Scheduled")
+        # Real route information from PNR record
+        from_stn = data.get('from_station', '')
+        to_stn = data.get('to_station', '')
+        ticket_data["route_name"] = f"{from_stn} – {to_stn}" if from_stn and to_stn else "DIRECT ROUTE"
+        ticket_data["from_code"] = from_stn[:4].upper() if from_stn else "DEP"
+        ticket_data["from_name"] = from_stn
+        ticket_data["to_code"] = to_stn[:4].upper() if to_stn else "ARR"
+        ticket_data["to_name"] = to_stn
+        ticket_data["dep_time"] = "--"
+        ticket_data["arr_time"] = "--"
+        ticket_data["duration"] = "--"
+        ticket_data["is_overnight"] = False
 
         passengers = data.get("passengers", [])
         total_passengers += len(passengers)
         ticket_spots = 0
 
+        detected_quota = "--"
         for pax in passengers:
             b_stat = str(pax.get("booking_status", "")).strip().upper()
             c_stat = str(pax.get("current_status", "")).strip().upper()
+            for q_candidate in ["RLGN", "GNWL", "PQWL", "TQWL", "CKWL", "RSWL", "RAC"]:
+                if q_candidate in b_stat:
+                    detected_quota = f"{q_candidate} Quota"
+                    break
             b_nums = re.findall(r'\d+', b_stat)
             c_nums = re.findall(r'\d+', c_stat)
             if b_nums and c_nums:
@@ -332,26 +333,23 @@ def get_status_overview():
                     total_spots_gained += diff
                     progressed_count += 1
 
+        ticket_data["coach_class"] = data.get("coach_class", "--")
+        ticket_data["quota"] = detected_quota
+        ticket_data["dep_day"] = "--"
+        ticket_data["arr_day"] = "--"
         ticket_data["ticket_spots_gained"] = ticket_spots
         ticket_data["has_progressed"] = ticket_spots > 0
 
-        pax_count = len(passengers) or 1
-        dist_km = schedule.get("distance_km", 733)
-        resv_fee = schedule.get("resv_fee", 20)
-        sf_ch = schedule.get("superfast_charge", 0)
-        fare_per_pax = schedule.get("fare_per_pax", 435)
-        total_fare = fare_per_pax * pax_count
-        fare_words = num_to_indian_words(total_fare)
-
-        ticket_data["distance_km"] = dist_km
-        ticket_data["via_route"] = schedule.get("via_route", "DIRECT")
-        ticket_data["via_hi"] = schedule.get("via_hi", "वाया सीधी सेवा")
-        ticket_data["resv_fee"] = resv_fee * pax_count
-        ticket_data["superfast_charge"] = sf_ch * pax_count
-        ticket_data["fare_per_pax"] = fare_per_pax
-        ticket_data["total_fare"] = total_fare
-        ticket_data["fare_words"] = fare_words
-        ticket_data["zonal_railway"] = schedule.get("zonal_railway", "INDIAN RAILWAYS / CENTRAL RAILWAY")
+        # Strictly authentic markers - No fake or synthetic numbers
+        ticket_data["distance_km"] = "--"
+        ticket_data["via_route"] = "--"
+        ticket_data["via_hi"] = "--"
+        ticket_data["resv_fee"] = "--"
+        ticket_data["superfast_charge"] = "--"
+        ticket_data["fare_per_pax"] = "--"
+        ticket_data["total_fare"] = "--"
+        ticket_data["fare_words"] = "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *"
+        ticket_data["zonal_railway"] = "INDIAN RAILWAYS / भारतीय रेल"
 
         enriched[pnr] = ticket_data
 
