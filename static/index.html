@@ -1658,18 +1658,44 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // Countdown Timer logic based on 5-hour schedule (18000s)
-    let remainingSeconds = 17980;
+    // Persistent Countdown Timer logic linked to actual poll timestamp
+    let nextPollTargetEpoch = Date.now() + 18000 * 1000;
+
+    function syncCountdownFromSeconds(sec) {
+      if (typeof sec === 'number' && sec >= 0) {
+        nextPollTargetEpoch = Date.now() + sec * 1000;
+        // Save to browser localStorage as well for instant restore across page reloads
+        try {
+          localStorage.setItem('railpulse_next_poll_epoch', String(nextPollTargetEpoch));
+        } catch (_) {}
+      }
+    }
+
+    // Try restoring saved countdown from localStorage immediately
+    try {
+      const savedEpoch = parseInt(localStorage.getItem('railpulse_next_poll_epoch') || '0', 10);
+      if (savedEpoch > Date.now()) {
+        nextPollTargetEpoch = savedEpoch;
+      }
+    } catch (_) {}
+
     function updateCountdown() {
-      remainingSeconds--;
-      if (remainingSeconds < 0) remainingSeconds = 18000;
-      const h = String(Math.floor(remainingSeconds / 3600)).padStart(2, '0');
-      const m = String(Math.floor((remainingSeconds % 3600) / 60)).padStart(2, '0');
-      const s = String(remainingSeconds % 60).padStart(2, '0');
+      const now = Date.now();
+      let remaining = Math.max(0, Math.floor((nextPollTargetEpoch - now) / 1000));
+      if (remaining === 0) {
+        // Schedule elapsed, reset to next 5h cycle until backend sync confirms
+        nextPollTargetEpoch = now + 18000 * 1000;
+        remaining = 18000;
+      }
+      const h = String(Math.floor(remaining / 3600)).padStart(2, '0');
+      const m = String(Math.floor((remaining % 3600) / 60)).padStart(2, '0');
+      const s = String(remaining % 60).padStart(2, '0');
       const el = document.getElementById('kpi-countdown');
       if (el) el.textContent = `${h}:${m}:${s}`;
     }
+    updateCountdown();
     setInterval(updateCountdown, 1000);
+
 
     // Append to Event Stream with slide-down animation and scroll preservation
     function logEvent(category, message, catClass) {
@@ -2048,6 +2074,11 @@
           document.getElementById('tel-gateway').textContent = `${tel.gateway_host} (Online)`;
           document.getElementById('tel-ntfy').textContent = tel.ntfy_status;
           document.getElementById('tel-telegram').textContent = tel.telegram_status;
+
+          // Sync countdown to persistent server epoch
+          if (typeof tel.seconds_until_next_poll === 'number') {
+            syncCountdownFromSeconds(tel.seconds_until_next_poll);
+          }
         }
       } catch (e) {
         // Fallback gracefully if network glitch occurs

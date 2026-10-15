@@ -14,5 +14,4 @@ status_state.json
 *.tmp
 .DS_Store
 irctc-pnr-notifier-upgrade.zip
-upgrade_extracted/
-irctc_skeleton/
+.last_poll_state.json

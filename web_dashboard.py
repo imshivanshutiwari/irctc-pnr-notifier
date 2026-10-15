@@ -21,10 +21,31 @@ from tracker import PNRTracker
 
 # Autonomous background poller running every 5 hours (18,000 seconds)
 CHECK_INTERVAL_SECONDS = 18000
+POLL_STATE_FILE = os.path.join(os.path.dirname(__file__), ".last_poll_state.json")
+
+def load_last_poll_time() -> datetime.datetime:
+    if os.path.isfile(POLL_STATE_FILE):
+        try:
+            with open(POLL_STATE_FILE, "r", encoding="utf-8") as f:
+                d = json.load(f)
+                ts = d.get("last_poll_timestamp")
+                if ts:
+                    return datetime.datetime.fromisoformat(ts)
+        except Exception:
+            pass
+    return datetime.datetime.now(datetime.timezone.utc)
+
+def save_last_poll_time(dt: datetime.datetime):
+    try:
+        with open(POLL_STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump({"last_poll_timestamp": dt.isoformat()}, f)
+    except Exception:
+        pass
 
 SERVER_START_TIME = datetime.datetime.now(datetime.timezone.utc)
-LAST_POLL_TIME = datetime.datetime.now(datetime.timezone.utc)
+LAST_POLL_TIME = load_last_poll_time()
 LAST_POLL_RESULT = "Baseline synchronized successfully across active fleet"
+
 
 TRAIN_SCHEDULE_DIRECTORY = {
     "12791": {
@@ -79,6 +100,7 @@ TRAIN_SCHEDULE_DIRECTORY = {
 
 async def background_pnr_poller():
     """Autonomous continuous daemon checking PNR status every 5 hours."""
+    global LAST_POLL_TIME, LAST_POLL_RESULT
     # Short initial warm-up delay before first check
     await asyncio.sleep(10)
     while True:
@@ -89,6 +111,9 @@ async def background_pnr_poller():
             pnrs = os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110")
             tracker = PNRTracker(pnrs=pnrs, client=client, notifier=notifier)
             alerted, summary = tracker.check_once()
+            LAST_POLL_TIME = datetime.datetime.now(datetime.timezone.utc)
+            LAST_POLL_RESULT = summary or "Scheduled fleet check completed"
+            save_last_poll_time(LAST_POLL_TIME)
             print(f"[RailPulse Background Daemon] Result: alerted={alerted}, summary={summary}")
         except Exception as e:
             print(f"[RailPulse Background Daemon] Check error: {e}")
@@ -249,11 +274,14 @@ def get_status_overview():
         ticket_data["has_progressed"] = ticket_spots > 0
         enriched[pnr] = ticket_data
 
-    # Current IST formatted string
     now_utc = datetime.datetime.now(datetime.timezone.utc)
     ist_tz = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
     now_ist = now_utc.astimezone(ist_tz)
     last_poll_ist = LAST_POLL_TIME.astimezone(ist_tz).strftime("%H:%M:%S IST")
+
+    # Precise remaining seconds until next 5-hour scheduled poll
+    elapsed_seconds = max(0, int((now_utc - LAST_POLL_TIME).total_seconds()))
+    seconds_until_next_poll = max(0, CHECK_INTERVAL_SECONDS - (elapsed_seconds % CHECK_INTERVAL_SECONDS))
 
     telegram_bot = os.getenv("TELEGRAM_BOT_TOKEN")
     telegram_chat = os.getenv("TELEGRAM_CHAT_ID")
@@ -268,6 +296,8 @@ def get_status_overview():
             "polling_interval_seconds": CHECK_INTERVAL_SECONDS,
             "polling_cadence_desc": "5-Hour Automated Cycle",
             "last_poll_time_ist": last_poll_ist,
+            "last_poll_timestamp": LAST_POLL_TIME.isoformat(),
+            "seconds_until_next_poll": seconds_until_next_poll,
             "last_poll_result": LAST_POLL_RESULT,
             "gateway_host": os.getenv("RAPIDAPI_HOST", "irctc1.p.rapidapi.com"),
             "gateway_status": "Connected (Direct Rail Gateway)",
@@ -299,6 +329,7 @@ def check_now():
     alerted, summary = tracker.check_once()
     LAST_POLL_TIME = datetime.datetime.now(datetime.timezone.utc)
     LAST_POLL_RESULT = summary
+    save_last_poll_time(LAST_POLL_TIME)
     return {"status": "success", "alerted": alerted, "message": summary}
 
 @app.post("/api/test-notify")
