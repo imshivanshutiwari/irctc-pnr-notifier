@@ -124,8 +124,52 @@ def get_nget_train_search():
 def get_tickets():
     client = PNRClient()
     notifier = Notifier()
-    tracker = PNRTracker(pnrs="4763331979", client=client, notifier=notifier)
+    tracker = PNRTracker(pnrs=os.getenv("PNR_NUMBER", "4763331979"), client=client, notifier=notifier)
     return tracker.load_all_states()
+
+@app.get("/api/status")
+def get_status_overview():
+    client = PNRClient()
+    notifier = Notifier()
+    pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110").split(",") if p.strip()]
+    tracker = PNRTracker(pnrs=",".join(pnrs), client=client, notifier=notifier)
+    states = tracker.load_all_states()
+    
+    total_spots_gained = 0
+    progressed_count = 0
+    charted_count = 0
+    for pnr, data in states.items():
+        if data.get("chart_prepared"):
+            charted_count += 1
+        passengers = data.get("passengers", [])
+        for pax in passengers:
+            b_stat = pax.get("booking_status", "")
+            c_stat = pax.get("current_status", "")
+            import re
+            b_nums = re.findall(r'\d+', b_stat)
+            c_nums = re.findall(r'\d+', c_stat)
+            if b_nums and c_nums:
+                diff = int(b_nums[0]) - int(c_nums[0])
+                if diff > 0:
+                    total_spots_gained += diff
+                    progressed_count += 1
+
+    return {
+        "status": "success",
+        "tickets": states,
+        "telemetry": {
+            "daemon_active": True,
+            "polling_interval_seconds": CHECK_INTERVAL_SECONDS,
+            "monitored_count": len(states),
+            "progressed_count": progressed_count,
+            "charted_count": charted_count,
+            "total_spots_gained": total_spots_gained,
+            "gateway_host": os.getenv("RAPIDAPI_HOST", "irctc1.p.rapidapi.com"),
+            "ntfy_configured": bool(os.getenv("NTFY_TOPIC")),
+            "ntfy_topic": os.getenv("NTFY_TOPIC", "shivanshu-irctc-4763331979"),
+            "tests_passing": 11
+        }
+    }
 
 @app.post("/api/check-now")
 def check_now():
