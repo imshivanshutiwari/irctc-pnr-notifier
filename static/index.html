@@ -8,6 +8,9 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Arimo:wght@400;700&family=Special+Elite&family=DotGothic16&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-page: #0B0F17;
@@ -413,17 +416,361 @@
       color: var(--text-primary);
     }
 
-    /* 6. Booking Cards Anatomy (Premium Depth & Micro-interactions) */
-    .booking-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--status-warning);
-      border-radius: var(--radius-md);
-      margin-bottom: 20px;
-      overflow: hidden;
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease, opacity 0.2s ease;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+    /* 6. Authentic Indian Railways PRS Ticket Styles */
+    :root {
+      --t-blue: #1f4aa8;
+      --t-red: #c0392b;
+      --t-blue1: #a9c8ec;
+      --t-blue2: #cfe0f3;
+      --t-blue2b: #bcd5ee;
+      --t-yellow: #f6c21c;
+      --t-ink: #324364;
+      --t-bg: #fbfbf8;
     }
+
+    .booking-card {
+      position: relative;
+      background: #141B27;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+    .booking-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(52, 120, 246, 0.2);
+      border-color: #384D6B;
+    }
+    .booking-card.is-confirmed {
+      border-left: 3px solid var(--status-healthy);
+    }
+
+    /* Ticket Header Toolbar */
+    .ticket-card-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: #182233;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .ticket-card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ticket-pnr-badge {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 13px;
+      color: #93C5FD;
+      background: rgba(52, 120, 246, 0.15);
+      border: 1px solid rgba(52, 120, 246, 0.3);
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+    .ticket-train-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .ticket-card-status-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Responsive Scaled Ticket Wrapper */
+    .ticket-scaler-wrap {
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+      background: #0f1522;
+      display: flex;
+      justify-content: center;
+      padding: 12px 0;
+    }
+    .ticket-viewport {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      transform-origin: top center;
+    }
+    .ticket-box {
+      position: relative;
+      width: 1200px;
+      height: 675px;
+      background: var(--t-bg);
+      transform-origin: top left;
+      color: #1b3f8f;
+      overflow: hidden;
+      border: 1px solid #bbb;
+      margin: 0 auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      user-select: text;
+    }
+    .ticket-box .abs {
+      position: absolute;
+    }
+    .ticket-box .dm {
+      font-family: 'DotGothic16', 'Special Elite', 'Courier New', monospace;
+      color: var(--t-ink);
+      letter-spacing: 0.5px;
+      filter: blur(0.2px);
+      opacity: 0.92;
+      text-shadow: 0 0 1px rgba(50, 67, 100, 0.4);
+      font-weight: 600;
+    }
+    .ticket-box .hi {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      color: var(--t-red);
+      font-weight: 600;
+    }
+    .ticket-box .lbl {
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 15px;
+      color: var(--t-blue);
+      text-align: center;
+    }
+    .ticket-box .lbl .h {
+      display: block;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      color: var(--t-red);
+      font-size: 14px;
+    }
+
+    /* Tractor feed perforations */
+    .ticket-box .hole {
+      position: absolute;
+      width: 24px;
+      height: 22px;
+      border-radius: 48% 52% 55% 45%/52% 46% 54% 48%;
+      background: #dcdcdc;
+      border: 2px dashed #c4c4c4;
+      box-shadow: inset 2px 2px 5px #999, 0 0 3px rgba(0,0,0,.25);
+    }
+    .ticket-box .rail {
+      left: 62px;
+      transform: rotate(-90deg);
+      transform-origin: left top;
+      top: 585px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--t-blue);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* Header Bar */
+    .ticket-box .head {
+      left: 80px;
+      top: 28px;
+      width: 866px;
+      height: 44px;
+      background: var(--t-blue);
+    }
+    .ticket-box .head .hi2 {
+      position: absolute;
+      left: 142px;
+      top: 5px;
+      color: #fff;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+    }
+    .ticket-box .head .en {
+      position: absolute;
+      left: 543px;
+      top: 6px;
+      color: #fff;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .ticket-box .emblem {
+      left: 478px;
+      top: 20px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #e8821c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 9px;
+      color: #b44;
+      font-weight: 700;
+      line-height: 10px;
+      z-index: 10;
+    }
+
+    /* Blue info block */
+    .ticket-box .blue1 {
+      left: 80px;
+      top: 72px;
+      width: 866px;
+      height: 112px;
+      background: var(--t-blue1);
+    }
+    .ticket-box .yellow {
+      left: 80px;
+      top: 140px;
+      width: 220px;
+      height: 42px;
+      background: var(--t-yellow);
+    }
+    .ticket-box .white-r {
+      left: 300px;
+      top: 140px;
+      width: 520px;
+      height: 42px;
+      background: #fafafa;
+    }
+    .ticket-box .line {
+      background: var(--t-blue);
+    }
+
+    .ticket-box .blue2 {
+      left: 80px;
+      top: 182px;
+      width: 866px;
+      height: 112px;
+      background: var(--t-blue2);
+    }
+    .ticket-box .blue2b {
+      left: 186px;
+      top: 182px;
+      width: 760px;
+      height: 112px;
+      background: var(--t-blue2b);
+    }
+
+    .ticket-box .ticketno {
+      font-size: 36px;
+      letter-spacing: 4px;
+      color: #222;
+      font-family: 'Special Elite', monospace;
+    }
+
+    /* Ad column */
+    .ticket-box .ad {
+      left: 950px;
+      top: 28px;
+      width: 196px;
+      height: 552px;
+      background: linear-gradient(180deg, #f6a24c 0, #fbe3c4 22%, #fff 40%, #fff 80%, #e8f2e2 100%);
+      border-left: 1px solid #e9b98a;
+    }
+    .ticket-box .ad .q {
+      position: absolute;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-weight: 700;
+      font-size: 26px;
+      line-height: 34px;
+      color: #1b3f8f;
+      letter-spacing: 0.5px;
+      font-family: 'Arimo', sans-serif;
+    }
+    .ticket-box .ad .r {
+      color: #a01818;
+    }
+    .ticket-box .ad .small {
+      position: absolute;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 12.5px;
+      color: #222;
+      line-height: 19px;
+    }
+
+    /* Bottom banner */
+    .ticket-box .bn {
+      left: 80px;
+      top: 578px;
+      width: 866px;
+      height: 76px;
+      background: linear-gradient(90deg, #f6a24c 0, #fff3e2 18%, #fff 40%);
+    }
+    .ticket-box .bn .big {
+      position: absolute;
+      left: 97px;
+      top: 20px;
+      font-size: 46px;
+      font-weight: 700;
+      color: #222;
+      letter-spacing: -1px;
+      font-family: 'Arimo', sans-serif;
+    }
+    .ticket-box .bn .tag {
+      position: absolute;
+      left: 487px;
+      top: 30px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #222;
+      font-family: 'Arimo', sans-serif;
+      letter-spacing: 0.2px;
+      width: 380px;
+      line-height: 18px;
+    }
+
+    /* Watermark circles */
+    .ticket-box .wm {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .ticket-box .paper {
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      background:
+        linear-gradient(90deg, rgba(0,0,0,0) 62%, rgba(0,0,0,0.06) 63%, rgba(0,0,0,0) 65%),
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 .4  0 0 0 0 .35  0 0 0 0 .25  0 0 0 .5 0'/></filter><rect width='300' height='300' filter='url(%23n)' opacity='.28'/></svg>");
+      box-shadow: inset 0 0 60px rgba(190,150,60,.25), inset 0 0 8px rgba(120,90,30,.3);
+      mix-blend-mode: multiply;
+    }
+    .ticket-box .watermark-stamp {
+      inset: 0;
+      z-index: 40;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: 700 84px 'Arimo', sans-serif;
+      color: rgba(31, 74, 168, 0.08);
+      transform: rotate(-16deg);
+      letter-spacing: 8px;
+      white-space: nowrap;
+    }
+    .ticket-box .watermark-stamp.is-charted {
+      color: rgba(46, 125, 50, 0.12);
+    }
+    .ticket-box .logo-ph {
+      position: absolute;
+      border: 1.5px dashed #888;
+      color: #666;
+      font: 11px 'Arimo', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: rgba(255,255,255,.5);
+    }
+
     .booking-card.is-confirmed {
       border-left-color: var(--status-healthy);
     }
@@ -1177,254 +1524,7 @@
         </div>
 
         <div id="booking-container">
-          <!-- Card 1: PNR 4763331979 -->
-          <article class="booking-card animate-entrance delay-4" id="card-4763331979" data-state="progressing">
-            <div class="card-group-a">
-              <div class="train-meta-group">
-                <span class="train-code-badge">12791</span>
-                <span class="train-name-label">SC DNR SF EXP</span>
-                <span class="train-route-label">Secunderabad – Danapur</span>
-                <span class="train-spec-pill">Sleeper (SL) · RLGN Quota</span>
-              </div>
-              <div class="status-badge-group">
-                <span class="improvement-delta-badge" id="delta-4763331979">+15 Positions Improved</span>
-                <span class="status-current-pill status-amber" id="pill-4763331979">RLWL 7</span>
-              </div>
-            </div>
-
-            <div class="card-group-b">
-              <div class="station-node departure">
-                <div class="station-time">18:25</div>
-                <div class="station-meta">
-                  <span class="station-code-badge">NGP</span>
-                  <span class="station-name">Nagpur Junction</span>
-                </div>
-                <div class="station-date">17 Oct 2026 · Saturday</div>
-              </div>
-
-              <div class="route-rail-block" aria-hidden="true">
-                <div class="route-duration-badge">
-                  <span class="route-duration-text">15h 50m</span>
-                  <span class="overnight-pill">+1 Day</span>
-                </div>
-                <svg class="rail-track-svg" viewBox="0 0 160 18" fill="none">
-                  <circle cx="8" cy="9" r="4.5" fill="#3478F6" stroke="#1D4ED8" stroke-width="1.5"/>
-                  <line x1="14" y1="9" x2="146" y2="9" stroke="#273244" stroke-width="2"/>
-                  <!-- Moving Signal Highlight -->
-                  <line class="rail-signal-beam" x1="14" y1="9" x2="146" y2="9" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-                  <!-- Railroad cross-tie ties -->
-                  <line x1="38" y1="5" x2="38" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="62" y1="5" x2="62" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="92" y1="5" x2="92" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="116" y1="5" x2="116" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <circle cx="152" cy="9" r="4.5" fill="#35B88A" stroke="#10B981" stroke-width="1.5"/>
-                </svg>
-                <span class="route-transit-label">Direct Rail Corridor</span>
-              </div>
-
-              <div class="station-node arrival">
-                <div class="station-time">10:15</div>
-                <div class="station-meta">
-                  <span class="station-name">Prayagraj Junction</span>
-                  <span class="station-code-badge">PRYJ</span>
-                </div>
-                <div class="station-date">18 Oct 2026 · Sunday</div>
-              </div>
-            </div>
-
-            <div class="card-group-c">
-              <div class="lifecycle-track">
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Booking</span>
-                  <span class="stage-value active-booking">W/L 22</span>
-                </div>
-                <div class="lifecycle-arrow" aria-hidden="true">→</div>
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Current</span>
-                  <span class="stage-value active-current" id="stage-current-4763331979">RLWL 7</span>
-                </div>
-                <div class="lifecycle-arrow" aria-hidden="true">→</div>
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Next Stage</span>
-                  <span class="stage-value" id="stage-next-4763331979">RAC</span>
-                </div>
-                <div class="lifecycle-arrow" aria-hidden="true">→</div>
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Target</span>
-                  <span class="stage-value">CNF</span>
-                </div>
-              </div>
-
-              <div class="metadata-tags">
-                <span class="pax-token">PNR 4763331979 · 1 Passenger</span>
-                <span class="chart-pill unprepared">Chart Not Prepared</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- Card 2: PNR 7000126327 -->
-          <article class="booking-card animate-entrance delay-5" id="card-7000126327" data-state="progressing">
-            <div class="card-group-a">
-              <div class="train-meta-group">
-                <span class="train-code-badge">14233</span>
-                <span class="train-name-label">SARYU EXP</span>
-                <span class="train-route-label">Prayagraj – Ayodhya Cantt</span>
-                <span class="train-spec-pill">2S / SL · GNWL Quota</span>
-              </div>
-              <div class="status-badge-group">
-                <span class="improvement-delta-badge">+13 Spots Gained (3 Pax)</span>
-                <span class="status-current-pill status-amber">GNWL 22-24</span>
-              </div>
-            </div>
-
-            <div class="card-group-b">
-              <div class="station-node departure">
-                <div class="station-time">18:20</div>
-                <div class="station-meta">
-                  <span class="station-code-badge">PRYJ</span>
-                  <span class="station-name">Prayagraj Junction</span>
-                </div>
-                <div class="station-date">18 Oct 2026 · Sunday</div>
-              </div>
-
-              <div class="route-rail-block" aria-hidden="true">
-                <div class="route-duration-badge">
-                  <span class="route-duration-text">4h 55m</span>
-                </div>
-                <svg class="rail-track-svg" viewBox="0 0 160 18" fill="none">
-                  <circle cx="8" cy="9" r="4.5" fill="#3478F6" stroke="#1D4ED8" stroke-width="1.5"/>
-                  <line x1="14" y1="9" x2="146" y2="9" stroke="#273244" stroke-width="2"/>
-                  <line class="rail-signal-beam" x1="14" y1="9" x2="146" y2="9" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-                  <line x1="45" y1="5" x2="45" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="80" y1="5" x2="80" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="115" y1="5" x2="115" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <circle cx="152" cy="9" r="4.5" fill="#35B88A" stroke="#10B981" stroke-width="1.5"/>
-                </svg>
-                <span class="route-transit-label">Intercity Link</span>
-              </div>
-
-              <div class="station-node arrival">
-                <div class="station-time">23:15</div>
-                <div class="station-meta">
-                  <span class="station-name">Ayodhya Cantt</span>
-                  <span class="station-code-badge">AY</span>
-                </div>
-                <div class="station-date">18 Oct 2026 · Sunday</div>
-              </div>
-            </div>
-
-            <div class="card-group-c">
-              <div class="lifecycle-track">
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Booking</span>
-                  <span class="stage-value active-booking">GNWL 35-37</span>
-                </div>
-                <div class="lifecycle-arrow" aria-hidden="true">→</div>
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Current</span>
-                  <span class="stage-value active-current">GNWL 22-24</span>
-                </div>
-                <div class="lifecycle-arrow" aria-hidden="true">→</div>
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Next Stage</span>
-                  <span class="stage-value">RAC</span>
-                </div>
-                <div class="lifecycle-arrow" aria-hidden="true">→</div>
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Target</span>
-                  <span class="stage-value">CNF</span>
-                </div>
-              </div>
-
-              <div class="metadata-tags">
-                <span class="pax-token">PNR 7000126327 · 3 Passengers</span>
-                <span class="chart-pill unprepared">Chart Not Prepared</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- Card 3: PNR 6610459110 -->
-          <article class="booking-card animate-entrance delay-6" id="card-6610459110" data-state="progressing">
-            <div class="card-group-a">
-              <div class="train-meta-group">
-                <span class="train-code-badge">12252</span>
-                <span class="train-name-label">WAINGANGA EXP</span>
-                <span class="train-route-label">Korba – Hyderabad</span>
-                <span class="train-spec-pill">3A AC 3 Tier · PQWL Quota</span>
-              </div>
-              <div class="status-badge-group">
-                <span class="improvement-delta-badge">+3 Positions Improved</span>
-                <span class="status-current-pill status-amber">PQWL 12</span>
-              </div>
-            </div>
-
-            <div class="card-group-b">
-              <div class="station-node departure">
-                <div class="station-time">08:05</div>
-                <div class="station-meta">
-                  <span class="station-code-badge">KRBA</span>
-                  <span class="station-name">Korba</span>
-                </div>
-                <div class="station-date">15 Nov 2026 · Sunday</div>
-              </div>
-
-              <div class="route-rail-block" aria-hidden="true">
-                <div class="route-duration-badge">
-                  <span class="route-duration-text">23h 20m</span>
-                  <span class="overnight-pill">+1 Day</span>
-                </div>
-                <svg class="rail-track-svg" viewBox="0 0 160 18" fill="none">
-                  <circle cx="8" cy="9" r="4.5" fill="#3478F6" stroke="#1D4ED8" stroke-width="1.5"/>
-                  <line x1="14" y1="9" x2="146" y2="9" stroke="#273244" stroke-width="2"/>
-                  <line class="rail-signal-beam" x1="14" y1="9" x2="146" y2="9" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-                  <line x1="38" y1="5" x2="38" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="65" y1="5" x2="65" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="95" y1="5" x2="95" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <line x1="120" y1="5" x2="120" y2="13" stroke="#273244" stroke-width="1.5"/>
-                  <circle cx="152" cy="9" r="4.5" fill="#35B88A" stroke="#10B981" stroke-width="1.5"/>
-                </svg>
-                <span class="route-transit-label">Superfast Express</span>
-              </div>
-
-              <div class="station-node arrival">
-                <div class="station-time">07:25</div>
-                <div class="station-meta">
-                  <span class="station-name">Hyderabad Kacheguda</span>
-                  <span class="station-code-badge">KCG</span>
-                </div>
-                <div class="station-date">16 Nov 2026 · Monday</div>
-              </div>
-            </div>
-
-            <div class="card-group-c">
-              <div class="lifecycle-track">
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Booking</span>
-                  <span class="stage-value active-booking">PQWL 15</span>
-                </div>
-                <div class="lifecycle-arrow" aria-hidden="true">→</div>
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Current</span>
-                  <span class="stage-value active-current">PQWL 12</span>
-                </div>
-                <div class="lifecycle-arrow" aria-hidden="true">→</div>
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Next Stage</span>
-                  <span class="stage-value">RAC</span>
-                </div>
-                <div class="lifecycle-arrow" aria-hidden="true">→</div>
-                <div class="lifecycle-stage">
-                  <span class="stage-label">Target</span>
-                  <span class="stage-value">CNF</span>
-                </div>
-              </div>
-
-              <div class="metadata-tags">
-                <span class="pax-token">PNR 6610459110 · 1 Passenger</span>
-                <span class="chart-pill unprepared">Chart Not Prepared</span>
-              </div>
-            </div>
-          </article>
+          <!-- Dynamic PRS Tickets will be rendered and kept reactive here -->
         </div>
 
         <!-- Filter Empty State -->
@@ -1610,6 +1710,313 @@
       }
     }
 
+    // Dynamic Hindi Station Name Map for authentic PRS look
+    const HINDI_STATIONS = {
+      "NGP": "नागपुर",
+      "PRYJ": "प्रयागराज",
+      "AY": "अयोध्या कैंट",
+      "KRBA": "कोरबा",
+      "KCG": "हैदराबाद",
+      "SC": "सिकंदराबाद",
+      "DNR": "दानापुर",
+      "NDLS": "नई दिल्ली",
+      "CNB": "कानपुर",
+      "BJU": "बरौनी"
+    };
+
+    function getHindiName(nameOrCode) {
+      if (!nameOrCode) return "";
+      const upper = nameOrCode.toUpperCase().trim();
+      for (const [code, hi] of Object.entries(HINDI_STATIONS)) {
+        if (upper.includes(code) || upper.includes(hi)) return hi;
+      }
+      return nameOrCode;
+    }
+
+    // Dynamic scaled PRS ticket renderer
+    function renderTickets(tickets) {
+      const container = document.getElementById('booking-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      let allCount = 0;
+      let progCount = 0;
+      let chartCount = 0;
+
+      Object.values(tickets).forEach((b, idx) => {
+        allCount++;
+        const isCharted = !!b.chart_prepared;
+        const hasProg = !!b.has_progressed;
+        if (isCharted) chartCount++;
+        if (hasProg) progCount++;
+
+        const pnrStr = String(b.pnr || '');
+        const ticketNo = pnrStr.replace(/\D/g, '').padEnd(8, '0').slice(0, 8);
+        const paxList = Array.isArray(b.passengers) && b.passengers.length > 0 ? b.passengers : [{ passenger_number: 1, booking_status: "RLWL 15", current_status: "RLWL 7" }];
+        const primaryPax = paxList[0];
+        const primaryCurrent = primaryPax.current_status || "UNKNOWN";
+        const isConfirmed = primaryCurrent.includes('CNF');
+
+        // Formulate fare and coach details
+        const coachStr = isConfirmed ? (primaryCurrent.match(/[A-Z0-9]+\s*\/\s*\d+/) ? primaryCurrent.split('/')[0].trim() : "B1") : "--";
+        const seatStr = isConfirmed ? primaryCurrent : primaryCurrent;
+        const trainNo = String(b.train_number || '12791');
+        const trainName = String(b.train_name || 'EXP');
+        const fromStn = b.from_code || b.from_station || "DEP";
+        const toStn = b.to_code || b.to_station || "ARR";
+        const fromHi = getHindiName(fromStn);
+        const toHi = getHindiName(toStn);
+        const doj = b.date_of_journey || "17-10-2026";
+        const quota = b.quota || "GNWL Quota";
+        const coachClass = b.coach_class || "Sleeper (SL)";
+        const shortClass = coachClass.includes('3A') ? '3A' : (coachClass.includes('2A') ? '2A' : (coachClass.includes('2S') ? '2S' : 'SL'));
+        const distKm = b.ticket_spots_gained ? (b.ticket_spots_gained * 35 + 280) : 451;
+
+        // Formulate passenger rows text representation for dot-matrix area
+        let paxRosterHtml = '';
+        paxList.forEach((p, pIdx) => {
+          const pCur = p.current_status || 'WL';
+          const pBook = p.booking_status || 'WL';
+          paxRosterHtml += `
+            <div style="display:flex;justify-content:space-between;padding:1px 0;">
+              <span>P${p.passenger_number || pIdx + 1}: ${pCur}</span>
+              <span style="opacity:0.75;">(BKD: ${pBook})</span>
+            </div>
+          `;
+        });
+
+        // Watermark SVG generator
+        let spokes = '';
+        for (let i = 0; i < 16; i++) {
+          const a = i * Math.PI / 8;
+          spokes += `<line x1='50' y1='50' x2='${50 + 40 * Math.cos(a)}' y2='${50 + 40 * Math.sin(a)}' stroke='#b9a8d6' stroke-width='3'/>`;
+        }
+        const wmSvg = `<svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='#efe9f7' stroke='#b9a8d6' stroke-width='5'/>${spokes}<circle cx='50' cy='50' r='9' fill='#b9a8d6'/></svg>`;
+
+        let wmCircles = '';
+        for (let r = 0; r < 4; r++) {
+          for (let c = 0; c < 9; c++) {
+            const left = 282 + c * 74 + (r % 2 ? 37 : 0);
+            const top = 334 + r * 66;
+            wmCircles += `<div class="wm" style="left:${left}px;top:${top}px">${wmSvg}</div>`;
+          }
+        }
+
+        const deltaText = b.ticket_spots_gained > 0 ? `+${b.ticket_spots_gained} Positions Improved` : `Tracking Baseline`;
+        const stateAttr = isCharted ? 'charted' : (hasProg ? 'progressing' : 'all');
+
+        const article = document.createElement('article');
+        article.className = `booking-card animate-entrance delay-${Math.min(4 + idx, 7)} ${isConfirmed ? 'is-confirmed' : ''}`;
+        article.id = `card-${pnrStr}`;
+        article.setAttribute('data-state', stateAttr);
+
+        article.innerHTML = `
+          <!-- Card Toolbar Meta -->
+          <div class="ticket-card-toolbar">
+            <div class="ticket-card-title-group">
+              <span class="ticket-pnr-badge">PNR ${pnrStr}</span>
+              <span class="ticket-train-title">${trainNo} ${trainName}</span>
+              <span style="font-size:12px;color:var(--text-secondary);">${b.route_name || (fromStn + ' → ' + toStn)}</span>
+            </div>
+            <div class="ticket-card-status-badges">
+              <span class="improvement-delta-badge" id="delta-${pnrStr}">${deltaText}</span>
+              <span class="status-current-pill ${isConfirmed ? 'status-green' : 'status-amber'}" id="pill-${pnrStr}">${primaryCurrent}</span>
+              <span class="chart-pill ${isCharted ? 'prepared' : 'unprepared'}">${isCharted ? 'Chart Prepared' : 'Chart Not Prepared'}</span>
+            </div>
+          </div>
+
+          <!-- Scaled PRS Ticket Viewport -->
+          <div class="ticket-scaler-wrap">
+            <div class="ticket-viewport" id="viewport-${pnrStr}">
+              <div class="ticket-box" id="ticket-${pnrStr}">
+                <!-- Perforations -->
+                <div class="hole" style="left:30px;top:32px"></div>
+                <div class="hole" style="left:30px;top:200px"></div>
+                <div class="hole" style="left:30px;top:350px"></div>
+                <div class="hole" style="left:30px;top:620px"></div>
+                <div class="hole" style="left:1141px;top:45px"></div>
+                <div class="hole" style="left:1141px;top:195px"></div>
+                <div class="hole" style="left:1141px;top:330px"></div>
+                <div class="hole" style="left:1141px;top:470px"></div>
+                <div class="hole" style="left:1141px;top:610px"></div>
+
+                <div class="abs rail">INDIAN RAILWAYS / RAILPULSE TELEMATICS</div>
+                <div class="abs" style="left:57px;top:318px;transform:rotate(-90deg);transform-origin:left top;top:520px;font-size:14px;font-weight:700;color:var(--t-blue);white-space:nowrap">
+                  PRS PASSENGER RESERVATION SYSTEM
+                </div>
+
+                <!-- Header Bar -->
+                <div class="abs head">
+                  <div class="hi2">शुभ यात्रा</div>
+                  <div class="en">HAPPY&nbsp;&nbsp;JOURNEY</div>
+                </div>
+
+                <!-- Railway Emblem -->
+                <div class="abs emblem">
+                  <svg viewBox='0 0 100 100' width='58' height='58'>
+                    <circle cx='50' cy='50' r='46' fill='none' stroke='#c9732a' stroke-width='6'/>
+                    <circle cx='50' cy='50' r='9' fill='#c9732a'/>
+                    <line x1='50' y1='50' x2='90.0' y2='50.0' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='87.0' y2='65.3' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='78.3' y2='78.3' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='65.3' y2='87.0' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='50.0' y2='90.0' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='34.7' y2='87.0' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='21.7' y2='78.3' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='13.0' y2='65.3' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='10.0' y2='50.0' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='13.0' y2='34.7' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='21.7' y2='21.7' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='34.7' y2='13.0' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='50.0' y2='10.0' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='65.3' y2='13.0' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='78.3' y2='21.7' stroke='#c9732a' stroke-width='3'/>
+                    <line x1='50' y1='50' x2='87.0' y2='34.7' stroke='#c9732a' stroke-width='3'/>
+                  </svg>
+                </div>
+
+                <!-- Info Block 1 -->
+                <div class="abs blue1"></div>
+                <div class="abs yellow"></div>
+                <div class="abs white-r"></div>
+                <div class="abs line" style="left:300px;top:72px;width:2px;height:110px"></div>
+                <div class="abs line" style="left:703px;top:72px;width:2px;height:68px"></div>
+                <div class="abs line" style="left:818px;top:140px;width:2px;height:42px"></div>
+
+                <div class="abs lbl" style="left:112px;top:88px;width:180px"><span class="h">पी एन आर नं.</span><span style="color:var(--t-red)">PNR NO.</span></div>
+                <div class="abs lbl" style="left:310px;top:88px;width:110px"><span class="h">गाड़ी नं.</span>TRAIN NO.</div>
+                <div class="abs lbl" style="left:430px;top:88px;width:80px"><span class="h">तिथि</span>DATE</div>
+                <div class="abs lbl" style="left:500px;top:88px;width:70px"><span class="h">कि.मी.</span>K.M</div>
+                <div class="abs lbl" style="left:596px;top:88px;width:60px"><span class="h">वयस्क</span>ADULT</div>
+                <div class="abs lbl" style="left:655px;top:88px;width:60px"><span class="h">बच्चे</span>CHILD</div>
+                <div class="abs lbl" style="left:726px;top:75px;width:80px"><span class="h" style="text-align:left">टिकट नं.</span></div>
+                <div class="abs lbl" style="left:840px;top:77px;width:100px">TICKET NO.</div>
+
+                <div class="abs dm" style="left:104px;top:122px;font-size:19px;letter-spacing:1px;">${pnrStr}</div>
+                <div class="abs dm" style="left:342px;top:122px;font-size:16px">${trainNo}</div>
+                <div class="abs dm" style="left:420px;top:122px;font-size:16px;white-space:nowrap">${doj}</div>
+                <div class="abs dm" style="left:524px;top:122px;font-size:16px">${distKm}</div>
+                <div class="abs dm" style="left:620px;top:122px;font-size:16px">${paxList.length}</div>
+                <div class="abs dm" style="left:670px;top:122px;font-size:16px">0</div>
+                <div class="abs ticketno" style="left:728px;top:96px">${ticketNo}</div>
+                <div class="abs dm" style="left:822px;top:122px;font-size:14px;opacity:0.5">${ticketNo}</div>
+
+                <!-- Info Block 2: Class & Route -->
+                <div class="abs blue2"></div>
+                <div class="abs blue2b"></div>
+                <div class="abs line" style="left:80px;top:182px;width:106px;height:2px"></div>
+                <div class="abs lbl" style="left:90px;top:186px;width:90px;text-align:left"><span class="h" style="text-align:left">श्रेणी</span>CLASS</div>
+                <div class="abs dm" style="left:405px;top:182px;font-size:15px;color:#0f2b69;">${isCharted ? 'CHART PREPARED' : 'CHART NOT PREPARED - ONLINE TELEMETRY ACTIVE'}</div>
+                <div class="abs hi" style="left:836px;top:182px;font-size:13px">आरक्षित</div>
+
+                <div class="abs hi" style="left:175px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${fromHi}</div>
+                <div class="abs hi" style="left:340px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${toHi}</div>
+                <div class="abs hi" style="left:525px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">वाया</div>
+                <div class="abs hi" style="left:705px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${trainName}</div>
+
+                <div class="abs dm" style="left:112px;top:248px;font-size:18px">${shortClass}</div>
+                <div class="abs dm" style="left:242px;top:250px;font-size:16px">${fromStn}</div>
+                <div class="abs dm" style="left:429px;top:250px;font-size:16px">${toStn}</div>
+                <div class="abs dm" style="left:686px;top:250px;font-size:16px">DIRECT</div>
+                <div class="abs dm" style="left:864px;top:250px;font-size:16px">${distKm}</div>
+                <div class="abs" style="left:604px;top:270px;font-size:13px;font-weight:700;color:var(--t-blue)"><span style="font-family:'Noto Sans Devanagari';color:var(--t-red)">तक आरक्षित</span> / RESV. UP TO</div>
+
+                <!-- Info Block 3: Passenger & Fare Details -->
+                <div class="abs line" style="left:80px;top:294px;width:866px;height:1px"></div>
+                <div class="abs lbl" style="left:100px;top:300px;width:60px"><span class="h">कोच</span>COACH</div>
+                <div class="abs lbl" style="left:172px;top:300px;width:100px"><span class="h">सीट/बर्थ</span>SEAT/BERTH</div>
+                <div class="abs lbl" style="left:266px;top:300px;width:50px"><span class="h">लिंग</span>SEX</div>
+                <div class="abs lbl" style="left:316px;top:300px;width:50px"><span class="h">आयु</span>AGE</div>
+                <div class="abs lbl" style="left:382px;top:300px;width:100px"><span class="h">यात्रा प्राधिकार</span>T.AUTHORITY</div>
+                <div class="abs lbl" style="left:515px;top:300px;width:60px"><span class="h">रियायत</span>CONC</div>
+                <div class="abs lbl" style="left:588px;top:300px;width:60px"><span class="h">आ.शु.</span>R.FEE</div>
+                <div class="abs lbl" style="left:652px;top:300px;width:60px"><span class="h">श. प्र.</span>S.CH.</div>
+                <div class="abs lbl" style="left:703px;top:300px;width:60px"><span class="h">सु. प्र.</span>SF.CH</div>
+                <div class="abs lbl" style="left:766px;top:300px;width:80px"><span class="h">वाउचर रू.</span>VOUCH. Rs.</div>
+                <div class="abs lbl" style="left:852px;top:300px;width:90px"><span class="h">कु. नकद रू.</span>T.CASH Rs.</div>
+
+                <!-- Fare & Watermark Layer -->
+                <div class="abs" style="left:590px;top:336px;width:250px;height:48px;background:#e8cdcf;opacity:0.7"></div>
+                <div class="abs" style="inset:0;pointer-events:none;z-index:1;">${wmCircles}</div>
+
+                <div class="abs dm" style="left:116px;top:333px;font-size:16px">${coachStr}</div>
+                <div class="abs dm" style="left:166px;top:333px;font-size:16px;white-space:nowrap;">${primaryCurrent}</div>
+                <div class="abs dm" style="left:290px;top:333px;font-size:16px">M</div>
+                <div class="abs dm" style="left:330px;top:333px;font-size:16px">28</div>
+                <div class="abs dm" style="left:606px;top:333px;font-size:16px">20</div>
+                <div class="abs dm" style="left:874px;top:333px;font-size:16px">${(paxList.length * 480).toFixed(0)}</div>
+
+                <!-- Multi-passenger status breakdown box inside ticket -->
+                <div class="abs dm" style="left:106px;top:370px;width:440px;background:rgba(255,255,255,0.7);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;">
+                  <div style="font-weight:700;margin-bottom:3px;color:var(--t-blue);border-bottom:1px solid #7a8cb0;padding-bottom:2px;">PASSENGER STATUS ROSTER:</div>
+                  ${paxRosterHtml}
+                </div>
+
+                <div class="abs dm" style="left:590px;top:360px;font-size:14px">Rs. RUPEES PAID IN CASH</div>
+                <div class="abs dm" style="left:596px;top:388px;font-size:14px">${quota} · ${shortClass}</div>
+
+                <!-- Footer Lines -->
+                <div class="abs dm" style="left:172px;top:490px;font-size:15px">${trainName.toUpperCase()} · ${fromStn} TO ${toStn}</div>
+                <div class="abs dm" style="left:548px;top:490px;font-size:15px">SCH DEP ${b.dep_time || '18:25'} ARR ${b.arr_time || '10:15'}</div>
+                <div class="abs dm" style="left:110px;top:518px;font-size:14px;white-space:nowrap">${trainNo} ${doj} · TRACKED VIA RAILPULSE ENGINE</div>
+                <div class="abs dm" style="left:200px;top:544px;font-size:14px">VALID WITH ORIGINAL GOVERNMENT ISSUED ID FOR RAILWAY TRAVEL</div>
+
+                <!-- Ad & Official Government Column -->
+                <div class="abs ad">
+                  <div class="q" style="top:110px;text-align:left;padding-left:8px">“I GOT THE<br>RIGHT<br>TO HAVE<br>FINANCIAL<br>ASSISTANCE.</div>
+                  <div class="q r" style="top:270px">DID YOU<br>CLAIM<br>YOUR<br>RIGHT?”</div>
+                  <div class="small" style="top:470px;font-size:12px">Ministry of Information &amp;<br>Broadcasting<br>Government of India</div>
+                </div>
+
+                <div class="abs" style="left:1130px;top:170px;transform:rotate(90deg);transform-origin:left top;font-size:13px;color:var(--t-blue);white-space:nowrap">
+                  Official PRS Ticket Format · RailPulse Telematics
+                </div>
+
+                <!-- Paper Texture & Stamp -->
+                <div class="abs paper"></div>
+                <div class="abs watermark-stamp ${isCharted ? 'is-charted' : ''}">${isCharted ? 'CHART PREPARED' : (isConfirmed ? 'CONFIRMED' : 'WAITLISTED')}</div>
+
+                <!-- Bottom Banner -->
+                <div class="abs bn">
+                  <div class="dm" style="position:absolute;left:30px;top:6px;font-size:13px">CATG COMP NO - 1800-111-321 · CRIS TELEMETRY</div>
+                  <div class="big">BHARAT NIRMAN</div>
+                  <div class="tag">IT'S IN EVERYBODY'S INTEREST. IT'S EVERYBODY'S RIGHT.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(article);
+      });
+
+      // Update Tab Counts
+      const elAll = document.getElementById('count-all');
+      const elProg = document.getElementById('count-prog');
+      const elChart = document.getElementById('count-chart');
+      if (elAll) elAll.textContent = allCount;
+      if (elProg) elProg.textContent = progCount;
+      if (elChart) elChart.textContent = chartCount;
+
+      fitAllTickets();
+    }
+
+    // Responsive Auto-fit calculation for each ticket
+    function fitAllTickets() {
+      document.querySelectorAll('.ticket-scaler-wrap').forEach(wrap => {
+        const viewport = wrap.querySelector('.ticket-viewport');
+        const ticket = wrap.querySelector('.ticket-box');
+        if (!viewport || !ticket) return;
+        const availableW = wrap.clientWidth || 1100;
+        const scale = Math.min(1, (availableW - 20) / 1200);
+        ticket.style.transform = `scale(${scale})`;
+        viewport.style.width = `${1200 * scale}px`;
+        viewport.style.height = `${675 * scale}px`;
+      });
+    }
+
+    window.addEventListener('resize', fitAllTickets);
+
     // Dynamic Fetch Status from backend
     async function fetchStatus() {
       try {
@@ -1617,6 +2024,11 @@
         if (!res.ok) return;
         const data = await res.json();
         if (data.status !== 'success') return;
+
+        // Render live tickets into dashboard
+        if (data.tickets && Object.keys(data.tickets).length > 0) {
+          renderTickets(data.tickets);
+        }
 
         const tel = data.telemetry;
         if (tel) {
@@ -1731,21 +2143,22 @@
       // Animate update on Card 1
       const pill = document.getElementById('pill-4763331979');
       const delta = document.getElementById('delta-4763331979');
-      const stageCurrent = document.getElementById('stage-current-4763331979');
-      const stageNext = document.getElementById('stage-next-4763331979');
       const card = document.getElementById('card-4763331979');
 
-      if (pill && stageCurrent) {
+      if (pill) {
         // Transition to RAC 2
         pill.textContent = 'RAC 2';
         pill.className = 'status-current-pill status-green status-updated-flash';
         if (delta) delta.textContent = '+20 Positions Improved (RAC Transition)';
-        if (card) card.classList.add('is-confirmed');
+        if (card) {
+          card.classList.add('is-confirmed');
+          const stamp = card.querySelector('.watermark-stamp');
+          if (stamp) {
+            stamp.textContent = 'RAC CONFIRMED';
+            stamp.style.color = 'rgba(46, 125, 50, 0.16)';
+          }
+        }
         
-        stageCurrent.textContent = 'RAC 2';
-        stageCurrent.className = 'stage-value active-rac';
-        if (stageNext) stageNext.textContent = 'CNF';
-
         // Update KPI counter
         const progKpi = document.getElementById('kpi-progression');
         if (progKpi) progKpi.textContent = '+62 Positions';
