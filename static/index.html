@@ -2036,23 +2036,6 @@
           </table>
         </div>
 
-        <!-- Operational Event Stream -->
-        <div class="panel animate-entrance delay-7">
-          <h3 class="panel-title">Operational Event Stream</h3>
-          <p class="panel-desc">Chronological log of gateway polls, state diffs, and alert dispatches.</p>
-          <div class="log-stream" id="log-stream" role="log" aria-live="polite">
-            <div class="log-entry">
-              <span class="log-time">[20:20:43]</span> <span class="log-category cat-sync">[SYNC]</span> Baseline state verified: 3 PNRs active, 5 passengers tracked.
-            </div>
-            <div class="log-entry">
-              <span class="log-time">[20:20:40]</span> <span class="log-category cat-gateway">[GATEWAY]</span> Direct rail gateway connection verified.
-            </div>
-            <div class="log-entry">
-              <span class="log-time">[20:20:38]</span> <span class="log-category cat-daemon">[DAEMON]</span> Telematics daemon initialized on port 8000.
-            </div>
-          </div>
-        </div>
-
       </aside>
     </div>
 
@@ -2174,9 +2157,10 @@
     setInterval(updateCountdown, 1000);
 
 
-    // Append to Event Stream with slide-down animation and scroll preservation
+    // Append to Event Stream (gracefully no-op if widget is removed)
     function logEvent(category, message, catClass) {
       const stream = document.getElementById('log-stream');
+      if (!stream) return;
       const now = new Date();
       const timeOpts = { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
       const ts = `[${new Intl.DateTimeFormat('en-IN', timeOpts).format(now)}]`;
