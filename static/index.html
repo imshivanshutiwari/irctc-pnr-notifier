@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800;900&family=Arimo:wght@400;700&family=Special+Elite&family=DotGothic16&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Yatra+One&family=Noto+Sans+Devanagari:wght@400;600;700;800;900&family=Arimo:wght@400;700&family=Special+Elite&family=DotGothic16&display=swap" rel="stylesheet">
   <style>
     :root {
       /* Exact Warm Charcoal Palette */
@@ -32,8 +32,9 @@
       --status-warning-bg: rgba(226, 184, 107, 0.14);
       --status-error: #D97868;
       --status-error-bg: rgba(217, 120, 104, 0.14);
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-display: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 14px;
@@ -164,8 +165,9 @@
       gap: 2px;
     }
     .brand-title {
-      font-size: 22px;
-      font-weight: 800;
+      font-family: var(--font-display);
+      font-size: 23px;
+      font-weight: 700;
       color: var(--text-primary);
       letter-spacing: -0.02em;
       display: flex;
@@ -272,11 +274,12 @@
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
     .intro-text h1 {
-      font-size: 20px;
+      font-family: var(--font-display);
+      font-size: 21px;
       font-weight: 700;
       color: var(--text-primary);
       margin-bottom: 4px;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.015em;
     }
     .intro-text p {
       font-size: 13px;
@@ -470,8 +473,9 @@
       gap: 3px;
     }
     .overview-brand-title {
+      font-family: var(--font-display);
       font-size: 24px;
-      font-weight: 800;
+      font-weight: 700;
       color: #FFFFFF;
       letter-spacing: -0.02em;
     }
@@ -595,8 +599,9 @@
       background: var(--status-error-bg);
     }
     .pnr-route {
+      font-family: var(--font-display);
       font-size: 22px;
-      font-weight: 800;
+      font-weight: 700;
       color: #F4EBDD;
       margin-bottom: 4px;
       letter-spacing: -0.01em;
@@ -616,10 +621,12 @@
       margin-bottom: 16px;
     }
     .pnr-current-status {
-      font-size: 17px;
+      font-family: var(--font-display);
+      font-size: 18px;
       font-weight: 700;
       color: var(--primary);
       margin-bottom: 2px;
+      letter-spacing: -0.01em;
     }
     .pnr-current-status.is-cnf {
       color: var(--status-healthy);
@@ -1511,10 +1518,12 @@
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
     .panel-title {
-      font-size: 14px;
+      font-family: var(--font-display);
+      font-size: 15px;
       font-weight: 700;
       color: var(--text-primary);
       margin-bottom: 4px;
+      letter-spacing: -0.01em;
     }
     .panel-desc {
       font-size: 12px;
@@ -1700,19 +1709,19 @@
       user-select: none;
     }
     .rail-giant-wordmark {
-      font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: clamp(48px, 10.5vw, 145px);
-      font-weight: 900;
-      line-height: 1.35;
-      letter-spacing: -0.01em;
+      font-family: 'Yatra One', 'Noto Sans Devanagari', -apple-system, sans-serif;
+      font-size: clamp(48px, 11vw, 150px);
+      font-weight: 400;
+      line-height: 1.3;
+      letter-spacing: 0.02em;
       pointer-events: none;
       white-space: nowrap;
       margin: 0;
       padding: 16px 20px 8px;
-      background: linear-gradient(180deg, rgba(244, 235, 221, 0.35) 0%, rgba(226, 184, 107, 0.20) 45%, rgba(138, 106, 56, 0.06) 100%);
+      background: linear-gradient(180deg, rgba(244, 235, 221, 0.42) 0%, rgba(226, 184, 107, 0.24) 45%, rgba(138, 106, 56, 0.08) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.6));
+      filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.7));
       transition: opacity 0.3s ease;
     }
     .rail-footer-meta {
