@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700&family=Arimo:wght@400;700&family=Special+Elite&family=DotGothic16&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800;900&family=Arimo:wght@400;700&family=Special+Elite&family=DotGothic16&display=swap" rel="stylesheet">
   <style>
     :root {
       /* Exact Warm Charcoal Palette */
@@ -1686,16 +1686,68 @@
       display: none;
     }
 
-    /* Footer */
-    .app-footer {
+    /* Footer & Giant Architectural Typographic Display */
+    .rail-display-footer {
       max-width: 1440px;
-      margin: 40px auto 0;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
+      margin: 48px auto 16px;
+      padding-top: 24px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      user-select: none;
+    }
+    .rail-giant-wordmark {
+      font-family: 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: clamp(52px, 11.5vw, 155px);
+      font-weight: 900;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      pointer-events: none;
+      white-space: nowrap;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(180deg, rgba(244, 235, 221, 0.28) 0%, rgba(226, 184, 107, 0.16) 45%, rgba(138, 106, 56, 0.05) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.6));
+      transition: opacity 0.3s ease;
+    }
+    .rail-footer-meta {
+      width: 100%;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(226, 184, 107, 0.14);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 12px;
+      gap: 16px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+    .rail-footer-meta-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .rail-footer-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: rgba(226, 184, 107, 0.08);
+      border: 1px solid rgba(226, 184, 107, 0.22);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 10px;
+    }
+    .rail-footer-meta-right {
       color: var(--text-muted);
     }
 
@@ -1835,10 +1887,11 @@
         gap: 12px;
         padding: 14px 16px;
       }
-      .app-footer {
+      .rail-footer-meta {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
         gap: 8px;
+        text-align: center;
       }
     }
   </style>
@@ -2038,6 +2091,20 @@
 
       </aside>
     </div>
+
+    <!-- Giant Architectural Typographic Display Footer -->
+    <footer class="rail-display-footer" aria-label="Indian Railways Telemetry Footer">
+      <div class="rail-giant-wordmark" aria-hidden="true">भारतीय रेल</div>
+      <div class="rail-footer-meta">
+        <div class="rail-footer-meta-left">
+          <span class="rail-footer-badge">CRIS TELEMETRY</span>
+          <span>INDIAN RAILWAYS · PASSENGER RESERVATION SYSTEM</span>
+        </div>
+        <div class="rail-footer-meta-right">
+          <span>AUTONOMOUS MONITORING ENGINE · OPEN SOURCE</span>
+        </div>
+      </div>
+    </footer>
 
     <!-- Full PRS Ticket Viewer Modal (Layer B) -->
     <div id="prs-ticket-modal" class="ticket-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-pnr-title" style="display: none;">
