@@ -46,17 +46,39 @@
     }
 
     body {
-      background-color: var(--bg-page);
-      background-image: 
-        radial-gradient(ellipse 800px 600px at 15% 10%, rgba(217, 166, 91, 0.07) 0%, transparent 70%),
-        radial-gradient(ellipse 900px 700px at 85% 45%, rgba(138, 98, 56, 0.08) 0%, transparent 75%);
-      background-attachment: fixed;
-      background-repeat: no-repeat;
+      background-color: #1A1715;
       color: var(--text-primary);
       font-family: var(--font-sans);
       min-height: 100vh;
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
+      position: relative;
+    }
+
+    /* Fixed Cinematic Indian Railways Background (Still & Covered) */
+    .railway-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -10;
+      pointer-events: none;
+      background-image: 
+        linear-gradient(rgba(35, 22, 14, 0.60), rgba(24, 18, 14, 0.74)),
+        radial-gradient(ellipse 900px 700px at 15% 15%, rgba(217, 166, 91, 0.12) 0%, transparent 70%),
+        url('/static/assets/railway-background.jpg');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      transform: translate3d(0, 0, 0);
+      will-change: transform;
+    }
+
+    @media (max-width: 768px) {
+      .railway-backdrop {
+        background-position: 28% center;
+      }
     }
 
     /* Keyboard Navigation & Skip Link */
@@ -1822,6 +1844,9 @@
   </style>
 </head>
 <body>
+  <!-- Fixed Cinematic Indian Railways Background Backdrop (Layer 0) -->
+  <div class="railway-backdrop" aria-hidden="true"></div>
+
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- Header with Prominent Railway Logo -->

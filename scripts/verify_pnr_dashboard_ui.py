@@ -35,6 +35,19 @@ def run_verification():
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "pnr-card")))
         time.sleep(1) # Allow CSS animations to settle
 
+        # 0. Verify Cinematic Railway Backdrop Layer
+        backdrop = driver.find_element(By.CLASS_NAME, "railway-backdrop")
+        assert backdrop is not None, "railway-backdrop element must exist"
+        bg_style = driver.execute_script("return window.getComputedStyle(arguments[0]).backgroundImage;", backdrop)
+        pointer_events = driver.execute_script("return window.getComputedStyle(arguments[0]).pointerEvents;", backdrop)
+        position = driver.execute_script("return window.getComputedStyle(arguments[0]).position;", backdrop)
+        print(f"Backdrop Position: {position}")
+        print(f"Backdrop Pointer Events: {pointer_events}")
+        print(f"Backdrop Background Image: {bg_style[:80]}...")
+        assert "railway-background.jpg" in bg_style, "Backdrop must load railway-background.jpg"
+        assert position == "fixed", "Backdrop must be fixed in place"
+        assert pointer_events == "none", "Backdrop must have pointer-events: none"
+
         # 1. Verify Header & Pill Badge
         title_el = driver.find_element(By.CLASS_NAME, "overview-brand-title")
         subtitle_el = driver.find_element(By.CLASS_NAME, "overview-subtitle")
@@ -63,7 +76,7 @@ def run_verification():
             btn = card.find_element(By.CLASS_NAME, "btn-view-ticket")
             print(f"  Card {idx + 1}: Label='{label}', Route='{route}', Status='{status}', Movement='{movement}', Button='{btn.text}'")
 
-        # Capture Screenshot of Layer A: Compact Dashboard Overview
+        # Capture Screenshot of Layer A: Compact Dashboard Overview with Cinematic Background
         screenshot1 = output_dir / "01_layer_a_overview_grid.png"
         driver.save_screenshot(str(screenshot1))
         print(f"Saved Layer A Screenshot to: {screenshot1}")
@@ -132,6 +145,14 @@ def run_verification():
         visible_all = [c for c in driver.find_elements(By.CLASS_NAME, "pnr-card") if c.is_displayed()]
         print(f"Visible cards under 'All' filter: {len(visible_all)}")
         assert len(visible_all) == len(cards), "All cards should be visible again under All filter"
+
+        # 7. Test Mobile Viewport (Responsive & Background Positioning)
+        print("\n6. Testing mobile viewport (390 x 844)...")
+        driver.set_window_size(390, 844)
+        time.sleep(1)
+        mobile_screenshot = output_dir / "04_mobile_viewport_view.png"
+        driver.save_screenshot(str(mobile_screenshot))
+        print(f"Saved Mobile Screenshot to: {mobile_screenshot}")
 
         print("\n=== ALL BROWSER UI VERIFICATION TESTS PASSED SUCCESSFULLY! ===")
         return True
