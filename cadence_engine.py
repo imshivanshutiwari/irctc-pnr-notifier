@@ -90,3 +90,62 @@ def compute_pnr_cadence(
             "days_until_journey": days_until_journey,
             "is_near_journey": False,
         }
+
+def compute_destination_arrival(
+    date_of_journey: Optional[str],
+    dep_time_str: Optional[str],
+    arr_time_str: Optional[str]
+) -> Optional[datetime]:
+    """
+    Computes exact arrival datetime in IST.
+    Handles overnight cross-midnight journeys (e.g. Dep 18:25 -> Arr 09:55 next day).
+    """
+    j_date = parse_journey_date(date_of_journey)
+    if not j_date:
+        return None
+
+    dep_clean = dep_time_str or "00:00"
+    arr_clean = arr_time_str or "00:00"
+
+    try:
+        dep_h, dep_m = [int(x) for x in dep_clean.split(":")[:2]]
+    except Exception:
+        dep_h, dep_m = 0, 0
+
+    try:
+        arr_h, arr_m = [int(x) for x in arr_clean.split(":")[:2]]
+    except Exception:
+        arr_h, arr_m = 0, 0
+
+    arr_date = j_date
+    # If arrival time is earlier in the clock than departure time, journey crosses midnight
+    if (arr_h * 60 + arr_m) < (dep_h * 60 + dep_m):
+        arr_date = j_date + timedelta(days=1)
+
+    return datetime(arr_date.year, arr_date.month, arr_date.day, arr_h, arr_m, tzinfo=IST_TIMEZONE)
+
+def is_journey_completed(
+    date_of_journey: Optional[str],
+    dep_time_str: Optional[str],
+    arr_time_str: Optional[str],
+    buffer_minutes: int = 120,
+    now_dt: Optional[datetime] = None
+) -> Tuple[bool, Optional[datetime]]:
+    """
+    Determines if train has arrived at destination and completed its journey.
+    buffer_minutes: standard delay buffer (default 120 mins / 2 hours after scheduled arrival).
+    Returns (is_completed, arrival_datetime_ist).
+    """
+    if now_dt is None:
+        now_dt = datetime.now(IST_TIMEZONE)
+    elif now_dt.tzinfo is None:
+        now_dt = now_dt.replace(tzinfo=IST_TIMEZONE)
+    else:
+        now_dt = now_dt.astimezone(IST_TIMEZONE)
+
+    arr_dt = compute_destination_arrival(date_of_journey, dep_time_str, arr_time_str)
+    if not arr_dt:
+        return False, None
+
+    completion_threshold = arr_dt + timedelta(minutes=buffer_minutes)
+    return now_dt >= completion_threshold, arr_dt

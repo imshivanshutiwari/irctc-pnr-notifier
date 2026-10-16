@@ -23,6 +23,7 @@ except ImportError:
 
 from pnr_client import PNRClient
 from notifier import Notifier
+from cadence_engine import is_journey_completed
 
 DEFAULT_STATE_FILE = "status_state.json"
 WAITLIST_RE = re.compile(r"\b(GNWL|RLWL|PQWL|RQWL|TQWL|WL|W/L)\s*[- ]*\s*(\d+)\b", re.I)
@@ -223,6 +224,29 @@ class PNRTracker:
             summaries.append(summary)
             if "fetch failed" in summary.lower() or "no valid passenger" in summary.lower():
                 errors.append(summary)
+
+        # Autonomous Pruning: Remove completed journeys that have arrived at destination
+        completed_pnrs = []
+        for pnr, data in list(all_states.items()):
+            doj = data.get("date_of_journey")
+            dep_t = data.get("dep_time")
+            arr_t = data.get("arr_time")
+            is_done, arr_dt = is_journey_completed(doj, dep_t, arr_t, buffer_minutes=120)
+            if is_done:
+                completed_pnrs.append(pnr)
+                train_name = data.get("train_name", "Train")
+                train_no = data.get("train_number", "")
+                to_st = data.get("to_station") or data.get("to_code", "Destination")
+                
+                # Send journey completion push notification
+                msg = (
+                    f"Journey Completed - PNR {pnr}\n"
+                    f"Train {train_no} {train_name} has arrived at {to_st}.\n"
+                    f"Ticket archived and removed from active monitoring."
+                )
+                self.notifier.send_alert(msg)
+                del all_states[pnr]
+                summaries.append(f"PNR {pnr} completed journey at {to_st} and was auto-pruned.")
 
         self.save_all_states(all_states)
         if errors and len(errors) == len(self.pnrs):

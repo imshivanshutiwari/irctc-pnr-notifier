@@ -205,6 +205,27 @@ async def background_pnr_poller():
                     PNR_SCHEDULE[pnr]["last_poll"] = pnr_now_epoch
                     PNR_SCHEDULE[pnr]["next_poll"] = pnr_now_epoch + cadence_sec
 
+                # Auto-prune journeys that have arrived at destination station
+                for pnr, data in list(all_states.items()):
+                    doj = data.get("date_of_journey")
+                    dep_t = data.get("dep_time")
+                    arr_t = data.get("arr_time")
+                    is_done, arr_dt = is_journey_completed(doj, dep_t, arr_t, buffer_minutes=120)
+                    if is_done:
+                        train_name = data.get("train_name", "Train")
+                        train_no = data.get("train_number", "")
+                        to_st = data.get("to_station") or data.get("to_code", "Destination")
+                        msg = (
+                            f"Journey Completed - PNR {pnr}\n"
+                            f"Train {train_no} {train_name} has arrived at {to_st}.\n"
+                            f"Ticket archived and removed from active monitoring."
+                        )
+                        notifier.send_alert(msg)
+                        del all_states[pnr]
+                        if pnr in PNR_SCHEDULE:
+                            del PNR_SCHEDULE[pnr]
+                        print(f"[RailPulse Adaptive Daemon] Auto-pruned completed PNR {pnr} (Arrived at {to_st})")
+
                 tracker.save_all_states(all_states)
                 LAST_POLL_TIME = datetime.datetime.now(datetime.timezone.utc)
                 LAST_POLL_RESULT = "; ".join(poll_summaries)

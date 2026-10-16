@@ -55,3 +55,24 @@ def test_invalid_date_fallback():
     res = compute_pnr_cadence(None)
     assert res["cadence_seconds"] == 18000
     assert res["priority_tier"] == "standard-5h"
+
+def test_destination_arrival_calculation():
+    from cadence_engine import compute_destination_arrival, is_journey_completed
+
+    # Overnight journey: Dep 17-10-2026 18:25 -> Arr 09:55 next day (18-10-2026 09:55)
+    arr_dt = compute_destination_arrival("17-10-2026", "18:25", "09:55")
+    assert arr_dt == datetime(2026, 10, 18, 9, 55, tzinfo=IST_TIMEZONE)
+
+    # Same-day journey: Dep 18-10-2026 19:06 -> Arr 23:50 (18-10-2026 23:50)
+    arr_same = compute_destination_arrival("18-10-2026", "19:06", "23:50")
+    assert arr_same == datetime(2026, 10, 18, 23, 50, tzinfo=IST_TIMEZONE)
+
+    # Before completion: 18-10-2026 09:00 (train has not arrived)
+    before_dt = datetime(2026, 10, 18, 9, 0, tzinfo=IST_TIMEZONE)
+    completed_before, _ = is_journey_completed("17-10-2026", "18:25", "09:55", buffer_minutes=60, now_dt=before_dt)
+    assert completed_before is False
+
+    # After arrival + buffer: 18-10-2026 11:30 (buffer 60 mins -> threshold 10:55)
+    after_dt = datetime(2026, 10, 18, 11, 30, tzinfo=IST_TIMEZONE)
+    completed_after, _ = is_journey_completed("17-10-2026", "18:25", "09:55", buffer_minutes=60, now_dt=after_dt)
+    assert completed_after is True

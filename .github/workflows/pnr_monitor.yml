@@ -2,8 +2,8 @@ name: IRCTC PNR Waiting List 24/7 Monitor
 
 on:
   schedule:
-    # Runs every 5 hours (at minute 0 past every 5th hour)
-    - cron: '0 */5 * * *'
+    # Runs every 2 hours to service priority near-journey cadences and auto-pruning
+    - cron: '0 */2 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions anytime
 
 permissions:
