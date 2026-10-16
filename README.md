@@ -3,47 +3,54 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmonth-brightgreen.svg)]()
-[![Automated Tests](https://img.shields.io/badge/Tests-47%20Passed-brightgreen.svg)]()
+[![Automated Tests](https://img.shields.io/badge/Tests-52%20Passed-brightgreen.svg)]()
+[![Berth Engine](https://img.shields.io/badge/Berth%20Engine-Verified%20Layouts-gold.svg)]()
 [![Cloudflare Tunnel](https://img.shields.io/badge/Tunnel-Cloudflare%20Zero%20Trust-orange.svg)]()
 [![Multi-Channel](https://img.shields.io/badge/Alerts-ntfy%20%7C%20Telegram%20%7C%20WhatsApp-orange.svg)]()
 
-> A full-stack Indian Railways (IRCTC/CRIS) Passenger Reservation System (PRS) waiting-list monitoring telematics engine with exact physical dot-matrix ticket rendering, real-time background tracking daemon, multi-channel mobile alerting, Cloudflare zero-trust tunneling, and anti-scraping client protection.
+> An autonomous, full-stack Indian Railways (IRCTC/CRIS) Passenger Reservation System (PRS) telematics engine with exact physical dot-matrix ticket rendering, interactive visual cabin blueprints, adaptive journey-date polling cadences, real-time background tracking daemon, multi-channel mobile alerts, and Cloudflare zero-trust edge access.
 
 ---
 
 ## What Makes RailPulse Unique?
 
-Unlike typical CLI scripts or basic HTML clones, RailPulse integrates an authentic physical ticket canvas with a live 24/7 background telemetry daemon:
+Unlike standard command-line scrapers or basic static clones, RailPulse is an enterprise-grade railway monitoring system that delivers complete end-to-end transparency:
 
-1. **Exact 1:1 Scale Dot-Matrix Physical Ticket Canvas:**
-   - Bilingual Indian Railways counter ticket typography (English & Hindi).
-   - Authentic Ashok Chakra watermark, thermal perforation edges, and dynamic status stamps (`CONFIRMED`, `WAITLISTED`, `CHART PREPARED`).
-   - Block 3 fare matrix columns: `COACH`, `SEAT/BERTH`, `SEX`, `AGE`, `T.AUTHORITY`, `CONC`, `R.FEE`, `S.CH.`, `SF.CH`, `VOUCH.Rs.`, and `T.CASH Rs.`
-   - Authentic Hindi station translations powered by `stations.py` (e.g., `प्रयागराज जंक्शन`, `नागपुर जंक्शन`, `अयोध्या`, `कोरबा`).
-   - Integrated Vande Bharat Express golden-hour showcase artwork.
-   - Zero synthetic or forged data: all rendered fields bind directly to real gateway telemetry or truthful railway placeholders (`--`).
+### 1. Verified Indian Railways Berth & Interactive Cabin Blueprint Engine
+- **Deterministic Coach & Bay Mapping (`static/berth_resolver.js`):**
+  - Accurately models official Indian Railways carriage architectures across **Sleeper (SL)**, **AC 3 Tier (3A)**, **AC 3 Tier Economy (3E)** with Side Middle (SM) berths, and **AC 2 Tier (2A)** without naive global modulo math.
+  - Generates interactive, visual coach compartment bays with physical orientation markers:
+    - Locomotive / Engine direction vs. Guard Van direction.
+    - Bay aisle / gangway separation, window indicators, and user-assigned berth highlighting.
+  - **Passenger Proximity Resolver:** Validates multi-passenger bookings in the same PNR to determine if passengers are truly seated together in the same bay (`Co-located in Same Cabin`) or split across different bays/coaches.
+  - **Zero Fake Precision:** Refuses to guess irregular or manually charted coaches (e.g., First AC `1A` coupes or unreserved `2S`) and provides explicit, truthful railway status badges (`Seat allocation pending final chart`).
 
-2. **24/7 Autonomous Background Daemon:**
-   - Runs an automated 5-hour scheduled background polling cadence (18,000s) managed through FastAPI lifespan context.
-   - One-shot manual queries do not skew or reset the scheduled background interval.
-   - Multi-passenger status tracking detecting genuine waiting list drops (e.g., `RLWL 10` -> `RLWL 7`), promotions to `RAC`, and final `CNF` allocations.
+### 2. Adaptive Per-PNR Polling Cadence Engine (`cadence_engine.py`)
+- **Journey-Date Awareness (IST Timezone):**
+  - **⚡ High Priority (2-Hour Interval / 7,200s):** For tickets within 2 calendar days of journey (`journey_day - 2`, `journey_day - 1`, and `journey_day`).
+  - **Standard Fleet Cadence (5-Hour Interval / 18,000s):** For tickets farther out (> 2 days).
+  - **Autonomous Auto-Switching:** As the calendar date advances into the 48-hour departure window, the background scheduler automatically elevates the ticket to the 2-hour cadence without manual user intervention.
+  - **Live Card Indicators:** Visual badges on each PNR card reflect whether the ticket is under `⚡ 2h Poll` or standard `5h Poll`.
 
-3. **Multi-Channel Push Notification Pipeline:**
-   - **ntfy.sh:** Zero-account, instant mobile push alerts with custom sound and priority tags.
-   - **Telegram Bot:** Direct Markdown alerts with train name, journey date, and passenger status diffs.
-   - **WhatsApp:** Automated delivery via CallMeBot gateway.
+### 3. Real-Time Operational Fleet Metrics & Live Schedules
+- **Live Departure Tracker:** Automatically calculates the nearest upcoming train departure across the monitored fleet (e.g., `Tomorrow 18:25 · 12791 SC DNR SF EXP · NGP → PRYJ`).
+- **Fleet Chart Preparation Status:** Direct gateway check tracking finalized vs. pending charts (`Chart Status: 0 of 4 Prepared (Pending)`).
+- **Persistent Fleet Countdown:** Live synchronization against backend schedule epochs to prevent countdown resets across page refreshes.
 
-4. **Public Tunnel & Edge Exposure:**
-   - Native Cloudflare Tunnel integration (`cloudflared`) allowing secure public internet access (`trycloudflare.com`) with automated SSL termination and zero open router ports.
+### 4. 1:1 Scale Dot-Matrix PRS Ticket Canvas
+- Bilingual Indian Railways counter ticket typography in English & Hindi.
+- Authentic Ashok Chakra watermark, thermal perforation edges, and dynamic status stamps (`CONFIRMED`, `WAITLISTED`, `CHART PREPARED`).
+- Full Block 3 fare matrix columns: `COACH`, `SEAT/BERTH`, `SEX`, `AGE`, `T.AUTHORITY`, `CONC`, `R.FEE`, `S.CH.`, `SF.CH`, `VOUCH.Rs.`, and `T.CASH Rs.`
+- Real-time station lookup via `stations.py` with authentic Hindi translations (e.g., `प्रयागराज जंक्शन`, `सिकंदराबाद जंक्शन`, `नागपुर जंक्शन`, `अयोध्या`, `कोरबा`).
 
-5. **Client-Side Anti-Inspect & Tamper Protection:**
-   - Disables Right-Click context menu across the dashboard.
-   - Intercepts DevTools and source inspection keyboard shortcuts (`F12`, `Ctrl+Shift+I`, `Ctrl+Shift+J`, `Ctrl+Shift+C`, `Ctrl+U`, `Ctrl+S`).
-   - Active background debugger trap to prevent inspection of proprietary ticket layout code.
+### 5. Multi-Channel Instant Push Notification Pipeline
+- **ntfy.sh:** Zero-account, instant mobile push alerts with custom audio alarms and urgency priority tags.
+- **Telegram Bot:** Clean Markdown alerts detailing train numbers, dates, and passenger-by-passenger status differentials.
+- **WhatsApp:** Automated delivery via CallMeBot gateway.
 
-6. **Comprehensive Automated QA & Audit Coverage:**
-   - 47 automated unit and integration tests passing in ~2.4s.
-   - Formally documented with complete vulnerability, security, and production readiness audit reports.
+### 6. Public Edge Exposure & Anti-Tamper Security
+- Native Cloudflare Zero Trust integration (`cloudflared`) providing secure public HTTPS URLs (`https://<subdomain>.trycloudflare.com`) with zero open router ports.
+- Client-side anti-inspect traps intercepting shortcut hotkeys (`F12`, `Ctrl+Shift+I`, `Ctrl+U`, `Ctrl+S`) and disabling context menus.
 
 ---
 
@@ -53,16 +60,18 @@ Unlike typical CLI scripts or basic HTML clones, RailPulse integrates an authent
 flowchart TD
     subgraph Client["Frontend Presentation Layer"]
         UI["PRS Dot-Matrix Physical Ticket Canvas"]
+        Blueprint["Interactive Cabin Blueprint & Seat Resolver"]
+        TelematicsBar["Live Departure & Charting Metrics Console"]
         AntiInspect["Anti-Inspect & Shortcut Interceptor"]
-        TelematicsBar["Live Operational Metrics & Event Console"]
     end
 
     subgraph Server["FastAPI Backend (Port 8000)"]
         Lifespan["FastAPI Lifespan Manager"]
-        Daemon["Autonomous Background Daemon (5h Cadence)"]
+        Cadence["Adaptive Cadence Engine (2h / 5h Rules)"]
+        Daemon["Autonomous 30s Tick Scheduler"]
         Tracker["tracker.py State Engine"]
         StationDB["stations.py Station Lookup (80+ Codes)"]
-        Persistence["status_state.json (Atomic Writes via os.replace)"]
+        Persistence["status_state.json & .last_poll_state.json (Atomic Writes)"]
     end
 
     subgraph Gateways["Railway Telemetry Providers"]
@@ -81,8 +90,10 @@ flowchart TD
     end
 
     UI <-->|HTTP / JSON| Server
+    Blueprint <-->|Dynamic DOM| UI
     CFTunnel --> Server
-    Daemon --> Tracker
+    Daemon --> Cadence
+    Cadence --> Tracker
     Tracker <--> Persistence
     Tracker --> StationDB
     Tracker --> PrimaryGW
@@ -103,7 +114,7 @@ flowchart TD
 │   ├── SECURITY_REPORT.md       # Threat boundaries & secret management audit
 │   ├── TEST_REPORT.md           # Test catalog & runner outputs
 │   ├── PRODUCTION_READINESS.md  # Deployment & operations playbook
-│   ├── COMPLETE_QA_AUDIT_REPORT.md # Exhaustive QA report across 62 test cases
+│   ├── COMPLETE_QA_AUDIT_REPORT.md # QA report across test cases
 │   ├── INDEPENDENT_QA_VERIFICATION_REPORT.md # Independent verification report
 │   ├── ARCHITECTURE.md          # Architecture specifications
 │   ├── PRD.md                   # Product requirements document
@@ -111,21 +122,26 @@ flowchart TD
 ├── static/                      # Frontend assets & templates
 │   ├── assets/
 │   │   ├── logo1.png            # RailPulse official emblem
-│   │   └── vande_bharat.png     # Vande Bharat golden-hour showcase artwork
-│   ├── index.html               # Authentic PRS dot-matrix ticket UI & telematics
+│   │   └── vande_bharat.png     # Vande Bharat golden-hour artwork
+│   ├── berth_resolver.js        # Verified IRCTC Coach & Cabin Layout Engine
+│   ├── test_berth_engine.js     # Pure JS unit test suite (8 test suites)
+│   ├── index.html               # Authentic PRS dot-matrix UI & modal viewer
+│   ├── styles.css               # Official IRCTC responsive stylesheet
 │   ├── 404.html                 # Custom railway 404 error page
 │   ├── robots.txt               # Crawler directives
 │   ├── sitemap.xml              # Search engine sitemap
 │   └── llms.txt                 # LLM context documentation
 ├── tests/
+│   ├── test_cadence_engine.py   # Adaptive 2h/5h polling cadence unit tests
 │   ├── test_status_rules.py     # Regex classification & stations unit tests
 │   ├── test_qa_suite.py         # Boundary, persistence, & notifier test suite
 │   └── test_inputs_live.py      # Live HTTP endpoint validation suite
+├── cadence_engine.py            # IST-based adaptive polling interval calculator
 ├── notifier.py                  # Multi-channel notification engine (ntfy/Telegram/WhatsApp)
 ├── pnr_client.py                # Dual-gateway Indian Railways API client
 ├── stations.py                  # Master railway station codes, names & Hindi translations
 ├── tracker.py                   # Atomic state management & status diff engine
-├── web_dashboard.py             # FastAPI telematics server & background daemon
+├── web_dashboard.py             # FastAPI telematics server & adaptive background daemon
 ├── test_tracker.py              # Multi-passenger progression & tracking tests
 └── requirements.txt             # Project dependencies (FastAPI, Uvicorn, Requests, Pytest)
 ```
@@ -146,7 +162,7 @@ pip install -r requirements.txt
 Create a local `.env` file based on `.env.example`:
 ```ini
 # Comma-separated 10-digit Indian Railways PNRs
-PNR_NUMBER=4763331979,7000126327,6610459110
+PNR_NUMBER=4763331979,7000126327,6610459110,4443362878
 
 # Push notifications (ntfy topic)
 NTFY_TOPIC=my-private-train-alerts
@@ -172,9 +188,14 @@ python web_dashboard.py
 Open `http://localhost:8000` to view the live dashboard and real-time physical tickets.
 
 ### 4. Run Automated Test Suite
-Run all 47 unit, integration, and security tests:
+Run all **52 automated unit, integration, and cadence tests**:
 ```bash
 python -m pytest -v
+```
+
+To run the JavaScript Berth Engine unit tests:
+```bash
+node static/test_berth_engine.js
 ```
 
 ### 5. Expose Securely via Cloudflare Tunnel
@@ -191,7 +212,7 @@ This instantly generates a public HTTPS URL (`https://<random>.trycloudflare.com
 | Endpoint | Method | Description |
 |---|---|---|
 | `/` | `GET` | Renders the primary PRS ticket monitoring dashboard |
-| `/api/status` | `GET` | Returns fleet tickets, station names, Hindi translations, and daemon telemetry |
+| `/api/status` | `GET` | Returns fleet tickets, nearest departure schedule, chart status, and per-PNR cadence |
 | `/api/tickets` | `GET` | Returns raw persisted ticket state dictionary |
 | `/api/check-now` | `POST` | Executes an instant status check across fleet without skewing background schedule |
 | `/api/add-pnr` | `POST` | Enrolls a new 10-digit PNR into active fleet monitoring |
@@ -203,7 +224,8 @@ This instantly generates a public HTTPS URL (`https://<random>.trycloudflare.com
 ## Quality Assurance & Verification Standards
 
 RailPulse enforces strict software verification standards:
-* **Zero Emojis & Zero Synthetic Data:** Professional, distraction-free railway telematics with 100% authentic gateway data.
+* **Zero Synthetic Data:** Professional railway telematics with 100% authentic gateway data and truthful `--` placeholders.
+* **Deterministic Berth Calculations:** Every seat is mapped using official coach schemas (SL, 3A, 3E, 2A) rather than speculative algorithms.
 * **Atomic State Persistence:** State file updates use `tempfile.NamedTemporaryFile` + `os.fsync` + `os.replace` to prevent JSON corruption during system crashes.
 * **Graceful Degradation:** Upstream gateway outages return structured HTTP 502 Bad Gateway responses rather than fabricating placeholder records.
 * **Information Redaction:** Secret tokens and internal notification topics are excluded from public API responses.
