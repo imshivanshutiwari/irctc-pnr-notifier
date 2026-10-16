@@ -741,5 +741,6 @@ async def delete_pnr(request: Request, pnr: Optional[str] = None):
     return {"status": "success", "message": f"PNR {pnr_clean} deleted successfully from fleet tracking."}
 
 if __name__ == "__main__":
-    print("Starting RailPulse Dashboard at http://localhost:8000 ...")
-    uvicorn.run("web_dashboard:app", host="127.0.0.1", port=8000, reload=False)
+    print("Starting RailPulse Dashboard at http://0.0.0.0:8000 ...")
+    uvicorn.run("web_dashboard:app", host="0.0.0.0", port=8000, reload=False)
+
