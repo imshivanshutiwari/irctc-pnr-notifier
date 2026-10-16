@@ -2661,8 +2661,15 @@
       const isConfirmed = primaryCurrent.includes('CNF');
       const isCharted = !!b.chart_prepared;
 
-      const coachStr = isConfirmed ? (primaryCurrent.match(/[A-Z0-9]+\s*\/\s*\d+/) ? primaryCurrent.split('/')[0].trim() : "--") : "--";
-      const seatStr = isConfirmed ? primaryCurrent : "--";
+      let coachStr = "--";
+      let seatStr = isConfirmed ? primaryCurrent : "--";
+      if (window.RailPulseBerthEngine) {
+        const ext = window.RailPulseBerthEngine.extractCoachBerth(primaryCurrent);
+        if (ext.coach) coachStr = ext.coach;
+        if (ext.seat) seatStr = `${ext.coach} / ${ext.seat}`;
+      } else if (isConfirmed) {
+        coachStr = primaryCurrent.match(/[A-Z0-9]+\s*[\/\s]\s*\d+/) ? primaryCurrent.split(/[\/\s]+/)[1]?.trim() || "--" : "--";
+      }
       const trainNo = String(b.train_number || '--');
       const trainName = String(b.train_name || 'EXP');
 

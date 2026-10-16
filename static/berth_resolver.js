@@ -143,16 +143,23 @@
     const str = String(statusString).trim().toUpperCase();
 
     // Check for standard IRCTC patterns
-    // e.g. "CNF/B2/41" or "CNF / B2 / 41 / MB" or "B2, 41" or "B2/41"
-    const patternSlash = /\b([A-Z0-9]{1,4})\s*[\/,-]\s*(\d{1,3})\b/;
-    const match = str.match(patternSlash);
+    // Pattern 1: Delimited by slash/comma/dash e.g. "CNF/B2/41" or "CNF / B2 / 41 / MB" or "B2, 41" or "B2/41"
+    const patternDelim = /\b([A-Z0-9]{1,4})\s*[\/,-]\s*(\d{1,3})\b/;
+    let match = str.match(patternDelim);
+
+    // Pattern 2: Space separated format e.g. "CNF B5 34", "CONFIRMED B5 34", "B5 34"
+    if (!match) {
+      const patternSpace = /\b(?:CNF|CONFIRMED)?\s*([A-Z][0-9]{1,2}|[A-Z]{1,2}[0-9]{1,2})\s+(\d{1,3})\b/;
+      match = str.match(patternSpace);
+    }
 
     if (match) {
       const coachCandidate = match[1];
       const seatCandidate = parseInt(match[2], 10);
       
-      // Prevent false positives like "W/L 7" where W is not a coach
-      if (!['W', 'WL', 'RL', 'PQ', 'GN', 'TQ'].includes(coachCandidate)) {
+      // Prevent false positives like "W/L 7" or "GNWL 22" where candidate is a quota/waitlist code
+      const nonCoachPrefixes = ['W', 'WL', 'RL', 'PQ', 'GN', 'TQ', 'RS', 'RAC', 'CK', 'CNF'];
+      if (!nonCoachPrefixes.includes(coachCandidate)) {
         return {
           coach: coachCandidate,
           seat: seatCandidate,

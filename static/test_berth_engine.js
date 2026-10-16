@@ -36,6 +36,10 @@ assert.strictEqual(ex3.seat, null);
 const ex4 = BerthEngine.extractCoachBerth('CNF');
 assert.strictEqual(ex4.coach, null);
 assert.strictEqual(ex4.seat, null);
+
+const ex5 = BerthEngine.extractCoachBerth('CNF B5 34');
+assert.strictEqual(ex5.coach, 'B5');
+assert.strictEqual(ex5.seat, 34);
 console.log('✓ Status extraction passed');
 
 // 3. Sleeper (SL) / 3A (Modulo 8) Exhaustive Bay 1 Test
