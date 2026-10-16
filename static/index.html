@@ -639,28 +639,264 @@
     .pnr-movement-text.has-gain {
       color: var(--status-healthy);
     }
+    .pnr-berth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(118, 184, 138, 0.12);
+      border: 1px solid rgba(118, 184, 138, 0.3);
+      color: var(--status-healthy);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .pnr-berth-badge.badge-pending {
+      background: rgba(226, 184, 107, 0.12);
+      border-color: rgba(226, 184, 107, 0.3);
+      color: var(--primary);
+    }
+    .pnr-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
     .btn-view-ticket {
-      width: 100%;
+      flex: 1;
       background: var(--primary); /* #D9A65B */
       color: #1A1816;
       border: none;
       border-radius: 6px;
-      padding: 10px 14px;
-      font-size: 13.5px;
+      padding: 9px 12px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       letter-spacing: 0.02em;
       transition: background-color 0.18s, transform 0.15s, box-shadow 0.18s;
       text-align: center;
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
     .btn-view-ticket:hover {
-      background: var(--primary-hover); /* #E5B66F */
+      background: var(--primary-hover);
       box-shadow: 0 4px 14px rgba(217, 166, 91, 0.35);
       transform: translateY(-1px);
     }
     .btn-view-ticket:active {
       transform: translateY(0);
+    }
+    .btn-card-seatmap {
+      background: rgba(217, 166, 91, 0.12);
+      color: var(--primary);
+      border: 1px solid rgba(217, 166, 91, 0.35);
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .btn-card-seatmap:hover {
+      background: var(--primary);
+      color: #1A1816;
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* Cabin Blueprint Viewer in Ticket Modal */
+    .modal-tab-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #1C1916;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-view-mode-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-view-mode-btn.active {
+      background: var(--bg-elevated);
+      color: var(--primary);
+      border-color: rgba(217, 166, 91, 0.3);
+    }
+    .cabin-blueprint-container {
+      width: 100%;
+      max-width: 860px;
+      background: #1A1715;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin: 12px auto;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+    }
+    .blueprint-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+    .blueprint-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .blueprint-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .blueprint-proximity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      background: rgba(118, 184, 138, 0.12);
+      border: 1px solid rgba(118, 184, 138, 0.3);
+      color: var(--status-healthy);
+    }
+    .blueprint-proximity-badge.is-split {
+      background: rgba(226, 184, 107, 0.12);
+      border-color: rgba(226, 184, 107, 0.3);
+      color: var(--primary);
+    }
+    .blueprint-bay-visual {
+      background: #24201C;
+      border: 1px solid rgba(217, 166, 91, 0.25);
+      border-radius: 8px;
+      padding: 20px;
+      position: relative;
+    }
+    .blueprint-track-indicator {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed rgba(217, 166, 91, 0.2);
+    }
+    .bay-grid {
+      display: grid;
+      gap: 12px;
+      align-items: center;
+    }
+    .bay-grid-8 {
+      grid-template-columns: repeat(3, 1fr) 40px repeat(1, 1.2fr);
+    }
+    .bay-grid-9 {
+      grid-template-columns: repeat(3, 1fr) 30px repeat(1, 1.2fr);
+    }
+    .bay-grid-6 {
+      grid-template-columns: repeat(2, 1fr) 50px repeat(1, 1.2fr);
+    }
+    .berth-box {
+      background: #2F2A25;
+      border: 1px solid #4A423A;
+      border-radius: 6px;
+      padding: 10px 8px;
+      text-align: center;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .berth-box.is-user-seat {
+      background: rgba(217, 166, 91, 0.2);
+      border: 2px solid var(--primary);
+      box-shadow: 0 0 14px rgba(217, 166, 91, 0.35);
+    }
+    .berth-num {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .berth-box.is-user-seat .berth-num {
+      color: var(--primary);
+    }
+    .berth-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+    .berth-box.is-user-seat .berth-tag {
+      color: #F4EBDD;
+    }
+    .aisle-corridor {
+      height: 100%;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      border-left: 1px dashed rgba(255, 255, 255, 0.1);
+      border-right: 1px dashed rgba(255, 255, 255, 0.1);
+      padding: 6px 0;
+    }
+    .blueprint-legend {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+    }
+    .legend-swatch.active {
+      background: rgba(217, 166, 91, 0.25);
+      border-color: var(--primary);
+    }
+    .legend-swatch.other {
+      background: #2F2A25;
+      border-color: #4A423A;
     }
 
     /* Full PRS Ticket Viewer Modal (Layer B) */
@@ -2135,12 +2371,36 @@
           </button>
         </div>
 
+        <!-- Mode Switcher: PRS Ticket vs Visual Cabin Map -->
+        <div class="modal-tab-nav" id="modal-view-mode-bar">
+          <button type="button" class="modal-view-mode-btn active" id="btn-mode-prs" onclick="setModalViewMode('prs')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+              <line x1="7" y1="8" x2="17" y2="8"></line>
+              <line x1="7" y1="12" x2="17" y2="12"></line>
+            </svg>
+            <span>PRS Counter Ticket</span>
+          </button>
+          <button type="button" class="modal-view-mode-btn" id="btn-mode-map" onclick="setModalViewMode('map')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+            <span>Visual Cabin Blueprint</span>
+          </button>
+        </div>
+
         <!-- Modal Body: Houses the 1:1 Scale Authentic PRS Ticket -->
         <div class="ticket-modal-body" id="ticket-modal-body">
           <div class="modal-scaler-wrap" id="modal-scaler-wrap">
             <div class="ticket-viewport" id="modal-ticket-viewport">
               <!-- Ticket dynamically mounted here -->
             </div>
+          </div>
+          <!-- Blueprint mounted here when in 'map' mode -->
+          <div class="cabin-blueprint-container" id="modal-blueprint-container" style="display: none;">
+            <!-- Dynamic blueprint rendered here -->
           </div>
         </div>
 
@@ -2166,6 +2426,9 @@
     </div>
 
   </main>
+
+  <!-- RailPulse Verified Indian Railways Berth Engine -->
+  <script src="/static/berth_resolver.js"></script>
 
   <script>
     // Remove entrance animation classes after initial page load to prevent replay on updates
@@ -2654,6 +2917,45 @@
         card.id = `card-${pnrStr}`;
         card.setAttribute('data-state', stateAttr);
 
+        // Extract verified coach and berth details using BerthEngine if available
+        let berthBadgeHtml = '';
+        let seatMapBtnHtml = '';
+        if (window.RailPulseBerthEngine) {
+          const coachBerth = window.RailPulseBerthEngine.extractCoachBerth(primaryCurrent);
+          if (coachBerth.coach && coachBerth.seat) {
+            const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, coachBerth.seat, coachBerth.coach);
+            if (details.isSupported && details.berthCode) {
+              berthBadgeHtml = `
+                <div class="pnr-berth-badge">
+                  <span>${details.coach} / ${details.seat} · ${details.berthCode} (${details.berthName})</span>
+                </div>
+              `;
+              seatMapBtnHtml = `
+                <button type="button" class="btn-card-seatmap" onclick="openCabinMapModal('${pnrStr}')" title="View Cabin Blueprint">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                  </svg>
+                  <span>Seat Map</span>
+                </button>
+              `;
+            } else if (details.class === '1A') {
+              berthBadgeHtml = `
+                <div class="pnr-berth-badge badge-pending">
+                  <span>${details.coach} · First Class</span>
+                </div>
+              `;
+            }
+          } else if (isConfirmed) {
+            berthBadgeHtml = `
+              <div class="pnr-berth-badge badge-pending">
+                <span>Seat allocation pending final chart</span>
+              </div>
+            `;
+          }
+        }
+
         card.innerHTML = `
           <div>
             <div class="pnr-card-header">
@@ -2675,10 +2977,16 @@
             <div class="pnr-status-group">
               <div class="pnr-current-status ${isConfirmed ? 'is-cnf' : ''}">${primaryCurrent}</div>
               <div class="pnr-movement-text ${b.ticket_spots_gained > 0 ? 'has-gain' : ''}">${deltaText}</div>
+              ${berthBadgeHtml}
             </div>
           </div>
 
-          <button type="button" class="btn-view-ticket" onclick="openTicketModal('${pnrStr}')">View ticket</button>
+          <div class="pnr-card-actions">
+            <button type="button" class="btn-view-ticket" onclick="openTicketModal('${pnrStr}')">
+              <span>View ticket</span>
+            </button>
+            ${seatMapBtnHtml}
+          </div>
         `;
 
         container.appendChild(card);
@@ -2698,10 +3006,185 @@
       }
     }
 
+    let currentModalViewMode = 'prs'; // 'prs' | 'map'
+
+    function setModalViewMode(mode) {
+      currentModalViewMode = mode;
+      const btnPrs = document.getElementById('btn-mode-prs');
+      const btnMap = document.getElementById('btn-mode-map');
+      const scalerWrap = document.getElementById('modal-scaler-wrap');
+      const blueprintCont = document.getElementById('modal-blueprint-container');
+
+      if (btnPrs) btnPrs.classList.toggle('active', mode === 'prs');
+      if (btnMap) btnMap.classList.toggle('active', mode === 'map');
+
+      if (mode === 'prs') {
+        if (scalerWrap) scalerWrap.style.display = 'flex';
+        if (blueprintCont) blueprintCont.style.display = 'none';
+        setTimeout(fitModalTicket, 30);
+      } else {
+        if (scalerWrap) scalerWrap.style.display = 'none';
+        if (blueprintCont) {
+          blueprintCont.style.display = 'block';
+          renderActiveCabinBlueprint();
+        }
+      }
+    }
+
+    function openCabinMapModal(pnrStr) {
+      window.activeModalPnr = pnrStr;
+      renderModalTicket(pnrStr);
+      setModalViewMode('map');
+      const modal = document.getElementById('prs-ticket-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    // Dynamic Visual Cabin Blueprint HTML Generator with multi-passenger grouping
+    function renderActiveCabinBlueprint() {
+      const blueprintCont = document.getElementById('modal-blueprint-container');
+      if (!blueprintCont || !window.activeModalPnr || !window.currentTickets) return;
+      const b = window.currentTickets[window.activeModalPnr];
+      if (!b) return;
+
+      if (!window.RailPulseBerthEngine) {
+        blueprintCont.innerHTML = `<div style="padding: 20px; color: var(--text-muted); text-align: center;">Berth engine module not loaded.</div>`;
+        return;
+      }
+
+      const paxList = Array.isArray(b.passengers) && b.passengers.length > 0 ? b.passengers : [];
+      const primaryPax = paxList[0] || {};
+      const primaryCurrent = primaryPax.current_status || '';
+      const coachBerth = window.RailPulseBerthEngine.extractCoachBerth(primaryCurrent);
+
+      // Multi-passenger proximity check
+      const proximity = window.RailPulseBerthEngine.evaluatePassengerProximity(paxList, b.coach_class);
+
+      let proximityHtml = '';
+      if (proximity.status === 'together') {
+        proximityHtml = `<div class="blueprint-proximity-badge">${proximity.message}</div>`;
+      } else if (proximity.status === 'split-bay' || proximity.status === 'split-coach') {
+        proximityHtml = `<div class="blueprint-proximity-badge is-split">${proximity.message}</div>`;
+      }
+
+      if (!coachBerth.coach || !coachBerth.seat) {
+        blueprintCont.innerHTML = `
+          <div class="blueprint-header">
+            <div>
+              <div class="blueprint-title">Physical Cabin Layout</div>
+              <div class="blueprint-subtitle">${b.train_number || ''} ${b.train_name || ''} · Class: ${b.coach_class || '--'}</div>
+            </div>
+            ${proximityHtml}
+          </div>
+          <div style="padding: 40px 20px; text-align: center; background: #24201C; border-radius: 8px; border: 1px dashed var(--border);">
+            <div style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 6px;">Seat / Berth Allocation Pending</div>
+            <div style="font-size: 13px; color: var(--text-secondary); max-width: 520px; margin: 0 auto;">
+              Indian Railways assigns physical coach and seat numbers only upon final chart preparation (typically 4 hours before scheduled departure). The visual blueprint will activate automatically once seats are allocated.
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, coachBerth.seat, coachBerth.coach);
+
+      if (!details.isSupported) {
+        blueprintCont.innerHTML = `
+          <div class="blueprint-header">
+            <div>
+              <div class="blueprint-title">Physical Cabin Layout</div>
+              <div class="blueprint-subtitle">${b.train_number || ''} ${b.train_name || ''} · Class: ${b.coach_class || '--'}</div>
+            </div>
+            ${proximityHtml}
+          </div>
+          <div style="padding: 40px 20px; text-align: center; background: #24201C; border-radius: 8px; border: 1px dashed var(--border);">
+            <div style="font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 6px;">Official Blueprint Not Available For This Class</div>
+            <div style="font-size: 13px; color: var(--text-secondary); max-width: 500px; margin: 0 auto;">
+              ${details.reason || 'Coupe/Cabin arrangements for this class are manually scheduled by Indian Railways charting authorities.'}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Collect all user seats across multi-passengers
+      const userSeats = new Set();
+      paxList.forEach(p => {
+        const ext = window.RailPulseBerthEngine.extractCoachBerth(p.current_status);
+        if (ext.coach === details.coach && ext.seat) {
+          userSeats.add(ext.seat);
+        }
+      });
+
+      // Render main cabin grid and side berth grid based on verified layout
+      let mainBerthsHtml = '';
+      let sideBerthsHtml = '';
+      details.bayBerths.forEach(bInfo => {
+        const isUser = userSeats.has(bInfo.seatNumber);
+        const box = `
+          <div class="berth-box ${isUser ? 'is-user-seat' : ''}">
+            <div class="berth-num">${bInfo.seatNumber}</div>
+            <div class="berth-tag">${bInfo.berthCode}</div>
+          </div>
+        `;
+        if (bInfo.position.startsWith('side')) {
+          sideBerthsHtml += box;
+        } else {
+          mainBerthsHtml += box;
+        }
+      });
+
+      const gridClass = details.baySize === 9 ? 'bay-grid-9' : (details.baySize === 6 ? 'bay-grid-6' : 'bay-grid-8');
+
+      blueprintCont.innerHTML = `
+        <div class="blueprint-header">
+          <div>
+            <div class="blueprint-title">Coach ${details.coach} · Cabin ${details.bayNumber} (${details.className})</div>
+            <div class="blueprint-subtitle">Verified Indian Railways Standard Physical Layout · ${details.baySize} Berths per Bay</div>
+          </div>
+          ${proximityHtml}
+        </div>
+
+        <div class="blueprint-bay-visual">
+          <div class="blueprint-track-indicator">
+            <span>&larr; LOCOMOTIVE / ENGINE DIRECTION</span>
+            <span>CABIN ${details.bayNumber} SECTION</span>
+            <span>GUARD VAN DIRECTION &rarr;</span>
+          </div>
+
+          <div class="bay-grid ${gridClass}">
+            <div style="display: grid; grid-template-columns: repeat(${details.baySize === 6 ? 2 : 3}, 1fr); gap: 10px;">
+              ${mainBerthsHtml}
+            </div>
+            <div class="aisle-corridor">
+              <span>AISLE · GANGWAY</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              ${sideBerthsHtml}
+            </div>
+          </div>
+
+          <div class="blueprint-legend">
+            <div class="legend-item">
+              <span class="legend-swatch active"></span>
+              <span>Your Allocated Seat (${details.coach}/${details.seat} · ${details.berthName})</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-swatch other"></span>
+              <span>Other Berths in Same Physical Cabin</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     // Layer B: Full PRS Ticket Modal Viewer Functions
     function openTicketModal(pnrStr) {
       window.activeModalPnr = pnrStr;
       renderModalTicket(pnrStr);
+      setModalViewMode('prs');
       const modal = document.getElementById('prs-ticket-modal');
       if (modal) {
         modal.style.display = 'flex';
@@ -2722,7 +3205,11 @@
     function switchModalTicket(pnrStr) {
       window.activeModalPnr = pnrStr;
       renderModalTicket(pnrStr);
-      setTimeout(fitModalTicket, 20);
+      if (currentModalViewMode === 'map') {
+        renderActiveCabinBlueprint();
+      } else {
+        setTimeout(fitModalTicket, 20);
+      }
     }
 
     function renderModalTicket(pnrStr) {
@@ -2759,6 +3246,10 @@
         const trainName = b.train_name || 'EXP';
         const doj = b.date_of_journey || '--';
         info.textContent = `${trainNo} ${trainName} · ${fromCode} → ${toCode} · Date of Journey: ${doj}`;
+      }
+
+      if (currentModalViewMode === 'map') {
+        renderActiveCabinBlueprint();
       }
     }
 
