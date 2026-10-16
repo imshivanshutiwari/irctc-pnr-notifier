@@ -431,6 +431,380 @@
       --t-bg: #fbfbf8;
     }
 
+    /* PNR Overview Dashboard (Layer A) */
+    .pnr-overview-section {
+      margin-bottom: 24px;
+    }
+    .overview-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 16px;
+    }
+    .overview-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .overview-brand-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+    }
+    .overview-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .overview-meta-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+    .tracked-pill {
+      background: rgba(16, 185, 129, 0.16);
+      color: #10B981;
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 9999px;
+      letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.12);
+    }
+    .overview-mode-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    .overview-divider {
+      height: 1px;
+      background: rgba(217, 166, 91, 0.22);
+      margin-bottom: 16px;
+    }
+    .overview-filter-bar {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 16px;
+    }
+
+    /* PNR Overview Responsive Grid */
+    .pnr-overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 1080px) {
+      .pnr-overview-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 680px) {
+      .pnr-overview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* PNR Compact Card (Reference: Screenshot 2026-10-16 121500) */
+    .pnr-card {
+      background: #24201C;
+      border: 1px solid #3E372E;
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+    .pnr-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(217, 166, 91, 0.45);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 12px rgba(217, 166, 91, 0.12);
+    }
+    .pnr-card.is-confirmed {
+      border-left: 3px solid var(--status-healthy);
+    }
+    .pnr-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .pnr-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary); /* #D9A65B */
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .pnr-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pnr-number-muted {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .btn-card-del {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, background-color 0.15s;
+    }
+    .btn-card-del:hover {
+      color: var(--status-error);
+      background: var(--status-error-bg);
+    }
+    .pnr-route {
+      font-size: 22px;
+      font-weight: 800;
+      color: #F4EBDD;
+      margin-bottom: 4px;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pnr-train-info {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pnr-status-group {
+      margin-bottom: 16px;
+    }
+    .pnr-current-status {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+    .pnr-current-status.is-cnf {
+      color: var(--status-healthy);
+    }
+    .pnr-movement-text {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .pnr-movement-text.has-gain {
+      color: var(--status-healthy);
+    }
+    .btn-view-ticket {
+      width: 100%;
+      background: var(--primary); /* #D9A65B */
+      color: #1A1816;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background-color 0.18s, transform 0.15s, box-shadow 0.18s;
+      text-align: center;
+      display: block;
+    }
+    .btn-view-ticket:hover {
+      background: var(--primary-hover); /* #E5B66F */
+      box-shadow: 0 4px 14px rgba(217, 166, 91, 0.35);
+      transform: translateY(-1px);
+    }
+    .btn-view-ticket:active {
+      transform: translateY(0);
+    }
+
+    /* Full PRS Ticket Viewer Modal (Layer B) */
+    .ticket-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(14, 13, 12, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+      animation: fadeInModal 0.2s ease-out;
+    }
+    @keyframes fadeInModal {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .ticket-modal-container {
+      background: #1E1B18;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 1260px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(217, 166, 91, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 94vh;
+    }
+    .ticket-modal-header {
+      padding: 14px 20px;
+      background: #282420;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .modal-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .modal-pnr-badge {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      background: rgba(217, 166, 91, 0.15);
+      border: 1px solid rgba(217, 166, 91, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .modal-pnr-switcher {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .modal-tab-btn {
+      background: #1E1B18;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .modal-tab-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--primary);
+    }
+    .modal-tab-btn.active {
+      background: rgba(217, 166, 91, 0.18);
+      color: var(--primary);
+      border-color: rgba(217, 166, 91, 0.5);
+      box-shadow: 0 0 8px rgba(217, 166, 91, 0.15);
+    }
+    .btn-modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, background-color 0.15s;
+    }
+    .btn-modal-close:hover {
+      color: #FFFFFF;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .ticket-modal-body {
+      padding: 16px;
+      background: #141311;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 300px;
+    }
+    .modal-scaler-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .ticket-modal-footer {
+      padding: 12px 20px;
+      background: #282420;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .modal-footer-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .modal-footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-modal-delete {
+      background: transparent;
+      border: 1px solid rgba(217, 120, 104, 0.4);
+      color: var(--status-error);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-modal-delete:hover {
+      background: var(--status-error-bg);
+      border-color: var(--status-error);
+    }
+    .btn-modal-primary {
+      background: var(--primary);
+      color: #1A1816;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+    .btn-modal-primary:hover {
+      background: var(--primary-hover);
+    }
+
     .booking-card {
       position: relative;
       background: var(--bg-panel);
@@ -1538,10 +1912,21 @@
     <!-- Main Layout: Booking List & Supporting Sidebar -->
     <div class="dashboard-layout">
       
-      <!-- Monitored Fleet Column -->
-      <section aria-labelledby="fleet-heading">
-        <div class="fleet-header animate-entrance delay-4">
-          <h2 id="fleet-heading" class="fleet-title">Monitored Rail Bookings</h2>
+      <!-- Monitored Fleet Column: PNR Overview Dashboard (Layer A) -->
+      <section aria-labelledby="fleet-heading" class="pnr-overview-section">
+        <div class="overview-header animate-entrance delay-4">
+          <div class="overview-title-group">
+            <h2 id="fleet-heading" class="overview-brand-title">RailPulse</h2>
+            <div class="overview-subtitle">Your journey dashboard</div>
+          </div>
+          <div class="overview-meta-group">
+            <div class="tracked-pill" id="overview-pnr-count-pill">3 PNRs tracked</div>
+            <div class="overview-mode-label">Overview / Ticket view</div>
+          </div>
+        </div>
+        <div class="overview-divider"></div>
+
+        <div class="overview-filter-bar">
           <div class="filter-group" role="tablist" aria-label="Filter bookings by state">
             <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All (<span id="count-all">3</span>)</button>
             <button class="filter-btn" data-filter="progressing" onclick="setFilter('progressing')">Progressing (<span id="count-prog">3</span>)</button>
@@ -1549,8 +1934,8 @@
           </div>
         </div>
 
-        <div id="booking-container">
-          <!-- Dynamic PRS Tickets will be rendered and kept reactive here -->
+        <div id="booking-container" class="pnr-overview-grid">
+          <!-- Dynamic PNR Overview Cards rendered here -->
         </div>
 
         <!-- Filter Empty State -->
@@ -1646,11 +2031,57 @@
       </aside>
     </div>
 
-    <!-- Footer -->
-    <footer class="app-footer">
-      <div>RailPulse Telematics — Open-Source Indian Railways PNR Monitor</div>
-      <div>Autonomous Daemon Cadence: 18,000s (5h) · Data freshness verified</div>
-    </footer>
+    <!-- Full PRS Ticket Viewer Modal (Layer B) -->
+    <div id="prs-ticket-modal" class="ticket-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-pnr-title" style="display: none;">
+      <div class="ticket-modal-container">
+        <div class="ticket-modal-header">
+          <div class="modal-header-left">
+            <h3 id="modal-pnr-title" class="modal-title">Official PRS Reservation Ticket</h3>
+            <span class="modal-pnr-badge" id="modal-pnr-badge">PNR --</span>
+          </div>
+
+          <!-- Dynamic PNR Switcher Tabs -->
+          <div class="modal-pnr-switcher" id="modal-pnr-switcher" role="tablist" aria-label="Switch between tracked tickets">
+            <!-- Tabs dynamically rendered -->
+          </div>
+
+          <button type="button" class="btn-modal-close" onclick="closeTicketModal()" aria-label="Close ticket modal" title="Close (Esc)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Modal Body: Houses the 1:1 Scale Authentic PRS Ticket -->
+        <div class="ticket-modal-body" id="ticket-modal-body">
+          <div class="modal-scaler-wrap" id="modal-scaler-wrap">
+            <div class="ticket-viewport" id="modal-ticket-viewport">
+              <!-- Ticket dynamically mounted here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="ticket-modal-footer">
+          <div class="modal-footer-info" id="modal-footer-info">
+            --
+          </div>
+          <div class="modal-footer-actions">
+            <button type="button" class="btn-modal-delete" id="modal-btn-delete" onclick="handleModalDeletePnr()" title="Remove PNR from fleet monitoring">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Delete PNR</span>
+            </button>
+            <button type="button" class="btn-modal-primary" onclick="closeTicketModal()">
+              <span>Close Viewer</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </main>
 
@@ -1741,10 +2172,10 @@
         b.classList.toggle('active', b.getAttribute('data-filter') === filter);
       });
       let matchCount = 0;
-      document.querySelectorAll('.booking-card').forEach(card => {
+      document.querySelectorAll('.pnr-card, .booking-card').forEach(card => {
         const match = (filter === 'all' || card.getAttribute('data-state') === filter);
         if (match) {
-          card.style.display = 'block';
+          card.style.display = 'flex';
           card.style.opacity = '1';
           card.style.transform = 'translateY(0)';
           matchCount++;
@@ -1846,296 +2277,331 @@
     }
 
     // Dynamic scaled PRS ticket renderer with state diffing to prevent DOM blinking
+    // Global State for Reactive Tickets and Modal Viewer
+    window.currentTickets = {};
+    window.activeModalPnr = null;
     let lastRenderedTicketsJson = null;
 
+    // Authentic Indian Railways PRS Ticket Box HTML Generator
+    function generatePrsTicketBoxHtml(b, pnrStr) {
+      const paxList = Array.isArray(b.passengers) && b.passengers.length > 0 ? b.passengers : [{ passenger_number: 1, booking_status: "WL", current_status: "WL" }];
+      const primaryPax = paxList[0];
+      const primaryCurrent = primaryPax.current_status || "UNKNOWN";
+      const isConfirmed = primaryCurrent.includes('CNF');
+      const isCharted = !!b.chart_prepared;
+
+      const coachStr = isConfirmed ? (primaryCurrent.match(/[A-Z0-9]+\s*\/\s*\d+/) ? primaryCurrent.split('/')[0].trim() : "--") : "--";
+      const seatStr = isConfirmed ? primaryCurrent : "--";
+      const trainNo = String(b.train_number || '--');
+      const trainName = String(b.train_name || 'EXP');
+
+      const fromCode = b.from_code || "--";
+      const toCode = b.to_code || "--";
+      const fromName = b.from_name || b.from_station || fromCode;
+      const toName = b.to_name || b.to_station || toCode;
+      const fromHi = b.from_hi || getHindiName(fromCode) || getHindiName(fromName);
+      const toHi = b.to_hi || getHindiName(toCode) || getHindiName(toName);
+
+      const doj = b.date_of_journey || "--";
+      const quota = b.quota && b.quota !== "--" ? b.quota : "PRS TELEMETRY";
+      const coachClass = b.coach_class || "--";
+      const shortClass = coachClass.includes('3A') ? '3A' : (coachClass.includes('2A') ? '2A' : (coachClass.includes('2S') ? '2S' : (coachClass.includes('SL') ? 'SL' : (coachClass.includes('CC') ? 'CC' : coachClass))));
+      const distKm = "--";
+      const viaRoute = "--";
+      const viaHi = "--";
+      const totalCashFare = b.total_fare && b.total_fare !== "--" ? b.total_fare : (b.fare ? b.fare : "--");
+      const fareWords = b.fare_words || "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *";
+      const zonalRailway = "INDIAN RAILWAYS / भारतीय रेल";
+
+      let paxRosterHtml = '';
+      paxList.forEach((p, pIdx) => {
+        const pCur = p.current_status || 'WL';
+        const pBook = p.booking_status || 'WL';
+        paxRosterHtml += `
+          <div style="display:flex;justify-content:space-between;padding:1px 0;">
+            <span>P${p.passenger_number || pIdx + 1}: ${pCur}</span>
+            <span style="opacity:0.75;">(BKD: ${pBook})</span>
+          </div>
+        `;
+      });
+
+      let spokes = '';
+      for (let i = 0; i < 16; i++) {
+        const a = i * Math.PI / 8;
+        spokes += `<line x1='50' y1='50' x2='${50 + 40 * Math.cos(a)}' y2='${50 + 40 * Math.sin(a)}' stroke='#b9a8d6' stroke-width='3'/>`;
+      }
+      const wmSvg = `<svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='none' stroke='#927eb8' stroke-width='3'/>${spokes}<circle cx='50' cy='50' r='8' fill='#927eb8'/></svg>`;
+
+      let wmCircles = '';
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 9; c++) {
+          const left = 282 + c * 74 + (r % 2 ? 37 : 0);
+          const top = 334 + r * 66;
+          wmCircles += `<div class="wm" style="left:${left}px;top:${top}px">${wmSvg}</div>`;
+        }
+      }
+
+      return `
+        <div class="ticket-box" id="ticket-${pnrStr}">
+          <!-- Perforations -->
+          <div class="hole" style="left:30px;top:32px"></div>
+          <div class="hole" style="left:30px;top:200px"></div>
+          <div class="hole" style="left:30px;top:350px"></div>
+          <div class="hole" style="left:30px;top:620px"></div>
+          <div class="hole" style="left:1141px;top:45px"></div>
+          <div class="hole" style="left:1141px;top:195px"></div>
+          <div class="hole" style="left:1141px;top:330px"></div>
+          <div class="hole" style="left:1141px;top:470px"></div>
+          <div class="hole" style="left:1141px;top:610px"></div>
+
+          <div class="abs rail">${zonalRailway}</div>
+          <div class="abs" style="left:57px;top:318px;transform:rotate(-90deg);transform-origin:left top;top:520px;font-size:14px;font-weight:700;color:var(--t-blue);white-space:nowrap">
+            PRS PASSENGER RESERVATION SYSTEM
+          </div>
+
+          <!-- Header Bar -->
+          <div class="abs head">
+            <div class="hi2">शुभ यात्रा</div>
+            <div class="en">HAPPY&nbsp;&nbsp;JOURNEY</div>
+          </div>
+
+          <!-- Railway Emblem -->
+          <div class="abs emblem">
+            <svg viewBox='0 0 100 100' width='58' height='58'>
+              <circle cx='50' cy='50' r='46' fill='none' stroke='#c9732a' stroke-width='6'/>
+              <circle cx='50' cy='50' r='9' fill='#c9732a'/>
+              <line x1='50' y1='50' x2='90.0' y2='50.0' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='87.0' y2='65.3' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='78.3' y2='78.3' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='65.3' y2='87.0' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='50.0' y2='90.0' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='34.7' y2='87.0' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='21.7' y2='78.3' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='13.0' y2='65.3' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='10.0' y2='50.0' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='13.0' y2='34.7' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='21.7' y2='21.7' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='34.7' y2='13.0' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='50.0' y2='10.0' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='65.3' y2='13.0' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='78.3' y2='21.7' stroke='#c9732a' stroke-width='3'/>
+              <line x1='50' y1='50' x2='87.0' y2='34.7' stroke='#c9732a' stroke-width='3'/>
+            </svg>
+          </div>
+
+          <!-- Info Block 1 -->
+          <div class="abs blue1"></div>
+          <div class="abs yellow"></div>
+          <div class="abs white-r"></div>
+          <div class="abs line" style="left:300px;top:72px;width:2px;height:110px"></div>
+          <div class="abs line" style="left:703px;top:72px;width:2px;height:68px"></div>
+          <div class="abs line" style="left:818px;top:140px;width:2px;height:42px"></div>
+
+          <div class="abs lbl" style="left:112px;top:88px;width:180px"><span class="h">पी एन आर नं.</span><span style="color:var(--t-red)">PNR NO.</span></div>
+          <div class="abs lbl" style="left:310px;top:88px;width:110px"><span class="h">गाड़ी नं.</span>TRAIN NO.</div>
+          <div class="abs lbl" style="left:430px;top:88px;width:80px"><span class="h">तिथि</span>DATE</div>
+          <div class="abs lbl" style="left:500px;top:88px;width:70px"><span class="h">कि.मी.</span>K.M</div>
+          <div class="abs lbl" style="left:596px;top:88px;width:60px"><span class="h">वयस्क</span>ADULT</div>
+          <div class="abs lbl" style="left:655px;top:88px;width:60px"><span class="h">बच्चे</span>CHILD</div>
+          <div class="abs lbl" style="left:726px;top:75px;width:80px"><span class="h" style="text-align:left">टिकट नं.</span></div>
+          <div class="abs lbl" style="left:840px;top:77px;width:100px">TICKET NO.</div>
+
+          <div class="abs dm" style="left:104px;top:122px;font-size:19px;letter-spacing:1px;">${pnrStr}</div>
+          <div class="abs dm" style="left:342px;top:122px;font-size:16px">${trainNo}</div>
+          <div class="abs dm" style="left:420px;top:122px;font-size:16px;white-space:nowrap">${doj}</div>
+          <div class="abs dm" style="left:500px;top:122px;width:70px;text-align:center;font-size:16px">${distKm}</div>
+          <div class="abs dm" style="left:620px;top:122px;font-size:16px">${paxList.length}</div>
+          <div class="abs dm" style="left:670px;top:122px;font-size:16px">--</div>
+          <div class="abs ticketno" style="left:728px;top:96px">--</div>
+          <div class="abs dm" style="left:822px;top:122px;font-size:14px;opacity:0.5">--</div>
+
+          <!-- Info Block 2: Class & Route -->
+          <div class="abs blue2"></div>
+          <div class="abs blue2b"></div>
+          <div class="abs line" style="left:80px;top:182px;width:106px;height:2px"></div>
+          <div class="abs lbl" style="left:90px;top:186px;width:90px;text-align:left"><span class="h" style="text-align:left">श्रेणी</span>CLASS</div>
+          <div class="abs dm" style="left:405px;top:182px;font-size:15px;color:#0f2b69;">${isCharted ? 'CHART PREPARED' : 'CHART NOT PREPARED - ONLINE TELEMETRY ACTIVE'}</div>
+          <div class="abs hi" style="left:836px;top:182px;font-size:13px">आरक्षित</div>
+
+          <div class="abs hi" style="left:175px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${fromHi}</div>
+          <div class="abs hi" style="left:340px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${toHi}</div>
+          <div class="abs hi" style="left:525px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">वाया</div>
+          <div class="abs hi" style="left:595px;top:214px;font-size:17px;color:#6a6a8a;font-weight:400;white-space:nowrap">${viaHi}</div>
+
+          <div class="abs dm" style="left:112px;top:248px;font-size:18px">${shortClass}</div>
+          <div class="abs dm" style="left:242px;top:250px;font-size:16px">${fromCode}</div>
+          <div class="abs dm" style="left:429px;top:250px;font-size:16px">${toCode}</div>
+          <div class="abs dm" style="left:605px;top:250px;font-size:14px;letter-spacing:1px">${viaRoute}</div>
+          <div class="abs dm" style="left:864px;top:250px;font-size:16px">${distKm}</div>
+          <div class="abs" style="left:604px;top:270px;font-size:13px;font-weight:700;color:var(--t-blue)"><span style="font-family:'Noto Sans Devanagari';color:var(--t-red)">तक आरक्षित</span> / RESV. UP TO</div>
+
+          <!-- Info Block 3: All 11 Passenger & Fare Columns -->
+          <div class="abs line" style="left:80px;top:294px;width:866px;height:1px;z-index:6"></div>
+          <div class="abs lbl" style="left:80px;top:300px;width:68px"><span class="h">कोच</span>COACH</div>
+          <div class="abs lbl" style="left:148px;top:300px;width:110px"><span class="h">सीट/बर्थ</span>SEAT/BERTH</div>
+          <div class="abs lbl" style="left:258px;top:300px;width:48px"><span class="h">लिंग</span>SEX</div>
+          <div class="abs lbl" style="left:306px;top:300px;width:48px"><span class="h">आयु</span>AGE</div>
+          <div class="abs lbl" style="left:354px;top:300px;width:106px"><span class="h">यात्रा प्राधिकार</span>T.AUTHORITY</div>
+          <div class="abs lbl" style="left:460px;top:300px;width:64px"><span class="h">रियायत</span>CONC</div>
+          <div class="abs lbl" style="left:524px;top:300px;width:64px"><span class="h">आ.शु.</span>R.FEE</div>
+          <div class="abs lbl" style="left:588px;top:300px;width:64px"><span class="h">श. प्र.</span>S.CH.</div>
+          <div class="abs lbl" style="left:652px;top:300px;width:64px"><span class="h">सु. प्र.</span>SF.CH</div>
+          <div class="abs lbl" style="left:716px;top:300px;width:84px"><span class="h">वाउचर रू.</span>VOUCH. Rs.</div>
+          <div class="abs lbl" style="left:800px;top:300px;width:146px"><span class="h">कु. नकद रू.</span>T.CASH Rs.</div>
+
+          <!-- Fare & Watermark Layer -->
+          <div class="abs" style="left:520px;top:334px;width:426px;height:48px;background:rgba(232, 205, 207, 0.4);z-index:2;pointer-events:none;"></div>
+          <div class="abs" style="inset:0;pointer-events:none;z-index:1;">${wmCircles}</div>
+
+          <div class="abs dm" style="left:80px;top:333px;width:68px;text-align:center;font-size:16px">${coachStr}</div>
+          <div class="abs dm" style="left:148px;top:333px;width:110px;text-align:center;font-size:16px;white-space:nowrap;">${primaryCurrent}</div>
+          <div class="abs dm" style="left:258px;top:333px;width:48px;text-align:center;font-size:16px">--</div>
+          <div class="abs dm" style="left:306px;top:333px;width:48px;text-align:center;font-size:16px">--</div>
+          <div class="abs dm" style="left:354px;top:333px;width:106px;text-align:center;font-size:14px">--</div>
+          <div class="abs dm" style="left:460px;top:333px;width:64px;text-align:center;font-size:14px">--</div>
+          <div class="abs dm" style="left:524px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
+          <div class="abs dm" style="left:588px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
+          <div class="abs dm" style="left:652px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
+          <div class="abs dm" style="left:716px;top:333px;width:84px;text-align:center;font-size:16px">--</div>
+          <div class="abs dm" style="left:800px;top:333px;width:146px;text-align:center;font-size:17px;font-weight:700;">${totalCashFare}</div>
+
+          <!-- Multi-passenger status breakdown box inside ticket -->
+          <div class="abs dm" style="left:80px;top:370px;width:430px;background:rgba(255,255,255,0.85);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;z-index:12;">
+            <div style="font-weight:700;margin-bottom:3px;color:var(--t-blue);border-bottom:1px solid #7a8cb0;padding-bottom:2px;">PASSENGER STATUS ROSTER:</div>
+            ${paxRosterHtml}
+          </div>
+
+          <div class="abs dm" style="left:520px;top:362px;font-size:13px;letter-spacing:0.5px;max-width:420px;line-height:1.3;font-weight:700;z-index:12;">${fareWords}</div>
+          <div class="abs dm" style="left:520px;top:392px;font-size:13px;font-weight:700;z-index:12;">${quota} · ${shortClass} · ${trainNo} ${trainName}</div>
+
+          <!-- Footer Lines -->
+          <div class="abs dm" style="left:172px;top:490px;max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px" title="${trainName.toUpperCase()} · ${fromName} (${fromCode}) TO ${toName} (${toCode})">${trainName.toUpperCase()} · ${fromName} (${fromCode}) TO ${toName} (${toCode})</div>
+          <div class="abs dm" style="left:548px;top:490px;font-size:14px;white-space:nowrap">${b.dep_time && b.dep_time !== '--' ? `DEP ${b.dep_time} · ARR ${b.arr_time}` : 'SCHEDULE: REFER LIVE NTES / IRCTC TIMETABLE'}</div>
+          <div class="abs dm" style="left:110px;top:518px;font-size:14px;white-space:nowrap">${trainNo} ${doj} · TRACKED VIA RAILPULSE ENGINE</div>
+          <div class="abs dm" style="left:200px;top:544px;font-size:14px">VALID WITH ORIGINAL GOVERNMENT ISSUED ID FOR RAILWAY TRAVEL</div>
+
+          <!-- Ad & Vande Bharat Showcase Column -->
+          <div class="abs ad" style="overflow:hidden;padding:0;">
+            <img src="/static/assets/vande_bharat.png" alt="Vande Bharat Express" style="width:100%;height:100%;object-fit:cover;display:block;">
+          </div>
+
+          <div class="abs" style="left:1130px;top:170px;transform:rotate(90deg);transform-origin:left top;font-size:13px;color:var(--t-blue);white-space:nowrap">
+            Official PRS Ticket Format · RailPulse Telematics
+          </div>
+
+          <!-- Paper Texture & Stamp -->
+          <div class="abs paper"></div>
+          <div class="abs watermark-stamp ${isCharted ? 'is-charted' : ''}">${isCharted ? 'CHART PREPARED' : (isConfirmed ? 'CONFIRMED' : 'WAITLISTED')}</div>
+
+          <!-- Bottom Banner -->
+          <div class="abs bn">
+            <div class="dm" style="position:absolute;left:30px;top:6px;font-size:13px">CATG COMP NO - 139 · ALL INDIA RAILWAY HELPLINE · CRIS</div>
+            <div class="big">BHARAT NIRMAN</div>
+            <div class="tag">IT'S IN EVERYBODY'S INTEREST. IT'S EVERYBODY'S RIGHT.</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Layer A: Render Compact PNR Overview Cards Grid
     function renderTickets(tickets) {
       const container = document.getElementById('booking-container');
       if (!container) return;
 
+      window.currentTickets = tickets || {};
       const ticketsJson = JSON.stringify(tickets);
       if (ticketsJson === lastRenderedTicketsJson && container.hasChildNodes()) {
-        return; // Data has not changed; skip DOM re-render entirely to prevent blinking
+        return; // Skip re-render if data has not changed
       }
       lastRenderedTicketsJson = ticketsJson;
 
       const isFirstLoad = !container.hasChildNodes();
       container.innerHTML = '';
 
+      const pnrList = Object.keys(window.currentTickets);
+      
+      // Update dynamic header badge (e.g. "3 PNRs tracked")
+      const overviewPill = document.getElementById('overview-pnr-count-pill');
+      if (overviewPill) {
+        overviewPill.textContent = `${pnrList.length} PNR${pnrList.length === 1 ? '' : 's'} tracked`;
+      }
+
       let allCount = 0;
       let progCount = 0;
       let chartCount = 0;
 
-      Object.values(tickets).forEach((b, idx) => {
+      if (pnrList.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 36px 20px; text-align: center; color: var(--text-secondary); background: #24201C; border: 1px dashed var(--border); border-radius: 10px;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 6px;">No PNRs Currently Monitored</div>
+            <div style="font-size: 13px;">Use the enrollment form in the sidebar to add a 10-digit Indian Railways PNR to start tracking.</div>
+          </div>
+        `;
+      }
+
+      pnrList.forEach((pnrStr, idx) => {
+        const b = window.currentTickets[pnrStr];
         allCount++;
         const isCharted = !!b.chart_prepared;
         const hasProg = !!b.has_progressed;
         if (isCharted) chartCount++;
         if (hasProg) progCount++;
 
-        const pnrStr = String(b.pnr || '');
-        const ticketNo = "--";
         const paxList = Array.isArray(b.passengers) && b.passengers.length > 0 ? b.passengers : [{ passenger_number: 1, booking_status: "WL", current_status: "WL" }];
         const primaryPax = paxList[0];
         const primaryCurrent = primaryPax.current_status || "UNKNOWN";
         const isConfirmed = primaryCurrent.includes('CNF');
 
-        // Formulate coach and seat details (only if confirmed, otherwise authentic unallocated marker)
-        const coachStr = isConfirmed ? (primaryCurrent.match(/[A-Z0-9]+\s*\/\s*\d+/) ? primaryCurrent.split('/')[0].trim() : "--") : "--";
-        const seatStr = isConfirmed ? primaryCurrent : "--";
         const trainNo = String(b.train_number || '--');
         const trainName = String(b.train_name || 'EXP');
-
-        // Authentic station codes, English names, and Hindi translations
         const fromCode = b.from_code || "--";
         const toCode = b.to_code || "--";
-        const fromName = b.from_name || b.from_station || fromCode;
-        const toName = b.to_name || b.to_station || toCode;
-        const fromHi = b.from_hi || getHindiName(fromCode) || getHindiName(fromName);
-        const toHi = b.to_hi || getHindiName(toCode) || getHindiName(toName);
-
         const doj = b.date_of_journey || "--";
-        const quota = b.quota && b.quota !== "--" ? b.quota : "PRS TELEMETRY";
-        const coachClass = b.coach_class || "--";
-        const shortClass = coachClass.includes('3A') ? '3A' : (coachClass.includes('2A') ? '2A' : (coachClass.includes('2S') ? '2S' : (coachClass.includes('SL') ? 'SL' : (coachClass.includes('CC') ? 'CC' : coachClass))));
-        const distKm = "--";
-        const viaRoute = "--";
-        const viaHi = "--";
-        const resvFee = "--";
-        const sfCharge = "--";
-        const totalCashFare = b.total_fare && b.total_fare !== "--" ? b.total_fare : (b.fare ? b.fare : "--");
-        const fareWords = b.fare_words || "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *";
-        const zonalRailway = "INDIAN RAILWAYS / भारतीय रेल";
 
-        // Formulate passenger rows text representation for dot-matrix area
-        let paxRosterHtml = '';
-        paxList.forEach((p, pIdx) => {
-          const pCur = p.current_status || 'WL';
-          const pBook = p.booking_status || 'WL';
-          paxRosterHtml += `
-            <div style="display:flex;justify-content:space-between;padding:1px 0;">
-              <span>P${p.passenger_number || pIdx + 1}: ${pCur}</span>
-              <span style="opacity:0.75;">(BKD: ${pBook})</span>
-            </div>
-          `;
-        });
+        const deltaText = (typeof b.ticket_spots_gained === 'number' && b.ticket_spots_gained > 0)
+          ? `+${b.ticket_spots_gained} positions`
+          : `Status tracked`;
 
-        // Watermark SVG generator
-        let spokes = '';
-        for (let i = 0; i < 16; i++) {
-          const a = i * Math.PI / 8;
-          spokes += `<line x1='50' y1='50' x2='${50 + 40 * Math.cos(a)}' y2='${50 + 40 * Math.sin(a)}' stroke='#b9a8d6' stroke-width='3'/>`;
-        }
-        const wmSvg = `<svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='none' stroke='#927eb8' stroke-width='3'/>${spokes}<circle cx='50' cy='50' r='8' fill='#927eb8'/></svg>`;
-
-        let wmCircles = '';
-        for (let r = 0; r < 4; r++) {
-          for (let c = 0; c < 9; c++) {
-            const left = 282 + c * 74 + (r % 2 ? 37 : 0);
-            const top = 334 + r * 66;
-            wmCircles += `<div class="wm" style="left:${left}px;top:${top}px">${wmSvg}</div>`;
-          }
-        }
-
-        const deltaText = b.ticket_spots_gained > 0 ? `+${b.ticket_spots_gained} Positions Improved` : `Tracking Baseline`;
         const stateAttr = isCharted ? 'charted' : (hasProg ? 'progressing' : 'all');
+        const pnrNum = idx + 1;
 
-        const article = document.createElement('article');
+        const card = document.createElement('article');
         const entranceAnim = isFirstLoad ? `animate-entrance delay-${Math.min(4 + idx, 7)}` : '';
-        article.className = `booking-card ${entranceAnim} ${isConfirmed ? 'is-confirmed' : ''}`.trim();
-        article.id = `card-${pnrStr}`;
-        article.setAttribute('data-state', stateAttr);
+        card.className = `pnr-card ${entranceAnim} ${isConfirmed ? 'is-confirmed' : ''}`.trim();
+        card.id = `card-${pnrStr}`;
+        card.setAttribute('data-state', stateAttr);
 
-        article.innerHTML = `
-          <!-- Card Toolbar Meta -->
-          <div class="ticket-card-toolbar">
-            <div class="ticket-card-title-group">
-              <span class="ticket-pnr-badge">PNR ${pnrStr}</span>
-              <span class="ticket-train-title">${trainNo} ${trainName}</span>
-              <span style="font-size:12px;color:var(--text-secondary);">${b.route_name || (fromName + ' (' + fromCode + ') → ' + toName + ' (' + toCode + ')')}</span>
-            </div>
-            <div class="ticket-card-status-badges">
-              <span class="improvement-delta-badge" id="delta-${pnrStr}">${deltaText}</span>
-              <span class="status-current-pill ${isConfirmed ? 'status-green' : 'status-amber'}" id="pill-${pnrStr}">${primaryCurrent}</span>
-              <span class="chart-pill ${isCharted ? 'prepared' : 'unprepared'}">${isCharted ? 'Chart Prepared' : 'Chart Not Prepared'}</span>
-              <button class="btn-delete-pnr" onclick="handleDeletePnr('${pnrStr}')" title="Delete PNR ${pnrStr} from fleet tracking">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-                <span>Delete</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Scaled PRS Ticket Viewport -->
-          <div class="ticket-scaler-wrap">
-            <div class="ticket-viewport" id="viewport-${pnrStr}">
-              <div class="ticket-box" id="ticket-${pnrStr}">
-                <!-- Perforations -->
-                <div class="hole" style="left:30px;top:32px"></div>
-                <div class="hole" style="left:30px;top:200px"></div>
-                <div class="hole" style="left:30px;top:350px"></div>
-                <div class="hole" style="left:30px;top:620px"></div>
-                <div class="hole" style="left:1141px;top:45px"></div>
-                <div class="hole" style="left:1141px;top:195px"></div>
-                <div class="hole" style="left:1141px;top:330px"></div>
-                <div class="hole" style="left:1141px;top:470px"></div>
-                <div class="hole" style="left:1141px;top:610px"></div>
-
-                <div class="abs rail">${zonalRailway}</div>
-                <div class="abs" style="left:57px;top:318px;transform:rotate(-90deg);transform-origin:left top;top:520px;font-size:14px;font-weight:700;color:var(--t-blue);white-space:nowrap">
-                  PRS PASSENGER RESERVATION SYSTEM
-                </div>
-
-                <!-- Header Bar -->
-                <div class="abs head">
-                  <div class="hi2">शुभ यात्रा</div>
-                  <div class="en">HAPPY&nbsp;&nbsp;JOURNEY</div>
-                </div>
-
-                <!-- Railway Emblem -->
-                <div class="abs emblem">
-                  <svg viewBox='0 0 100 100' width='58' height='58'>
-                    <circle cx='50' cy='50' r='46' fill='none' stroke='#c9732a' stroke-width='6'/>
-                    <circle cx='50' cy='50' r='9' fill='#c9732a'/>
-                    <line x1='50' y1='50' x2='90.0' y2='50.0' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='87.0' y2='65.3' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='78.3' y2='78.3' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='65.3' y2='87.0' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='50.0' y2='90.0' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='34.7' y2='87.0' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='21.7' y2='78.3' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='13.0' y2='65.3' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='10.0' y2='50.0' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='13.0' y2='34.7' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='21.7' y2='21.7' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='34.7' y2='13.0' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='50.0' y2='10.0' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='65.3' y2='13.0' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='78.3' y2='21.7' stroke='#c9732a' stroke-width='3'/>
-                    <line x1='50' y1='50' x2='87.0' y2='34.7' stroke='#c9732a' stroke-width='3'/>
+        card.innerHTML = `
+          <div>
+            <div class="pnr-card-header">
+              <span class="pnr-label">PNR ${pnrNum}</span>
+              <div class="pnr-header-right">
+                <span class="pnr-number-muted">${pnrStr}</span>
+                <button type="button" class="btn-card-del" onclick="handleDeletePnr('${pnrStr}')" title="Delete PNR ${pnrStr}" aria-label="Delete PNR ${pnrStr}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                   </svg>
-                </div>
-
-                <!-- Info Block 1 -->
-                <div class="abs blue1"></div>
-                <div class="abs yellow"></div>
-                <div class="abs white-r"></div>
-                <div class="abs line" style="left:300px;top:72px;width:2px;height:110px"></div>
-                <div class="abs line" style="left:703px;top:72px;width:2px;height:68px"></div>
-                <div class="abs line" style="left:818px;top:140px;width:2px;height:42px"></div>
-
-                <div class="abs lbl" style="left:112px;top:88px;width:180px"><span class="h">पी एन आर नं.</span><span style="color:var(--t-red)">PNR NO.</span></div>
-                <div class="abs lbl" style="left:310px;top:88px;width:110px"><span class="h">गाड़ी नं.</span>TRAIN NO.</div>
-                <div class="abs lbl" style="left:430px;top:88px;width:80px"><span class="h">तिथि</span>DATE</div>
-                <div class="abs lbl" style="left:500px;top:88px;width:70px"><span class="h">कि.मी.</span>K.M</div>
-                <div class="abs lbl" style="left:596px;top:88px;width:60px"><span class="h">वयस्क</span>ADULT</div>
-                <div class="abs lbl" style="left:655px;top:88px;width:60px"><span class="h">बच्चे</span>CHILD</div>
-                <div class="abs lbl" style="left:726px;top:75px;width:80px"><span class="h" style="text-align:left">टिकट नं.</span></div>
-                <div class="abs lbl" style="left:840px;top:77px;width:100px">TICKET NO.</div>
-
-                <div class="abs dm" style="left:104px;top:122px;font-size:19px;letter-spacing:1px;">${pnrStr}</div>
-                <div class="abs dm" style="left:342px;top:122px;font-size:16px">${trainNo}</div>
-                <div class="abs dm" style="left:420px;top:122px;font-size:16px;white-space:nowrap">${doj}</div>
-                <div class="abs dm" style="left:500px;top:122px;width:70px;text-align:center;font-size:16px">${distKm}</div>
-                <div class="abs dm" style="left:620px;top:122px;font-size:16px">${paxList.length}</div>
-                <div class="abs dm" style="left:670px;top:122px;font-size:16px">--</div>
-                <div class="abs ticketno" style="left:728px;top:96px">--</div>
-                <div class="abs dm" style="left:822px;top:122px;font-size:14px;opacity:0.5">--</div>
-
-                <!-- Info Block 2: Class & Route -->
-                <div class="abs blue2"></div>
-                <div class="abs blue2b"></div>
-                <div class="abs line" style="left:80px;top:182px;width:106px;height:2px"></div>
-                <div class="abs lbl" style="left:90px;top:186px;width:90px;text-align:left"><span class="h" style="text-align:left">श्रेणी</span>CLASS</div>
-                <div class="abs dm" style="left:405px;top:182px;font-size:15px;color:#0f2b69;">${isCharted ? 'CHART PREPARED' : 'CHART NOT PREPARED - ONLINE TELEMETRY ACTIVE'}</div>
-                <div class="abs hi" style="left:836px;top:182px;font-size:13px">आरक्षित</div>
-
-                <div class="abs hi" style="left:175px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${fromHi}</div>
-                <div class="abs hi" style="left:340px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">${toHi}</div>
-                <div class="abs hi" style="left:525px;top:212px;font-size:24px;color:#6a6a8a;font-weight:400">वाया</div>
-                <div class="abs hi" style="left:595px;top:214px;font-size:17px;color:#6a6a8a;font-weight:400;white-space:nowrap">${viaHi}</div>
-
-                <div class="abs dm" style="left:112px;top:248px;font-size:18px">${shortClass}</div>
-                <div class="abs dm" style="left:242px;top:250px;font-size:16px">${fromCode}</div>
-                <div class="abs dm" style="left:429px;top:250px;font-size:16px">${toCode}</div>
-                <div class="abs dm" style="left:605px;top:250px;font-size:14px;letter-spacing:1px">${viaRoute}</div>
-                <div class="abs dm" style="left:864px;top:250px;font-size:16px">${distKm}</div>
-                <div class="abs" style="left:604px;top:270px;font-size:13px;font-weight:700;color:var(--t-blue)"><span style="font-family:'Noto Sans Devanagari';color:var(--t-red)">तक आरक्षित</span> / RESV. UP TO</div>
-
-                <!-- Info Block 3: All 11 Passenger & Fare Columns -->
-                <div class="abs line" style="left:80px;top:294px;width:866px;height:1px;z-index:6"></div>
-                <div class="abs lbl" style="left:80px;top:300px;width:68px"><span class="h">कोच</span>COACH</div>
-                <div class="abs lbl" style="left:148px;top:300px;width:110px"><span class="h">सीट/बर्थ</span>SEAT/BERTH</div>
-                <div class="abs lbl" style="left:258px;top:300px;width:48px"><span class="h">लिंग</span>SEX</div>
-                <div class="abs lbl" style="left:306px;top:300px;width:48px"><span class="h">आयु</span>AGE</div>
-                <div class="abs lbl" style="left:354px;top:300px;width:106px"><span class="h">यात्रा प्राधिकार</span>T.AUTHORITY</div>
-                <div class="abs lbl" style="left:460px;top:300px;width:64px"><span class="h">रियायत</span>CONC</div>
-                <div class="abs lbl" style="left:524px;top:300px;width:64px"><span class="h">आ.शु.</span>R.FEE</div>
-                <div class="abs lbl" style="left:588px;top:300px;width:64px"><span class="h">श. प्र.</span>S.CH.</div>
-                <div class="abs lbl" style="left:652px;top:300px;width:64px"><span class="h">सु. प्र.</span>SF.CH</div>
-                <div class="abs lbl" style="left:716px;top:300px;width:84px"><span class="h">वाउचर रू.</span>VOUCH. Rs.</div>
-                <div class="abs lbl" style="left:800px;top:300px;width:146px"><span class="h">कु. नकद रू.</span>T.CASH Rs.</div>
-
-                <!-- Fare & Watermark Layer -->
-                <div class="abs" style="left:520px;top:334px;width:426px;height:48px;background:rgba(232, 205, 207, 0.4);z-index:2;pointer-events:none;"></div>
-                <div class="abs" style="inset:0;pointer-events:none;z-index:1;">${wmCircles}</div>
-
-                <div class="abs dm" style="left:80px;top:333px;width:68px;text-align:center;font-size:16px">${coachStr}</div>
-                <div class="abs dm" style="left:148px;top:333px;width:110px;text-align:center;font-size:16px;white-space:nowrap;">${primaryCurrent}</div>
-                <div class="abs dm" style="left:258px;top:333px;width:48px;text-align:center;font-size:16px">--</div>
-                <div class="abs dm" style="left:306px;top:333px;width:48px;text-align:center;font-size:16px">--</div>
-                <div class="abs dm" style="left:354px;top:333px;width:106px;text-align:center;font-size:14px">--</div>
-                <div class="abs dm" style="left:460px;top:333px;width:64px;text-align:center;font-size:14px">--</div>
-                <div class="abs dm" style="left:524px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
-                <div class="abs dm" style="left:588px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
-                <div class="abs dm" style="left:652px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
-                <div class="abs dm" style="left:716px;top:333px;width:84px;text-align:center;font-size:16px">--</div>
-                <div class="abs dm" style="left:800px;top:333px;width:146px;text-align:center;font-size:17px;font-weight:700;">${totalCashFare}</div>
-
-                <!-- Multi-passenger status breakdown box inside ticket -->
-                <div class="abs dm" style="left:80px;top:370px;width:430px;background:rgba(255,255,255,0.85);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;z-index:12;">
-                  <div style="font-weight:700;margin-bottom:3px;color:var(--t-blue);border-bottom:1px solid #7a8cb0;padding-bottom:2px;">PASSENGER STATUS ROSTER:</div>
-                  ${paxRosterHtml}
-                </div>
-
-                <div class="abs dm" style="left:520px;top:362px;font-size:13px;letter-spacing:0.5px;max-width:420px;line-height:1.3;font-weight:700;z-index:12;">${fareWords}</div>
-                <div class="abs dm" style="left:520px;top:392px;font-size:13px;font-weight:700;z-index:12;">${quota} · ${shortClass} · ${trainNo} ${trainName}</div>
-
-                <!-- Footer Lines -->
-                <div class="abs dm" style="left:172px;top:490px;font-size:15px">${trainName.toUpperCase()} · ${fromName} (${fromCode}) TO ${toName} (${toCode})</div>
-                <div class="abs dm" style="left:548px;top:490px;font-size:14px">${b.dep_time && b.dep_time !== '--' ? `DEP ${b.dep_time} · ARR ${b.arr_time}` : 'SCHEDULE: REFER LIVE NTES / IRCTC TIMETABLE'}</div>
-                <div class="abs dm" style="left:110px;top:518px;font-size:14px;white-space:nowrap">${trainNo} ${doj} · TRACKED VIA RAILPULSE ENGINE</div>
-                <div class="abs dm" style="left:200px;top:544px;font-size:14px">VALID WITH ORIGINAL GOVERNMENT ISSUED ID FOR RAILWAY TRAVEL</div>
-
-                <!-- Ad & Vande Bharat Showcase Column -->
-                <div class="abs ad" style="overflow:hidden;padding:0;">
-                  <img src="/static/assets/vande_bharat.png" alt="Vande Bharat Express" style="width:100%;height:100%;object-fit:cover;display:block;">
-                </div>
-
-                <div class="abs" style="left:1130px;top:170px;transform:rotate(90deg);transform-origin:left top;font-size:13px;color:var(--t-blue);white-space:nowrap">
-                  Official PRS Ticket Format · RailPulse Telematics
-                </div>
-
-                <!-- Paper Texture & Stamp -->
-                <div class="abs paper"></div>
-                <div class="abs watermark-stamp ${isCharted ? 'is-charted' : ''}">${isCharted ? 'CHART PREPARED' : (isConfirmed ? 'CONFIRMED' : 'WAITLISTED')}</div>
-
-                <!-- Bottom Banner -->
-                <div class="abs bn">
-                  <div class="dm" style="position:absolute;left:30px;top:6px;font-size:13px">CATG COMP NO - 139 · ALL INDIA RAILWAY HELPLINE · CRIS</div>
-                  <div class="big">BHARAT NIRMAN</div>
-                  <div class="tag">IT'S IN EVERYBODY'S INTEREST. IT'S EVERYBODY'S RIGHT.</div>
-                </div>
+                </button>
               </div>
             </div>
+
+            <div class="pnr-route">${fromCode} &rarr; ${toCode}</div>
+            <div class="pnr-train-info">${trainNo} ${trainName} &middot; ${doj}</div>
+
+            <div class="pnr-status-group">
+              <div class="pnr-current-status ${isConfirmed ? 'is-cnf' : ''}">${primaryCurrent}</div>
+              <div class="pnr-movement-text ${b.ticket_spots_gained > 0 ? 'has-gain' : ''}">${deltaText}</div>
+            </div>
           </div>
+
+          <button type="button" class="btn-view-ticket" onclick="openTicketModal('${pnrStr}')">View ticket</button>
         `;
 
-        container.appendChild(article);
+        container.appendChild(card);
       });
 
-      // Update Tab Counts
+      // Update Filter Tab Counts
       const elAll = document.getElementById('count-all');
       const elProg = document.getElementById('count-prog');
       const elChart = document.getElementById('count-chart');
@@ -2143,24 +2609,122 @@
       if (elProg) elProg.textContent = progCount;
       if (elChart) elChart.textContent = chartCount;
 
-      fitAllTickets();
+      // If modal viewer is open during a live poll update, refresh the active modal ticket
+      if (window.activeModalPnr && window.currentTickets[window.activeModalPnr]) {
+        renderModalTicket(window.activeModalPnr);
+      }
     }
 
-    // Responsive Auto-fit calculation for each ticket
-    function fitAllTickets() {
-      document.querySelectorAll('.ticket-scaler-wrap').forEach(wrap => {
-        const viewport = wrap.querySelector('.ticket-viewport');
-        const ticket = wrap.querySelector('.ticket-box');
-        if (!viewport || !ticket) return;
-        const availableW = wrap.clientWidth || 1100;
-        const scale = Math.min(1, (availableW - 20) / 1200);
-        ticket.style.transform = `scale(${scale})`;
-        viewport.style.width = `${1200 * scale}px`;
-        viewport.style.height = `${675 * scale}px`;
+    // Layer B: Full PRS Ticket Modal Viewer Functions
+    function openTicketModal(pnrStr) {
+      window.activeModalPnr = pnrStr;
+      renderModalTicket(pnrStr);
+      const modal = document.getElementById('prs-ticket-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+      setTimeout(fitModalTicket, 30);
+    }
+
+    function closeTicketModal() {
+      const modal = document.getElementById('prs-ticket-modal');
+      if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+      window.activeModalPnr = null;
+    }
+
+    function switchModalTicket(pnrStr) {
+      window.activeModalPnr = pnrStr;
+      renderModalTicket(pnrStr);
+      setTimeout(fitModalTicket, 20);
+    }
+
+    function renderModalTicket(pnrStr) {
+      if (!window.currentTickets || !window.currentTickets[pnrStr]) return;
+      const b = window.currentTickets[pnrStr];
+
+      const badge = document.getElementById('modal-pnr-badge');
+      if (badge) badge.textContent = `PNR ${pnrStr}`;
+
+      // Render Switcher Tabs for all tracked PNRs
+      const switcher = document.getElementById('modal-pnr-switcher');
+      if (switcher) {
+        let tabsHtml = '';
+        const keys = Object.keys(window.currentTickets);
+        keys.forEach((k, idx) => {
+          const isActive = (k === pnrStr);
+          tabsHtml += `<button type="button" class="modal-tab-btn ${isActive ? 'active' : ''}" onclick="switchModalTicket('${k}')" role="tab" aria-selected="${isActive}">PNR ${idx + 1}: ${k}</button>`;
+        });
+        switcher.innerHTML = tabsHtml;
+      }
+
+      // Render the authentic 1:1 scale PRS ticket into the viewport
+      const viewport = document.getElementById('modal-ticket-viewport');
+      if (viewport) {
+        viewport.innerHTML = generatePrsTicketBoxHtml(b, pnrStr);
+      }
+
+      // Update Modal Footer Route & Journey Info
+      const info = document.getElementById('modal-footer-info');
+      if (info) {
+        const fromCode = b.from_code || '--';
+        const toCode = b.to_code || '--';
+        const trainNo = b.train_number || '--';
+        const trainName = b.train_name || 'EXP';
+        const doj = b.date_of_journey || '--';
+        info.textContent = `${trainNo} ${trainName} · ${fromCode} → ${toCode} · Date of Journey: ${doj}`;
+      }
+    }
+
+    function fitModalTicket() {
+      const wrap = document.getElementById('modal-scaler-wrap');
+      const viewport = document.getElementById('modal-ticket-viewport');
+      const ticket = viewport ? viewport.querySelector('.ticket-box') : null;
+      if (!wrap || !viewport || !ticket) return;
+
+      const availableW = wrap.clientWidth || 1160;
+      const scale = Math.min(1, Math.max(0.2, (availableW - 32) / 1200));
+      ticket.style.transform = `scale(${scale})`;
+      viewport.style.width = `${1200 * scale}px`;
+      viewport.style.height = `${675 * scale}px`;
+    }
+
+    async function handleModalDeletePnr() {
+      if (!window.activeModalPnr) return;
+      const targetPnr = window.activeModalPnr;
+      await handleDeletePnr(targetPnr);
+      const remaining = Object.keys(window.currentTickets || {}).filter(k => k !== targetPnr);
+      if (remaining.length > 0) {
+        switchModalTicket(remaining[0]);
+      } else {
+        closeTicketModal();
+      }
+    }
+
+    // Modal Interaction Listeners: Escape Key & Backdrop Dismissal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && window.activeModalPnr) {
+        closeTicketModal();
+      }
+    });
+
+    const modalBackdrop = document.getElementById('prs-ticket-modal');
+    if (modalBackdrop) {
+      modalBackdrop.addEventListener('click', (e) => {
+        if (e.target === modalBackdrop) {
+          closeTicketModal();
+        }
       });
     }
 
-    window.addEventListener('resize', fitAllTickets);
+    window.addEventListener('resize', () => {
+      if (window.activeModalPnr) {
+        fitModalTicket();
+      }
+    });
 
     // Dynamic Fetch Status from backend
     async function fetchStatus() {
