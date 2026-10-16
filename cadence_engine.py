@@ -77,7 +77,7 @@ def compute_pnr_cadence(
             "cadence_seconds": PRIORITY_CADENCE_SECONDS,
             "cadence_hours": 2.0,
             "priority_tier": "priority-2h",
-            "tier_label": "⚡ Priority Journey Cadence (2h)",
+            "tier_label": "Priority Journey Cadence (2h)",
             "days_until_journey": days_until_journey,
             "is_near_journey": True,
         }

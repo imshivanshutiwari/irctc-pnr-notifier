@@ -2236,12 +2236,29 @@
         </div>
       </div>
 
-      <div class="metric-card animate-entrance delay-3">
+      <div class="metric-card animate-entrance delay-3" id="kpi-poll-card">
         <div class="metric-header">
-          <span class="metric-label">Next Scheduled Poll</span>
+          <span class="metric-label" id="kpi-poll-header">Next Scheduled Poll</span>
         </div>
-        <div class="metric-value" id="kpi-countdown">04:59:45</div>
-        <div class="metric-desc" id="kpi-last-poll-desc">Cadence: 5 hours (18,000s)</div>
+        <div id="kpi-dual-timers" style="display: flex; flex-direction: column; gap: 6px;">
+          <!-- Primary / Priority 2H Timer (Shows if tickets are within 2 days) -->
+          <div id="kpi-priority-timer-box" style="display: flex; align-items: baseline; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="channel-dot" style="background: #FF7B7B; box-shadow: 0 0 8px #FF7B7B;"></span>
+              <span style="font-size: 11px; font-weight: 700; color: #FF7B7B; text-transform: uppercase; letter-spacing: 0.04em;">⚡ 2h Priority</span>
+            </div>
+            <div class="metric-value" id="kpi-priority-countdown" style="font-size: 19px; color: #FF8F8F; font-family: var(--font-mono); font-weight: 700; letter-spacing: -0.02em;">--:--:--</div>
+          </div>
+          <!-- Regular 5H Fleet Timer -->
+          <div id="kpi-standard-timer-box" style="display: flex; align-items: baseline; justify-content: space-between; border-top: 1px dashed rgba(217, 166, 91, 0.2); padding-top: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="channel-dot" style="background: var(--text-muted);"></span>
+              <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Regular 5h</span>
+            </div>
+            <div class="metric-value" id="kpi-standard-countdown" style="font-size: 15px; color: var(--text-primary); font-family: var(--font-mono); font-weight: 600;">--:--:--</div>
+          </div>
+        </div>
+        <div class="metric-desc" id="kpi-last-poll-desc" style="margin-top: 4px;">Cadence: 2h Priority & 5h Fleet</div>
       </div>
 
       <div class="metric-card animate-entrance delay-3">
@@ -2480,40 +2497,79 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // Persistent Countdown Timer logic linked to actual poll timestamp
-    let nextPollTargetEpoch = Date.now() + 18000 * 1000;
+    // Persistent Dual Countdown Timer logic linked to actual poll timestamp
+    let nextPriorityPollEpoch = 0;
+    let nextStandardPollEpoch = 0;
+    let hasPriorityFleet = false;
 
-    function syncCountdownFromSeconds(sec) {
-      if (typeof sec === 'number' && sec >= 0) {
-        nextPollTargetEpoch = Date.now() + sec * 1000;
-        // Save to browser localStorage as well for instant restore across page reloads
-        try {
-          localStorage.setItem('railpulse_next_poll_epoch', String(nextPollTargetEpoch));
-        } catch (_) {}
-      }
-    }
-
-    // Try restoring saved countdown from localStorage immediately
+    // Restore saved epochs from localStorage immediately so page reloads NEVER reset timer
     try {
-      const savedEpoch = parseInt(localStorage.getItem('railpulse_next_poll_epoch') || '0', 10);
-      if (savedEpoch > Date.now()) {
-        nextPollTargetEpoch = savedEpoch;
+      const savedPriority = parseInt(localStorage.getItem('railpulse_priority_poll_epoch') || '0', 10);
+      if (savedPriority > Date.now()) {
+        nextPriorityPollEpoch = savedPriority;
+        hasPriorityFleet = true;
+      }
+      const savedStandard = parseInt(localStorage.getItem('railpulse_standard_poll_epoch') || '0', 10);
+      if (savedStandard > Date.now()) {
+        nextStandardPollEpoch = savedStandard;
       }
     } catch (_) {}
 
+    function syncDualCountdowns(tel) {
+      if (!tel) return;
+      const now = Date.now();
+      hasPriorityFleet = !!tel.has_priority;
+
+      // Sync Priority 2H Timer
+      if (typeof tel.priority_countdown_sec === 'number' && tel.priority_countdown_sec >= 0) {
+        nextPriorityPollEpoch = now + tel.priority_countdown_sec * 1000;
+        try {
+          localStorage.setItem('railpulse_priority_poll_epoch', String(nextPriorityPollEpoch));
+        } catch (_) {}
+      }
+
+      // Sync Standard 5H Timer
+      if (typeof tel.standard_countdown_sec === 'number' && tel.standard_countdown_sec >= 0) {
+        nextStandardPollEpoch = now + tel.standard_countdown_sec * 1000;
+        try {
+          localStorage.setItem('railpulse_standard_poll_epoch', String(nextStandardPollEpoch));
+        } catch (_) {}
+      }
+      updateCountdown();
+    }
+
+    function formatTimeRemaining(sec) {
+      const s = Math.max(0, Math.floor(sec));
+      const hours = String(Math.floor(s / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+      const secs = String(s % 60).padStart(2, '0');
+      return `${hours}:${mins}:${secs}`;
+    }
+
     function updateCountdown() {
       const now = Date.now();
-      let remaining = Math.max(0, Math.floor((nextPollTargetEpoch - now) / 1000));
-      if (remaining === 0) {
-        // Schedule elapsed, reset to next 5h cycle until backend sync confirms
-        nextPollTargetEpoch = now + 18000 * 1000;
-        remaining = 18000;
+
+      const priorityBox = document.getElementById('kpi-priority-timer-box');
+      const standardBox = document.getElementById('kpi-standard-timer-box');
+      const priorityEl = document.getElementById('kpi-priority-countdown');
+      const standardEl = document.getElementById('kpi-standard-countdown');
+
+      // 1. Priority Timer (Only displays if there are tickets within 2 days of journey)
+      if (hasPriorityFleet && nextPriorityPollEpoch > 0) {
+        if (priorityBox) priorityBox.style.display = 'flex';
+        const remPriority = Math.max(0, (nextPriorityPollEpoch - now) / 1000);
+        if (priorityEl) priorityEl.textContent = formatTimeRemaining(remPriority);
+      } else {
+        if (priorityBox) priorityBox.style.display = 'none';
       }
-      const h = String(Math.floor(remaining / 3600)).padStart(2, '0');
-      const m = String(Math.floor((remaining % 3600) / 60)).padStart(2, '0');
-      const s = String(remaining % 60).padStart(2, '0');
-      const el = document.getElementById('kpi-countdown');
-      if (el) el.textContent = `${h}:${m}:${s}`;
+
+      // 2. Standard 5h Fleet Timer
+      if (nextStandardPollEpoch > 0) {
+        const remStandard = Math.max(0, (nextStandardPollEpoch - now) / 1000);
+        if (standardEl) standardEl.textContent = formatTimeRemaining(remStandard);
+      } else {
+        if (standardEl) standardEl.textContent = '04:59:45';
+      }
     }
     updateCountdown();
     setInterval(updateCountdown, 1000);
@@ -3377,10 +3433,8 @@
           document.getElementById('tel-ntfy').textContent = tel.ntfy_status;
           document.getElementById('tel-telegram').textContent = tel.telegram_status;
 
-          // Sync countdown to persistent server epoch
-          if (typeof tel.seconds_until_next_poll === 'number') {
-            syncCountdownFromSeconds(tel.seconds_until_next_poll);
-          }
+          // Sync persistent dual countdowns from backend telemetry
+          syncDualCountdowns(tel);
         }
       } catch (e) {
         // Fallback gracefully if network glitch occurs

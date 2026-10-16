@@ -20,7 +20,7 @@ from pnr_client import PNRClient
 from notifier import Notifier
 from tracker import PNRTracker
 from stations import get_station_info
-from cadence_engine import compute_pnr_cadence, parse_journey_date, PRIORITY_CADENCE_SECONDS, STANDARD_CADENCE_SECONDS, IST_TIMEZONE
+from cadence_engine import compute_pnr_cadence, parse_journey_date, is_journey_completed, PRIORITY_CADENCE_SECONDS, STANDARD_CADENCE_SECONDS, IST_TIMEZONE
 
 # Autonomous background poller cadence configuration
 CHECK_INTERVAL_SECONDS = 18000  # Default fleet fallback (5 hours)
@@ -194,7 +194,7 @@ async def background_pnr_poller():
                 poll_summaries = []
                 any_alerted = False
                 for pnr in due_pnrs:
-                    cadence_desc = PNR_SCHEDULE[pnr]["tier_label"]
+                    cadence_desc = PNR_SCHEDULE[pnr]["tier_label"].encode('ascii', 'ignore').decode()
                     print(f"[RailPulse Adaptive Daemon] Polling PNR {pnr} ({cadence_desc})...")
                     alerted, summary = tracker.check_pnr(pnr, all_states)
                     any_alerted = any_alerted or alerted
@@ -462,16 +462,25 @@ def get_status_overview():
     now_ist = now_utc.astimezone(ist_tz)
     last_poll_ist = LAST_POLL_TIME.astimezone(ist_tz).strftime("%H:%M:%S IST")
 
-    # Earliest next scheduled poll among all active PNRs
+    # Calculate separate countdowns for Priority (2h) and Standard (5h) fleets
     now_epoch = now_utc.timestamp()
-    if PNR_SCHEDULE:
-        earliest_next_poll = min(info.get("next_poll", now_epoch + CHECK_INTERVAL_SECONDS) for info in PNR_SCHEDULE.values())
-        seconds_until_next_poll = max(0, int(earliest_next_poll - now_epoch))
-    else:
-        seconds_until_next_poll = CHECK_INTERVAL_SECONDS
+    priority_epochs = [
+        info["next_poll"] for pnr, info in PNR_SCHEDULE.items()
+        if info.get("cadence") == PRIORITY_CADENCE_SECONDS and pnr in enriched
+    ]
+    standard_epochs = [
+        info["next_poll"] for pnr, info in PNR_SCHEDULE.items()
+        if info.get("cadence") == STANDARD_CADENCE_SECONDS and pnr in enriched
+    ]
 
-    # Determine fleet cadence description
-    has_priority = any(t.get("is_near_journey") for t in enriched.values())
+    has_priority = len(priority_epochs) > 0
+    priority_countdown_sec = max(0, int(min(priority_epochs) - now_epoch)) if priority_epochs else None
+    standard_countdown_sec = max(0, int(min(standard_epochs) - now_epoch)) if standard_epochs else None
+
+    # Earliest overall next poll
+    all_epochs = priority_epochs + standard_epochs
+    seconds_until_next_poll = max(0, int(min(all_epochs) - now_epoch)) if all_epochs else CHECK_INTERVAL_SECONDS
+
     fleet_cadence_desc = "Adaptive: 2h Priority & 5h Fleet" if has_priority else "5-Hour Automated Cycle"
 
     # Calculate nearest upcoming departure across monitored fleet
@@ -544,6 +553,9 @@ def get_status_overview():
             "last_poll_time_ist": last_poll_ist,
             "last_poll_timestamp": LAST_POLL_TIME.isoformat(),
             "seconds_until_next_poll": seconds_until_next_poll,
+            "has_priority": has_priority,
+            "priority_countdown_sec": priority_countdown_sec,
+            "standard_countdown_sec": standard_countdown_sec,
             "last_poll_result": LAST_POLL_RESULT,
             "gateway_host": os.getenv("RAPIDAPI_HOST", "irctc1.p.rapidapi.com"),
             "gateway_status": "Connected (Direct Rail Gateway)",
