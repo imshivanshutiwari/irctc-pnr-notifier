@@ -20,7 +20,7 @@ from pnr_client import PNRClient
 from notifier import Notifier
 from tracker import PNRTracker
 from stations import get_station_info
-from cadence_engine import compute_pnr_cadence, PRIORITY_CADENCE_SECONDS, STANDARD_CADENCE_SECONDS, IST_TIMEZONE
+from cadence_engine import compute_pnr_cadence, parse_journey_date, PRIORITY_CADENCE_SECONDS, STANDARD_CADENCE_SECONDS, IST_TIMEZONE
 
 # Autonomous background poller cadence configuration
 CHECK_INTERVAL_SECONDS = 18000  # Default fleet fallback (5 hours)
@@ -453,6 +453,60 @@ def get_status_overview():
     has_priority = any(t.get("is_near_journey") for t in enriched.values())
     fleet_cadence_desc = "Adaptive: 2h Priority & 5h Fleet" if has_priority else "5-Hour Automated Cycle"
 
+    # Calculate nearest upcoming departure across monitored fleet
+    now_ist = now_utc.astimezone(ist_tz)
+    upcoming_departures = []
+    for pnr, data in enriched.items():
+        j_date = parse_journey_date(data.get("date_of_journey"))
+        dep_time_str = data.get("dep_time") or "00:00"
+        if j_date:
+            try:
+                parts = [int(p) for p in dep_time_str.split(":")[:2]]
+                dep_h, dep_m = parts[0], parts[1]
+            except Exception:
+                dep_h, dep_m = 0, 0
+            dep_dt = datetime.datetime(j_date.year, j_date.month, j_date.day, dep_h, dep_m, tzinfo=ist_tz)
+            upcoming_departures.append({
+                "pnr": pnr,
+                "dep_dt": dep_dt,
+                "dep_time": dep_time_str,
+                "doj": data.get("date_of_journey"),
+                "train": f"{data.get('train_number', '')} {data.get('train_name', '')}".strip(),
+                "route": f"{data.get('from_code', '')} → {data.get('to_code', '')}",
+                "diff_seconds": (dep_dt - now_ist).total_seconds()
+            })
+
+    # Sort to find the nearest upcoming departure (positive diff preferred)
+    upcoming_departures.sort(key=lambda x: (x["diff_seconds"] < 0, x["diff_seconds"]))
+    nearest_dep = upcoming_departures[0] if upcoming_departures else None
+    
+    nearest_dep_desc = "--"
+    nearest_dep_time = "--"
+    today_ist = now_ist.date()
+    if nearest_dep:
+        dep_dt = nearest_dep["dep_dt"]
+        j_date = dep_dt.date()
+        days_away = (j_date - today_ist).days
+        train_brief = nearest_dep["train"]
+        route_brief = nearest_dep["route"]
+        dep_time = nearest_dep["dep_time"]
+
+        if days_away == 0:
+            nearest_dep_time = f"Today {dep_time}"
+            nearest_dep_desc = f"{train_brief} · {route_brief}"
+        elif days_away == 1:
+            nearest_dep_time = f"Tomorrow {dep_time}"
+            nearest_dep_desc = f"{train_brief} · {route_brief}"
+        elif days_away > 1:
+            nearest_dep_time = f"{nearest_dep['doj']} {dep_time}"
+            nearest_dep_desc = f"{train_brief} · {route_brief}"
+        else:
+            nearest_dep_time = f"{nearest_dep['doj']}"
+            nearest_dep_desc = f"Departed · {train_brief}"
+
+    # Fleet chart preparation status
+    fleet_chart_summary = f"{charted_count} of {len(enriched)} Prepared (Pending)" if charted_count < len(enriched) else f"All {len(enriched)} Charts Finalized"
+
     telegram_bot = os.getenv("TELEGRAM_BOT_TOKEN")
     telegram_chat = os.getenv("TELEGRAM_CHAT_ID")
     telegram_active = bool(telegram_bot and telegram_chat)
@@ -480,6 +534,9 @@ def get_status_overview():
             "monitored_pax_count": total_passengers,
             "progressed_count": progressed_count,
             "charted_count": charted_count,
+            "chart_summary": fleet_chart_summary,
+            "nearest_departure_time": nearest_dep_time,
+            "nearest_departure_desc": nearest_dep_desc,
             "total_spots_gained": total_spots_gained,
             "tests_passing": 52,
             "tests_total": 52

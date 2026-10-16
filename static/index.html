@@ -2227,10 +2227,13 @@
 
       <div class="metric-card animate-entrance delay-2">
         <div class="metric-header">
-          <span class="metric-label">Progression Movement</span>
+          <span class="metric-label">Next Departure / अगली यात्रा</span>
         </div>
-        <div class="metric-value" id="kpi-progression">+57 Positions</div>
-        <div class="metric-desc">Cumulative waiting-list spots advanced</div>
+        <div class="metric-value" id="kpi-departure-time" style="font-size: 20px; color: var(--primary);">Tomorrow 18:25</div>
+        <div class="metric-desc" id="kpi-departure-desc" style="display: flex; flex-direction: column; gap: 2px;">
+          <span id="kpi-departure-train" style="color: var(--text-primary); font-weight: 600;">12791 SC DNR SF · NGP → PRYJ</span>
+          <span id="kpi-chart-status" style="color: var(--text-secondary); font-size: 11px;">Chart: 0 of 3 Prepared (Pending)</span>
+        </div>
       </div>
 
       <div class="metric-card animate-entrance delay-3">
@@ -3343,8 +3346,18 @@
         const tel = data.telemetry;
         if (tel) {
           document.getElementById('kpi-fleet-count').textContent = `${tel.monitored_pnr_count} PNRs`;
-          document.getElementById('kpi-pax-desc').textContent = `${tel.monitored_pax_count} passengers across active fleet`;
-          document.getElementById('kpi-progression').textContent = `+${tel.total_spots_gained} Positions`;
+          if (tel.nearest_departure_time) {
+            const depEl = document.getElementById('kpi-departure-time');
+            if (depEl) depEl.textContent = tel.nearest_departure_time;
+          }
+          if (tel.nearest_departure_desc) {
+            const trainEl = document.getElementById('kpi-departure-train');
+            if (trainEl) trainEl.textContent = tel.nearest_departure_desc;
+          }
+          if (tel.chart_summary) {
+            const chartEl = document.getElementById('kpi-chart-status');
+            if (chartEl) chartEl.textContent = `Chart Status: ${tel.chart_summary}`;
+          }
           document.getElementById('kpi-last-poll-desc').textContent = `Last polled: ${tel.last_poll_time_ist}`;
 
           const ntfyShort = tel.ntfy_configured ? 'Ntfy: Active' : 'Ntfy: Off';
