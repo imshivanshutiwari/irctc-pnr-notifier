@@ -658,6 +658,28 @@
       border-color: rgba(226, 184, 107, 0.3);
       color: var(--primary);
     }
+    .pnr-cadence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 6px;
+      margin-left: 6px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .pnr-cadence-badge.cadence-priority {
+      background: rgba(235, 87, 87, 0.14);
+      border: 1px solid rgba(235, 87, 87, 0.4);
+      color: #FF7B7B;
+    }
+    .pnr-cadence-badge.cadence-standard {
+      background: rgba(160, 160, 160, 0.1);
+      border: 1px solid rgba(160, 160, 160, 0.25);
+      color: var(--text-secondary);
+    }
     .pnr-card-actions {
       display: flex;
       gap: 8px;
@@ -2977,7 +2999,12 @@
             <div class="pnr-status-group">
               <div class="pnr-current-status ${isConfirmed ? 'is-cnf' : ''}">${primaryCurrent}</div>
               <div class="pnr-movement-text ${b.ticket_spots_gained > 0 ? 'has-gain' : ''}">${deltaText}</div>
-              ${berthBadgeHtml}
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 6px;">
+                ${berthBadgeHtml}
+                <div class="pnr-cadence-badge ${b.is_near_journey ? 'cadence-priority' : 'cadence-standard'}" title="${b.tier_label || 'Polling Cadence'}">
+                  <span>${b.is_near_journey ? '⚡ 2h Poll' : '5h Poll'}</span>
+                </div>
+              </div>
             </div>
           </div>
 

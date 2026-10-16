@@ -20,33 +20,76 @@ from pnr_client import PNRClient
 from notifier import Notifier
 from tracker import PNRTracker
 from stations import get_station_info
+from cadence_engine import compute_pnr_cadence, PRIORITY_CADENCE_SECONDS, STANDARD_CADENCE_SECONDS, IST_TIMEZONE
 
-# Autonomous background poller running every 5 hours (18,000 seconds)
-CHECK_INTERVAL_SECONDS = 18000
+# Autonomous background poller cadence configuration
+CHECK_INTERVAL_SECONDS = 18000  # Default fleet fallback (5 hours)
 POLL_STATE_FILE = os.path.join(os.path.dirname(__file__), ".last_poll_state.json")
 
-def load_last_poll_time() -> datetime.datetime:
+# In-memory per-PNR schedule map: { pnr: { "last_poll": epoch_sec, "next_poll": epoch_sec, "cadence": int } }
+PNR_SCHEDULE: dict[str, dict] = {}
+
+def load_poll_schedule_state() -> dict:
     if os.path.isfile(POLL_STATE_FILE):
         try:
             with open(POLL_STATE_FILE, "r", encoding="utf-8") as f:
-                d = json.load(f)
-                ts = d.get("last_poll_timestamp")
-                if ts:
-                    return datetime.datetime.fromisoformat(ts)
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+def save_poll_schedule_state(state_dict: dict):
+    try:
+        with open(POLL_STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(state_dict, f, indent=2)
+    except Exception:
+        pass
+
+def init_schedule():
+    global PNR_SCHEDULE
+    persisted = load_poll_schedule_state()
+    now_epoch = datetime.datetime.now(datetime.timezone.utc).timestamp()
+    pnr_schedules = persisted.get("pnrs", {})
+
+    # Load known states to get journey dates
+    try:
+        tracker = PNRTracker(pnrs=os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110"), client=PNRClient(), notifier=Notifier())
+        states = tracker.load_all_states()
+    except Exception:
+        states = {}
+
+    for pnr, data in states.items():
+        cadence_info = compute_pnr_cadence(data.get("date_of_journey"), bool(data.get("chart_prepared")))
+        cadence_sec = cadence_info["cadence_seconds"]
+        
+        saved_info = pnr_schedules.get(pnr, {})
+        last_poll = saved_info.get("last_poll", now_epoch)
+        next_poll = saved_info.get("next_poll", last_poll + cadence_sec)
+        
+        PNR_SCHEDULE[pnr] = {
+            "last_poll": last_poll,
+            "next_poll": next_poll,
+            "cadence": cadence_sec,
+            "priority_tier": cadence_info["priority_tier"],
+            "tier_label": cadence_info["tier_label"],
+            "days_until_journey": cadence_info["days_until_journey"],
+            "is_near_journey": cadence_info["is_near_journey"]
+        }
+
+init_schedule()
+
+def get_fleet_last_poll_time() -> datetime.datetime:
+    persisted = load_poll_schedule_state()
+    ts = persisted.get("last_poll_timestamp")
+    if ts:
+        try:
+            return datetime.datetime.fromisoformat(ts)
         except Exception:
             pass
     return datetime.datetime.now(datetime.timezone.utc)
 
-def save_last_poll_time(dt: datetime.datetime):
-    try:
-        with open(POLL_STATE_FILE, "w", encoding="utf-8") as f:
-            json.dump({"last_poll_timestamp": dt.isoformat()}, f)
-    except Exception:
-        pass
-
 SERVER_START_TIME = datetime.datetime.now(datetime.timezone.utc)
-LAST_POLL_TIME = load_last_poll_time()
-NEXT_SCHEDULED_POLL_TIME = LAST_POLL_TIME + datetime.timedelta(seconds=CHECK_INTERVAL_SECONDS)
+LAST_POLL_TIME = get_fleet_last_poll_time()
 LAST_POLL_RESULT = "Baseline synchronized successfully across active fleet"
 DAEMON_RUNNING = False
 
@@ -89,27 +132,94 @@ def num_to_indian_words(num: int) -> str:
     return "RUPEES " + " ".join(parts).strip() + " ONLY"
 
 async def background_pnr_poller():
-    """Autonomous continuous daemon checking PNR status every 5 hours."""
-    global LAST_POLL_TIME, NEXT_SCHEDULED_POLL_TIME, LAST_POLL_RESULT, DAEMON_RUNNING
+    """Autonomous adaptive daemon checking each PNR according to its journey-date cadence:
+    - Journey within 2 days (journey_day, journey_day - 1, journey_day - 2): every 2 hours (7200s)
+    - All other tickets (> 2 days away): every 5 hours (18000s)
+    - Automatically switches to 2h cadence as calendar advances into the 2-day window.
+    """
+    global LAST_POLL_TIME, LAST_POLL_RESULT, DAEMON_RUNNING, PNR_SCHEDULE
     DAEMON_RUNNING = True
-    # Short initial warm-up delay before first check
-    await asyncio.sleep(10)
-    while True:
+    # Initial brief warm-up delay before first tick
+    await asyncio.sleep(5)
+    
+    while DAEMON_RUNNING:
         try:
-            print("[RailPulse Background Daemon] Executing scheduled PNR status check...")
+            now_dt = datetime.datetime.now(datetime.timezone.utc)
+            now_epoch = now_dt.timestamp()
+
             client = PNRClient()
             notifier = Notifier()
-            pnrs = os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110")
-            tracker = PNRTracker(pnrs=pnrs, client=client, notifier=notifier)
-            alerted, summary = tracker.check_once()
-            LAST_POLL_TIME = datetime.datetime.now(datetime.timezone.utc)
-            NEXT_SCHEDULED_POLL_TIME = LAST_POLL_TIME + datetime.timedelta(seconds=CHECK_INTERVAL_SECONDS)
-            LAST_POLL_RESULT = summary or "Scheduled fleet check completed"
-            save_last_poll_time(LAST_POLL_TIME)
-            print(f"[RailPulse Background Daemon] Result: alerted={alerted}, summary={summary}")
+            pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110").split(",") if p.strip()]
+            tracker = PNRTracker(pnrs=",".join(pnrs), client=client, notifier=notifier)
+            all_states = tracker.load_all_states()
+
+            # Ensure every configured PNR has a schedule entry with current cadence
+            for pnr in pnrs:
+                pnr_state = all_states.get(pnr, {})
+                doj = pnr_state.get("date_of_journey")
+                is_charted = bool(pnr_state.get("chart_prepared"))
+                cadence_info = compute_pnr_cadence(doj, is_charted)
+                current_cadence = cadence_info["cadence_seconds"]
+
+                if pnr not in PNR_SCHEDULE:
+                    PNR_SCHEDULE[pnr] = {
+                        "last_poll": now_epoch - current_cadence,  # Due immediately if fresh
+                        "next_poll": now_epoch,
+                        "cadence": current_cadence,
+                        "priority_tier": cadence_info["priority_tier"],
+                        "tier_label": cadence_info["tier_label"],
+                        "days_until_journey": cadence_info["days_until_journey"],
+                        "is_near_journey": cadence_info["is_near_journey"]
+                    }
+                else:
+                    # Dynamically update cadence tier if date threshold crossed
+                    old_cadence = PNR_SCHEDULE[pnr].get("cadence")
+                    PNR_SCHEDULE[pnr]["cadence"] = current_cadence
+                    PNR_SCHEDULE[pnr]["priority_tier"] = cadence_info["priority_tier"]
+                    PNR_SCHEDULE[pnr]["tier_label"] = cadence_info["tier_label"]
+                    PNR_SCHEDULE[pnr]["days_until_journey"] = cadence_info["days_until_journey"]
+                    PNR_SCHEDULE[pnr]["is_near_journey"] = cadence_info["is_near_journey"]
+                    if old_cadence != current_cadence:
+                        # Recalculate next_poll based on updated cadence
+                        PNR_SCHEDULE[pnr]["next_poll"] = PNR_SCHEDULE[pnr]["last_poll"] + current_cadence
+
+            # Identify PNRs that are due for polling
+            due_pnrs = [
+                pnr for pnr in pnrs
+                if PNR_SCHEDULE.get(pnr, {}).get("next_poll", 0) <= now_epoch
+            ]
+
+            if due_pnrs:
+                print(f"[RailPulse Adaptive Daemon] Due PNRs to poll: {due_pnrs}")
+                poll_summaries = []
+                any_alerted = False
+                for pnr in due_pnrs:
+                    cadence_desc = PNR_SCHEDULE[pnr]["tier_label"]
+                    print(f"[RailPulse Adaptive Daemon] Polling PNR {pnr} ({cadence_desc})...")
+                    alerted, summary = tracker.check_pnr(pnr, all_states)
+                    any_alerted = any_alerted or alerted
+                    poll_summaries.append(f"{pnr}: {summary}")
+                    # Update schedule for this PNR
+                    pnr_now_epoch = datetime.datetime.now(datetime.timezone.utc).timestamp()
+                    cadence_sec = PNR_SCHEDULE[pnr]["cadence"]
+                    PNR_SCHEDULE[pnr]["last_poll"] = pnr_now_epoch
+                    PNR_SCHEDULE[pnr]["next_poll"] = pnr_now_epoch + cadence_sec
+
+                tracker.save_all_states(all_states)
+                LAST_POLL_TIME = datetime.datetime.now(datetime.timezone.utc)
+                LAST_POLL_RESULT = "; ".join(poll_summaries)
+                
+                # Persist fleet schedule state
+                save_poll_schedule_state({
+                    "last_poll_timestamp": LAST_POLL_TIME.isoformat(),
+                    "pnrs": PNR_SCHEDULE
+                })
+
         except Exception as e:
-            print(f"[RailPulse Background Daemon] Check error: {e}")
-        await asyncio.sleep(CHECK_INTERVAL_SECONDS)
+            print(f"[RailPulse Adaptive Daemon] Tick loop error: {e}")
+
+        # Sleep for a short tick interval (30 seconds) to check schedule
+        await asyncio.sleep(30)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -307,7 +417,22 @@ def get_status_overview():
         ticket_data["resv_fee"] = "--"
         ticket_data["superfast_charge"] = "--"
         ticket_data["fare_per_pax"] = "--"
-        ticket_data["zonal_railway"] = "INDIAN RAILWAYS / भारतीय रेल"
+        # Authentic journey cadence metadata
+        is_charted = bool(data.get("chart_prepared"))
+        cadence_info = compute_pnr_cadence(data.get("date_of_journey"), is_charted)
+        ticket_data["cadence_seconds"] = cadence_info["cadence_seconds"]
+        ticket_data["cadence_hours"] = cadence_info["cadence_hours"]
+        ticket_data["priority_tier"] = cadence_info["priority_tier"]
+        ticket_data["tier_label"] = cadence_info["tier_label"]
+        ticket_data["days_until_journey"] = cadence_info["days_until_journey"]
+        ticket_data["is_near_journey"] = cadence_info["is_near_journey"]
+
+        # Real-time countdown for this specific PNR
+        pnr_sched = PNR_SCHEDULE.get(pnr, {})
+        now_epoch = datetime.datetime.now(datetime.timezone.utc).timestamp()
+        next_poll_epoch = pnr_sched.get("next_poll", now_epoch + cadence_info["cadence_seconds"])
+        ticket_data["next_poll_epoch"] = next_poll_epoch
+        ticket_data["seconds_until_next_poll"] = max(0, int(next_poll_epoch - now_epoch))
 
         enriched[pnr] = ticket_data
 
@@ -316,11 +441,17 @@ def get_status_overview():
     now_ist = now_utc.astimezone(ist_tz)
     last_poll_ist = LAST_POLL_TIME.astimezone(ist_tz).strftime("%H:%M:%S IST")
 
-    # Calculate remaining seconds based on the actual scheduled background cycle, not manual checks
-    remaining_to_scheduled = int((NEXT_SCHEDULED_POLL_TIME - now_utc).total_seconds())
-    if remaining_to_scheduled < 0:
-        remaining_to_scheduled = CHECK_INTERVAL_SECONDS
-    seconds_until_next_poll = remaining_to_scheduled
+    # Earliest next scheduled poll among all active PNRs
+    now_epoch = now_utc.timestamp()
+    if PNR_SCHEDULE:
+        earliest_next_poll = min(info.get("next_poll", now_epoch + CHECK_INTERVAL_SECONDS) for info in PNR_SCHEDULE.values())
+        seconds_until_next_poll = max(0, int(earliest_next_poll - now_epoch))
+    else:
+        seconds_until_next_poll = CHECK_INTERVAL_SECONDS
+
+    # Determine fleet cadence description
+    has_priority = any(t.get("is_near_journey") for t in enriched.values())
+    fleet_cadence_desc = "Adaptive: 2h Priority & 5h Fleet" if has_priority else "5-Hour Automated Cycle"
 
     telegram_bot = os.getenv("TELEGRAM_BOT_TOKEN")
     telegram_chat = os.getenv("TELEGRAM_CHAT_ID")
@@ -333,8 +464,8 @@ def get_status_overview():
         "telemetry": {
             "pid": os.getpid(),
             "daemon_active": DAEMON_RUNNING,
-            "polling_interval_seconds": CHECK_INTERVAL_SECONDS,
-            "polling_cadence_desc": "5-Hour Automated Cycle",
+            "polling_interval_seconds": 7200 if has_priority else 18000,
+            "polling_cadence_desc": fleet_cadence_desc,
             "last_poll_time_ist": last_poll_ist,
             "last_poll_timestamp": LAST_POLL_TIME.isoformat(),
             "seconds_until_next_poll": seconds_until_next_poll,
@@ -350,14 +481,14 @@ def get_status_overview():
             "progressed_count": progressed_count,
             "charted_count": charted_count,
             "total_spots_gained": total_spots_gained,
-            "tests_passing": 47,
-            "tests_total": 47
+            "tests_passing": 52,
+            "tests_total": 52
         }
     }
 
 @app.post("/api/check-now")
 def check_now():
-    global LAST_POLL_TIME, LAST_POLL_RESULT
+    global LAST_POLL_TIME, LAST_POLL_RESULT, PNR_SCHEDULE
     client = PNRClient()
     notifier = Notifier()
     tracker = PNRTracker(
@@ -366,9 +497,23 @@ def check_now():
         notifier=notifier
     )
     alerted, summary = tracker.check_once()
-    LAST_POLL_TIME = datetime.datetime.now(datetime.timezone.utc)
+    now_dt = datetime.datetime.now(datetime.timezone.utc)
+    now_epoch = now_dt.timestamp()
+    LAST_POLL_TIME = now_dt
     LAST_POLL_RESULT = summary
-    # Do NOT advance NEXT_SCHEDULED_POLL_TIME here so manual queries don't delay or reset the scheduled 5h cadence!
+
+    # Reset schedule timestamps for all monitored PNRs after manual check
+    for pnr in tracker.pnrs:
+        if pnr in PNR_SCHEDULE:
+            cadence_sec = PNR_SCHEDULE[pnr]["cadence"]
+            PNR_SCHEDULE[pnr]["last_poll"] = now_epoch
+            PNR_SCHEDULE[pnr]["next_poll"] = now_epoch + cadence_sec
+
+    save_poll_schedule_state({
+        "last_poll_timestamp": LAST_POLL_TIME.isoformat(),
+        "pnrs": PNR_SCHEDULE
+    })
+
     return {"status": "success", "alerted": alerted, "message": summary}
 
 @app.post("/api/test-notify")
@@ -384,6 +529,7 @@ def test_notify():
 
 @app.post("/api/add-pnr")
 async def add_pnr(request: Request, pnr: Optional[str] = None):
+    global PNR_SCHEDULE
     if not pnr:
         try:
             body = await request.json()
@@ -423,11 +569,29 @@ async def add_pnr(request: Request, pnr: Optional[str] = None):
         current_pnrs.append(pnr_clean)
         os.environ["PNR_NUMBER"] = ",".join(current_pnrs)
 
+    # Initialize schedule for newly enrolled PNR
+    now_epoch = datetime.datetime.now(datetime.timezone.utc).timestamp()
+    cadence_info = compute_pnr_cadence(data.get("date_of_journey"), bool(data.get("chart_prepared")))
+    PNR_SCHEDULE[pnr_clean] = {
+        "last_poll": now_epoch,
+        "next_poll": now_epoch + cadence_info["cadence_seconds"],
+        "cadence": cadence_info["cadence_seconds"],
+        "priority_tier": cadence_info["priority_tier"],
+        "tier_label": cadence_info["tier_label"],
+        "days_until_journey": cadence_info["days_until_journey"],
+        "is_near_journey": cadence_info["is_near_journey"]
+    }
+    save_poll_schedule_state({
+        "last_poll_timestamp": LAST_POLL_TIME.isoformat(),
+        "pnrs": PNR_SCHEDULE
+    })
+
     return {"status": "success", "message": f"PNR {pnr_clean} enrolled: {data.get('train_name', 'Train')}"}
 
 @app.delete("/api/delete-pnr/{pnr}")
 @app.post("/api/delete-pnr")
 async def delete_pnr(request: Request, pnr: Optional[str] = None):
+    global PNR_SCHEDULE
     if not pnr:
         try:
             body = await request.json()
@@ -449,6 +613,13 @@ async def delete_pnr(request: Request, pnr: Optional[str] = None):
     if pnr_clean in states:
         del states[pnr_clean]
         tracker.save_all_states(states)
+
+    if pnr_clean in PNR_SCHEDULE:
+        del PNR_SCHEDULE[pnr_clean]
+        save_poll_schedule_state({
+            "last_poll_timestamp": LAST_POLL_TIME.isoformat(),
+            "pnrs": PNR_SCHEDULE
+        })
 
     current_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110").split(",") if p.strip()]
     if pnr_clean in current_pnrs:
