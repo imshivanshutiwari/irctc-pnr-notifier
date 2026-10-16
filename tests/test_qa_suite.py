@@ -180,5 +180,35 @@ class TestQAStationsIntegrity(unittest.TestCase):
         self.assertIn("अयोध्या", h)
 
 
+class TestQAApiValidation(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from fastapi.testclient import TestClient
+        from web_dashboard import app
+        cls.client = TestClient(app)
+
+    def test_delete_pnr_invalid_returns_422(self):
+        resp = self.client.post("/api/delete-pnr?pnr=invalid")
+        self.assertEqual(resp.status_code, 422)
+        self.assertIn("exactly 10 numeric digits", resp.json()["message"])
+
+    def test_delete_pnr_missing_returns_422(self):
+        resp = self.client.post("/api/delete-pnr")
+        self.assertEqual(resp.status_code, 422)
+
+    def test_add_pnr_invalid_returns_422(self):
+        resp = self.client.post("/api/add-pnr?pnr=123")
+        self.assertEqual(resp.status_code, 422)
+
+    def test_status_overview_schema(self):
+        resp = self.client.get("/api/status")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["status"], "success")
+        self.assertIn("telemetry", data)
+        self.assertIn("has_priority", data["telemetry"])
+
+
 if __name__ == "__main__":
     unittest.main()
+
