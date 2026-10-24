@@ -9,9 +9,9 @@ RailPulse is verified ready for continuous local operation and automated schedul
 | Reliability | Passed | Atomic state writes prevent corruption; network exceptions do not crash background daemon |
 | Data Truthfulness | Passed | 100% authentic data; zero synthetic ticket fields; authentic station names and codes |
 | Security | Passed | Loopback 127.0.0.1 binding; no credentials in git; sensitive tokens redacted from API responses |
-| Maintainability | Passed | Modular architecture (stations.py, pnr_client.py, tracker.py, notifier.py, web_dashboard.py) |
-| Performance | Passed | Async lifespan management; 30-second frontend polling with DOM diffing to prevent UI flickering |
-| Test Coverage | Passed | 18 passing tests covering status classification, progression, deduplication, and edge cases |
+| Maintainability | Passed | Modular architecture (stations.py, pnr_client.py, tracker.py, notifier.py, cadence_engine.py, web_dashboard.py) |
+| Performance | Passed | Async lifespan management; non-blocking autonomous adaptive daemon; zero UI flickering |
+| Test Coverage | Passed | 62 passing automated tests in pytest + 9 test suites in Node.js berth engine |
 
 ---
 
@@ -30,23 +30,25 @@ Access dashboard at `http://localhost:8000`.
 ### Background CLI Execution
 ```bash
 # Run one-shot status check across configured PNRs
-python tracker.py --pnr 4763331979,7000126327,6610459110
+python tracker.py --pnr 4345031074,6610459110
 
 # Dry-run mode (print alert messages to console without dispatching network calls)
-python tracker.py --pnr 4763331979 --dry-run
+python tracker.py --pnr 4345031074 --dry-run
 ```
 
-### GitHub Actions Autonomous 24/7 Monitoring
-The repository includes `.github/workflows/pnr_monitor.yml`, which executes scheduled checks every 5 hours:
-- Cron schedule: `0 */5 * * *`
+### GitHub Actions Autonomous Monitoring
+The repository includes `.github/workflows/pnr_monitor.yml`, which executes scheduled checks:
 - Runs `python -m pytest -v` before executing tracker
 - Restores state cache from previous workflow runs
 - Uses GitHub Repository Secrets: `PNR_NUMBER`, `NTFY_TOPIC`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `RAPIDAPI_KEY`
 
 ---
 
-## 3. Maintenance Checklist
+## 3. Maintenance & Operational Procedures
 
 1. **Station Database Expansion:** To add new railway stations, update `STATION_MAP` in `stations.py` with the 3-5 letter station code, canonical English name, and official Hindi script name.
-2. **Gateway Monitoring:** If the free ConfirmTKT endpoint introduces rate limits or schema changes, the client automatically falls back to RapidAPI if `RAPIDAPI_KEY` is configured in `.env`.
-3. **State Backup:** The `status_state.json` file is ignored in git to preserve user privacy and contains the latest serialized booking state. Back up this file if migrating servers.
+2. **Archiving Completed Journeys:** Completed journeys are automatically pruned and archived in `archived_pnrs.json` once a train arrives at its destination (after the 120-minute operational delay buffer).
+3. **Adaptive Polling Intervals:** The autonomous daemon in `web_dashboard.py` monitors journey dates relative to Indian Standard Time (IST):
+   - Tickets within 2 days of departure are polled every 2 hours (`priority-2h`).
+   - Tickets more than 2 days away are polled every 5 hours (`standard-5h`).
+   - Polling schedules and countdowns persist across server restarts in `.last_poll_state.json`.
