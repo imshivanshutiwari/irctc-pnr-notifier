@@ -699,6 +699,11 @@ async def add_pnr(request: Request, pnr: Optional[str] = None):
                     }
                 ]
             }
+        elif isinstance(e, ValueError) or any(k in str(e).lower() for k in ["flushed", "not yet generated", "invalid", "does not exist", "not found"]):
+            return JSONResponse(
+                {"status": "error", "message": f"{e}"},
+                status_code=400
+            )
         else:
             return JSONResponse(
                 {"status": "error", "message": f"Could not fetch PNR {pnr_clean} from railway gateway: {e}"},

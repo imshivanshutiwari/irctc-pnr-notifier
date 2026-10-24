@@ -51,8 +51,14 @@ class PNRClient:
         # Attempt 1: Free Unlimited Open Gateway (Zero quota limits)
         try:
             free_data = self._fetch_from_free_endpoint(pnr_clean)
-            if free_data and (free_data.get("PassengerStatus") or free_data.get("passengers")):
-                return self._normalize_response(pnr_clean, free_data)
+            if free_data:
+                err_msg = free_data.get("Error") or free_data.get("ErrorMessage")
+                if err_msg and any(term in str(err_msg).lower() for term in ["flushed", "not yet generated", "invalid", "does not exist", "not found"]):
+                    raise ValueError(f"Indian Railways PRS: {err_msg}")
+                if free_data.get("PassengerStatus") or free_data.get("passengers"):
+                    return self._normalize_response(pnr_clean, free_data)
+        except ValueError:
+            raise
         except Exception as e:
             print(f"[PNRClient] Free gateway notice ({e}), attempting RapidAPI fallback...")
 
