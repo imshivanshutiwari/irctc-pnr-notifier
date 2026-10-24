@@ -171,10 +171,22 @@
     return { coach: null, seat: null, rawStatus: str };
   }
 
+  const AUTHORITATIVE_CODES = {
+    'WS': { code: 'WS', name: 'Window Seat', position: 'window' },
+    'AS': { code: 'AS', name: 'Aisle Seat', position: 'aisle' },
+    'MB': { code: 'MB', name: 'Middle Seat', position: 'middle' },
+    'MS': { code: 'MS', name: 'Middle Seat', position: 'middle' },
+    'LB': { code: 'LB', name: 'Lower Berth', position: 'main-lower' },
+    'UB': { code: 'UB', name: 'Upper Berth', position: 'main-upper' },
+    'SL': { code: 'SL', name: 'Side Lower', position: 'side-lower' },
+    'SU': { code: 'SU', name: 'Side Upper', position: 'side-upper' },
+    'SM': { code: 'SM', name: 'Side Middle', position: 'side-middle' }
+  };
+
   /**
    * Resolves physical berth details without guessing
    */
-  function resolveBerthDetails(rawClass, seatNum, coachCode) {
+  function resolveBerthDetails(rawClass, seatNum, coachCode, authoritativeBerthCode) {
     const normClass = normalizeCoachClass(rawClass);
     const seat = parseInt(seatNum, 10);
 
@@ -224,10 +236,57 @@
 
     // Determine bay offset and bay number accurately
     const baySize = spec.baySize;
-    const offset = ((seat - 1) % baySize) + 1; // 1-indexed offset inside bay
-    const bayNumber = Math.floor((seat - 1) / baySize) + 1;
+    let offset = ((seat - 1) % baySize) + 1; // 1-indexed offset inside bay
+    let bayNumber = Math.floor((seat - 1) / baySize) + 1;
+    let berthMeta = spec.berthMap[offset];
 
-    const berthMeta = spec.berthMap[offset];
+    // Accurate 78-seater LHB & Vande Bharat AC Chair Car (CC) mapping
+    // Row 1 (seats 1-4, 4 seats): 1(WS), 2(AS) | 3(AS), 4(WS)
+    // Rows 2..15 (seats 5-74, 5 seats each): (seat-5)%5 -> 0:WS, 1:MB, 2:AS, 3:AS, 4:WS
+    // Row 16 (seats 75-78, 4 seats): 75(WS), 76(AS) | 77(AS), 78(WS)
+    if (normClass === 'CC' && seat <= 78) {
+      if (seat <= 4) {
+        bayNumber = 1;
+        const r1Map = {
+          1: { code: 'WS', name: 'Window Seat', position: 'row-2-window' },
+          2: { code: 'AS', name: 'Aisle Seat', position: 'row-2-aisle' },
+          3: { code: 'AS', name: 'Aisle Seat', position: 'row-2-aisle' },
+          4: { code: 'WS', name: 'Window Seat', position: 'row-2-window' }
+        };
+        berthMeta = r1Map[seat];
+      } else if (seat >= 75) {
+        bayNumber = 16;
+        const r16Map = {
+          75: { code: 'WS', name: 'Window Seat', position: 'row-2-window' },
+          76: { code: 'AS', name: 'Aisle Seat', position: 'row-2-aisle' },
+          77: { code: 'AS', name: 'Aisle Seat', position: 'row-2-aisle' },
+          78: { code: 'WS', name: 'Window Seat', position: 'row-2-window' }
+        };
+        berthMeta = r16Map[seat];
+      } else {
+        bayNumber = Math.floor((seat - 5) / 5) + 2;
+        const rowOffset = (seat - 5) % 5;
+        const midRowMap = {
+          0: { code: 'WS', name: 'Window Seat', position: 'row-3-window' },
+          1: { code: 'MB', name: 'Middle Seat', position: 'row-3-middle' },
+          2: { code: 'AS', name: 'Aisle Seat', position: 'row-3-aisle' },
+          3: { code: 'AS', name: 'Aisle Seat', position: 'row-2-aisle' },
+          4: { code: 'WS', name: 'Window Seat', position: 'row-2-window' }
+        };
+        berthMeta = midRowMap[rowOffset];
+      }
+    }
+
+    // Authoritative gateway override: If railway authority explicitly provided berth code (e.g. 'WS'), prioritize it
+    const cleanAuthCode = authoritativeBerthCode ? String(authoritativeBerthCode).trim().toUpperCase() : null;
+    if (cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) {
+      berthMeta = {
+        code: cleanAuthCode,
+        name: AUTHORITATIVE_CODES[cleanAuthCode].name,
+        position: berthMeta ? berthMeta.position : AUTHORITATIVE_CODES[cleanAuthCode].position
+      };
+    }
+
     if (!berthMeta) {
       return {
         isSupported: false,
@@ -242,20 +301,59 @@
       };
     }
 
-    // Compute all berths belonging to this specific physical bay
-    const bayStartSeat = (bayNumber - 1) * baySize + 1;
+    // Compute all berths belonging to this specific physical bay / row
     const bayBerths = [];
-    for (let i = 1; i <= baySize; i++) {
-      const bSeat = bayStartSeat + (i - 1);
-      const bInfo = spec.berthMap[i];
-      if (bInfo) {
-        bayBerths.push({
-          seatNumber: bSeat,
-          berthCode: bInfo.code,
-          berthName: bInfo.name,
-          position: bInfo.position,
-          isUserSeat: bSeat === seat
+    if (normClass === 'CC' && seat <= 78) {
+      if (bayNumber === 1) {
+        const r1 = [
+          { seatNumber: 1, berthCode: 'WS', berthName: 'Window Seat', position: 'row-2-window' },
+          { seatNumber: 2, berthCode: 'AS', berthName: 'Aisle Seat', position: 'row-2-aisle' },
+          { seatNumber: 3, berthCode: 'AS', berthName: 'Aisle Seat', position: 'row-2-aisle' },
+          { seatNumber: 4, berthCode: 'WS', berthName: 'Window Seat', position: 'row-2-window' }
+        ];
+        r1.forEach(b => bayBerths.push({ ...b, isUserSeat: b.seatNumber === seat }));
+      } else if (bayNumber === 16) {
+        const r16 = [
+          { seatNumber: 75, berthCode: 'WS', berthName: 'Window Seat', position: 'row-2-window' },
+          { seatNumber: 76, berthCode: 'AS', berthName: 'Aisle Seat', position: 'row-2-aisle' },
+          { seatNumber: 77, berthCode: 'AS', berthName: 'Aisle Seat', position: 'row-2-aisle' },
+          { seatNumber: 78, berthCode: 'WS', berthName: 'Window Seat', position: 'row-2-window' }
+        ];
+        r16.forEach(b => bayBerths.push({ ...b, isUserSeat: b.seatNumber === seat }));
+      } else {
+        const rowStart = 5 + (bayNumber - 2) * 5;
+        const rowDefs = [
+          { offset: 0, code: 'WS', name: 'Window Seat', position: 'row-3-window' },
+          { offset: 1, code: 'MB', name: 'Middle Seat', position: 'row-3-middle' },
+          { offset: 2, code: 'AS', name: 'Aisle Seat', position: 'row-3-aisle' },
+          { offset: 3, code: 'AS', name: 'Aisle Seat', position: 'row-2-aisle' },
+          { offset: 4, code: 'WS', name: 'Window Seat', position: 'row-2-window' }
+        ];
+        rowDefs.forEach(d => {
+          const sNum = rowStart + d.offset;
+          bayBerths.push({
+            seatNumber: sNum,
+            berthCode: (sNum === seat && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) ? cleanAuthCode : d.code,
+            berthName: (sNum === seat && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) ? AUTHORITATIVE_CODES[cleanAuthCode].name : d.name,
+            position: d.position,
+            isUserSeat: sNum === seat
+          });
         });
+      }
+    } else {
+      const bayStartSeat = (bayNumber - 1) * baySize + 1;
+      for (let i = 1; i <= baySize; i++) {
+        const bSeat = bayStartSeat + (i - 1);
+        const bInfo = spec.berthMap[i];
+        if (bInfo) {
+          bayBerths.push({
+            seatNumber: bSeat,
+            berthCode: (bSeat === seat && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) ? cleanAuthCode : bInfo.code,
+            berthName: (bSeat === seat && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) ? AUTHORITATIVE_CODES[cleanAuthCode].name : bInfo.name,
+            position: bInfo.position,
+            isUserSeat: bSeat === seat
+          });
+        }
       }
     }
 

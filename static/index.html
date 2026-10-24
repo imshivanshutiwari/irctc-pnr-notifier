@@ -3011,7 +3011,9 @@
         if (window.RailPulseBerthEngine) {
           const coachBerth = window.RailPulseBerthEngine.extractCoachBerth(primaryCurrent);
           if (coachBerth.coach && coachBerth.seat) {
-            const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, coachBerth.seat, coachBerth.coach);
+            const p0 = (b.passengers && b.passengers[0]) ? b.passengers[0] : {};
+            const authCode = p0.berth_code || (p0.current_status && p0.current_status.includes('WS') ? 'WS' : null);
+            const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, coachBerth.seat, coachBerth.coach, authCode);
             if (details.isSupported && details.berthCode) {
               berthBadgeHtml = `
                 <div class="pnr-berth-badge">
@@ -3181,7 +3183,9 @@
         return;
       }
 
-      const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, coachBerth.seat, coachBerth.coach);
+      const p0 = (b.passengers && b.passengers[0]) ? b.passengers[0] : {};
+      const authCode = p0.berth_code || (p0.current_status && p0.current_status.includes('WS') ? 'WS' : null);
+      const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, coachBerth.seat, coachBerth.coach, authCode);
 
       if (!details.isSupported) {
         blueprintCont.innerHTML = `

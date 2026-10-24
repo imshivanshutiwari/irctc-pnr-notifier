@@ -176,13 +176,17 @@ class PNRClient:
             )
             coach = str(p.get("currentCoachId") or p.get("Coach") or "").strip()
             berth = str(p.get("currentBerthNo") or p.get("Berth") or "").strip()
+            berth_code = str(p.get("CurrentBerthCode") or p.get("BookingBerthCode") or p.get("berth_code") or p.get("BerthCode") or "").strip().upper()
             if coach and berth and "CNF" in str(current_status).upper() and coach not in str(current_status):
                 current_status = f"{current_status} ({coach}/{berth})"
 
             passengers.append({
                 "passenger_number": p.get("passenger_number") or p.get("passengerSerialNumber") or p.get("Number") or p.get("number") or idx,
                 "booking_status": str(booking_status).strip().upper(),
-                "current_status": str(current_status).strip().upper()
+                "current_status": str(current_status).strip().upper(),
+                "coach": coach,
+                "berth": berth,
+                "berth_code": berth_code
             })
 
         return {
