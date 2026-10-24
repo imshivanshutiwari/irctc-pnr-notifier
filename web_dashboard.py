@@ -220,7 +220,7 @@ async def background_pnr_poller():
                     arr_t = data.get("arr_time")
                     is_done, arr_dt = is_journey_completed(doj, dep_t, arr_t, buffer_minutes=120)
                     if is_done:
-                        now_ist = datetime.datetime.now(ist_tz)
+                        now_ist = datetime.datetime.now(IST_TIMEZONE)
                         hours_since_arrival = (now_ist - arr_dt).total_seconds() / 3600 if arr_dt else 999
                         # Only send notification if arrived recently (within 6 hours) and not already archived
                         if 0 <= hours_since_arrival <= 6 and pnr not in tracker.load_archived_pnrs():
@@ -483,7 +483,7 @@ def get_status_overview():
         enriched[pnr] = ticket_data
 
     now_utc = datetime.datetime.now(datetime.timezone.utc)
-    ist_tz = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+    ist_tz = IST_TIMEZONE
     now_ist = now_utc.astimezone(ist_tz)
     last_poll_ist = LAST_POLL_TIME.astimezone(ist_tz).strftime("%H:%M:%S IST")
 
@@ -605,8 +605,8 @@ def get_status_overview():
             "nearest_departure_time": nearest_dep_time,
             "nearest_departure_desc": nearest_dep_desc,
             "total_spots_gained": total_spots_gained,
-            "tests_passing": 59,
-            "tests_total": 59
+            "tests_passing": 62,
+            "tests_total": 62
         }
     }
 

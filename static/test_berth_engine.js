@@ -143,4 +143,16 @@ const proxPending = BerthEngine.evaluatePassengerProximity(pendingGroup, '3A');
 assert.strictEqual(proxPending.status, 'pending');
 
 console.log('✓ Multi-passenger proximity evaluations passed');
-console.log('=== ALL 8 TEST SUITES IN BERTH ENGINE PASSED! ===');
+// 9. Chair Car (CC) & Vande Bharat / Shatabdi Seat Layout Tests
+const ccSeat19 = BerthEngine.resolveBerthDetails('CC', 19, 'C3');
+assert.strictEqual(ccSeat19.isSupported, true);
+assert.strictEqual(ccSeat19.berthCode, 'WS');
+assert.strictEqual(ccSeat19.berthName, 'Window Seat');
+
+// Test authoritative berth_code override (e.g. from IRCTC PRS)
+const ccOverride = BerthEngine.resolveBerthDetails('CC', 19, 'C3', 'WS');
+assert.strictEqual(ccOverride.berthCode, 'WS');
+assert.strictEqual(ccOverride.berthName, 'Window Seat');
+
+console.log('✓ CC Chair Car Seat 19 Window Seat & authoritative override passed');
+console.log('=== ALL 9 TEST SUITES IN BERTH ENGINE PASSED! ===');

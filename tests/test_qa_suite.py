@@ -200,6 +200,22 @@ class TestQAApiValidation(unittest.TestCase):
         resp = self.client.post("/api/add-pnr?pnr=123")
         self.assertEqual(resp.status_code, 422)
 
+    def test_add_pnr_prs_flushed_returns_400(self):
+        from unittest.mock import patch
+        with patch("web_dashboard.PNRClient.fetch_pnr_status") as mock_fetch:
+            mock_fetch.side_effect = ValueError("Indian Railways PRS: FLUSHED PNR / PNR NOT YET GENERATED")
+            resp = self.client.post("/api/add-pnr?pnr=6836776795")
+            self.assertEqual(resp.status_code, 400)
+            self.assertIn("FLUSHED PNR", resp.json()["message"])
+
+    def test_add_pnr_gateway_failure_returns_502(self):
+        from unittest.mock import patch
+        with patch("web_dashboard.PNRClient.fetch_pnr_status") as mock_fetch:
+            mock_fetch.side_effect = RuntimeError("Connection timeout to gateway")
+            resp = self.client.post("/api/add-pnr?pnr=9999999999")
+            self.assertEqual(resp.status_code, 502)
+            self.assertIn("Could not fetch PNR", resp.json()["message"])
+
     def test_status_overview_schema(self):
         resp = self.client.get("/api/status")
         self.assertEqual(resp.status_code, 200)
@@ -252,6 +268,50 @@ class TestQAArchiveAndSpamPrevention(unittest.TestCase):
             alerted, summary = tracker.check_once()
             self.assertFalse(alerted)
             self.assertEqual(len(alert_called), 0, "Spam alert was sent for ancient completed journey!")
+            self.assertIn("4763331979", tracker.load_archived_pnrs())
+
+    def test_recent_journey_completion_sends_alert_and_archives(self):
+        from datetime import datetime, timedelta
+        from cadence_engine import IST_TIMEZONE
+        with tempfile.TemporaryDirectory() as tmp:
+            state_p = Path(tmp) / "state.json"
+            arch_p = Path(tmp) / "archived.json"
+            
+            # Arrival was 3 hours ago (past the 2-hour train delay buffer, within 6-hour alert window)
+            arrival_time = datetime.now(IST_TIMEZONE) - timedelta(hours=3)
+            doj = arrival_time.strftime("%d-%m-%Y")
+            arr_str = arrival_time.strftime("%H:%M")
+            dep_str = (arrival_time - timedelta(hours=4)).strftime("%H:%M")
+            
+            class MockRecentClient:
+                def fetch_pnr_status(self, pnr):
+                    return {
+                        "pnr": pnr,
+                        "date_of_journey": doj,
+                        "dep_time": dep_str,
+                        "arr_time": arr_str,
+                        "train_number": "12252",
+                        "train_name": "WAINGANGA EXP",
+                        "to_station": "Hyderabad",
+                        "passengers": [{"passenger_number": 1, "booking_status": "CNF", "current_status": "CNF"}]
+                    }
+            
+            alert_called = []
+            class MockNotifier:
+                def send_alert(self, msg):
+                    alert_called.append(msg)
+                    return True
+
+            tracker = PNRTracker(
+                pnrs="4763331979",
+                client=MockRecentClient(),
+                notifier=MockNotifier(),
+                state_file=state_p,
+                archive_file=arch_p
+            )
+            alerted, summary = tracker.check_once()
+            self.assertEqual(len(alert_called), 1, "Expected journey completion alert to be sent!")
+            self.assertIn("Journey Completed", alert_called[0])
             self.assertIn("4763331979", tracker.load_archived_pnrs())
 
 
