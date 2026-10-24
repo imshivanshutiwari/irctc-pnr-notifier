@@ -209,6 +209,52 @@ class TestQAApiValidation(unittest.TestCase):
         self.assertIn("has_priority", data["telemetry"])
 
 
+class TestQAArchiveAndSpamPrevention(unittest.TestCase):
+    def test_archived_pnr_is_skipped_without_polling(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            state_p = Path(tmp) / "state.json"
+            arch_p = Path(tmp) / "archived.json"
+            arch_p.write_text(json.dumps(["4763331979"]))
+            
+            tracker = PNRTracker(pnrs="4763331979", state_file=state_p, archive_file=arch_p)
+            alerted, summary = tracker.check_once()
+            self.assertFalse(alerted)
+            self.assertIn("completed and archived", summary)
+
+    def test_ancient_journey_completion_never_sends_alert(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            state_p = Path(tmp) / "state.json"
+            arch_p = Path(tmp) / "archived.json"
+            
+            class MockAncientClient:
+                def fetch_pnr_status(self, pnr):
+                    return {
+                        "pnr": pnr,
+                        "date_of_journey": "01-01-2020",
+                        "dep_time": "10:00",
+                        "arr_time": "18:00",
+                        "passengers": [{"passenger_number": 1, "booking_status": "CNF", "current_status": "CNF"}]
+                    }
+            
+            alert_called = []
+            class MockNotifier:
+                def send_alert(self, msg):
+                    alert_called.append(msg)
+                    return True
+
+            tracker = PNRTracker(
+                pnrs="4763331979",
+                client=MockAncientClient(),
+                notifier=MockNotifier(),
+                state_file=state_p,
+                archive_file=arch_p
+            )
+            alerted, summary = tracker.check_once()
+            self.assertFalse(alerted)
+            self.assertEqual(len(alert_called), 0, "Spam alert was sent for ancient completed journey!")
+            self.assertIn("4763331979", tracker.load_archived_pnrs())
+
+
 if __name__ == "__main__":
     unittest.main()
 

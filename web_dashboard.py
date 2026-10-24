@@ -53,7 +53,7 @@ def init_schedule():
 
     # Load known states to get journey dates
     try:
-        tracker = PNRTracker(pnrs=os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110"), client=PNRClient(), notifier=Notifier())
+        tracker = PNRTracker(pnrs=os.getenv("PNR_NUMBER", "6610459110"), client=PNRClient(), notifier=Notifier())
         states = tracker.load_all_states()
     except Exception:
         states = {}
@@ -149,7 +149,7 @@ async def background_pnr_poller():
 
             client = PNRClient()
             notifier = Notifier()
-            pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110").split(",") if p.strip()]
+            pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "6610459110").split(",") if p.strip()]
             if not pnrs:
                 await asyncio.sleep(30)
                 continue
@@ -216,15 +216,20 @@ async def background_pnr_poller():
                     arr_t = data.get("arr_time")
                     is_done, arr_dt = is_journey_completed(doj, dep_t, arr_t, buffer_minutes=120)
                     if is_done:
-                        train_name = data.get("train_name", "Train")
-                        train_no = data.get("train_number", "")
-                        to_st = data.get("to_station") or data.get("to_code", "Destination")
-                        msg = (
-                            f"Journey Completed - PNR {pnr}\n"
-                            f"Train {train_no} {train_name} has arrived at {to_st}.\n"
-                            f"Ticket archived and removed from active monitoring."
-                        )
-                        notifier.send_alert(msg)
+                        now_ist = datetime.datetime.now(ist_tz)
+                        hours_since_arrival = (now_ist - arr_dt).total_seconds() / 3600 if arr_dt else 999
+                        # Only send notification if arrived recently (within 6 hours) and not already archived
+                        if 0 <= hours_since_arrival <= 6 and pnr not in tracker.load_archived_pnrs():
+                            train_name = data.get("train_name", "Train")
+                            train_no = data.get("train_number", "")
+                            to_st = data.get("to_station") or data.get("to_code", "Destination")
+                            msg = (
+                                f"Journey Completed - PNR {pnr}\n"
+                                f"Train {train_no} {train_name} has arrived at {to_st}.\n"
+                                f"Ticket archived and removed from active monitoring."
+                            )
+                            notifier.send_alert(msg)
+                        tracker.archive_pnr(pnr)
                         del all_states[pnr]
                         if pnr in PNR_SCHEDULE:
                             del PNR_SCHEDULE[pnr]
@@ -348,7 +353,7 @@ def get_nget_train_search():
 def get_tickets():
     client = PNRClient()
     notifier = Notifier()
-    tracker = PNRTracker(pnrs=os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110"), client=client, notifier=notifier)
+    tracker = PNRTracker(pnrs=os.getenv("PNR_NUMBER", "6610459110"), client=client, notifier=notifier)
     return tracker.load_all_states()
 
 @app.get("/api/status")
@@ -356,7 +361,7 @@ def get_status_overview():
     global LAST_POLL_TIME, LAST_POLL_RESULT
     client = PNRClient()
     notifier = Notifier()
-    pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110").split(",") if p.strip()]
+    pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "6610459110").split(",") if p.strip()]
     tracker = PNRTracker(pnrs=",".join(pnrs), client=client, notifier=notifier)
     states = tracker.load_all_states()
     
@@ -588,8 +593,8 @@ def get_status_overview():
             "nearest_departure_time": nearest_dep_time,
             "nearest_departure_desc": nearest_dep_desc,
             "total_spots_gained": total_spots_gained,
-            "tests_passing": 57,
-            "tests_total": 57
+            "tests_passing": 59,
+            "tests_total": 59
         }
     }
 
@@ -599,7 +604,7 @@ def check_now():
     client = PNRClient()
     notifier = Notifier()
     tracker = PNRTracker(
-        pnrs=os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110"),
+        pnrs=os.getenv("PNR_NUMBER", "6610459110"),
         client=client,
         notifier=notifier
     )
@@ -673,7 +678,7 @@ async def add_pnr(request: Request, pnr: Optional[str] = None):
     states[pnr_clean] = data
     tracker.save_all_states(states)
 
-    current_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110").split(",") if p.strip()]
+    current_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "6610459110").split(",") if p.strip()]
     if pnr_clean not in current_pnrs:
         current_pnrs.append(pnr_clean)
         os.environ["PNR_NUMBER"] = ",".join(current_pnrs)
@@ -733,7 +738,7 @@ async def delete_pnr(request: Request, pnr: Optional[str] = None):
             "pnrs": PNR_SCHEDULE
         })
 
-    current_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "4763331979,7000126327,6610459110").split(",") if p.strip()]
+    current_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "6610459110").split(",") if p.strip()]
     if pnr_clean in current_pnrs:
         current_pnrs.remove(pnr_clean)
         os.environ["PNR_NUMBER"] = ",".join(current_pnrs)
