@@ -2221,18 +2221,18 @@
         <div class="metric-header">
           <span class="metric-label">Monitored Fleet</span>
         </div>
-        <div class="metric-value" id="kpi-fleet-count">3 PNRs</div>
-        <div class="metric-desc" id="kpi-pax-desc">5 passengers across active fleet</div>
+        <div class="metric-value" id="kpi-fleet-count">--</div>
+        <div class="metric-desc" id="kpi-pax-desc">-- passengers across active fleet</div>
       </div>
 
       <div class="metric-card animate-entrance delay-2">
         <div class="metric-header">
           <span class="metric-label">Next Departure / अगली यात्रा</span>
         </div>
-        <div class="metric-value" id="kpi-departure-time" style="font-size: 20px; color: var(--primary);">Tomorrow 18:25</div>
+        <div class="metric-value" id="kpi-departure-time" style="font-size: 20px; color: var(--primary);">--</div>
         <div class="metric-desc" id="kpi-departure-desc" style="display: flex; flex-direction: column; gap: 2px;">
-          <span id="kpi-departure-train" style="color: var(--text-primary); font-weight: 600;">12791 SC DNR SF · NGP → PRYJ</span>
-          <span id="kpi-chart-status" style="color: var(--text-secondary); font-size: 11px;">Chart: 0 of 3 Prepared (Pending)</span>
+          <span id="kpi-departure-train" style="color: var(--text-primary); font-weight: 600;">--</span>
+          <span id="kpi-chart-status" style="color: var(--text-secondary); font-size: 11px;">Chart: --</span>
         </div>
       </div>
 
@@ -2283,7 +2283,7 @@
             <div class="overview-subtitle">Your journey dashboard</div>
           </div>
           <div class="overview-meta-group">
-            <div class="tracked-pill" id="overview-pnr-count-pill">3 PNRs tracked</div>
+            <div class="tracked-pill" id="overview-pnr-count-pill">-- PNRs tracked</div>
             <div class="overview-mode-label">Overview / Ticket view</div>
           </div>
         </div>
@@ -2291,8 +2291,8 @@
 
         <div class="overview-filter-bar">
           <div class="filter-group" role="tablist" aria-label="Filter bookings by state">
-            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All (<span id="count-all">3</span>)</button>
-            <button class="filter-btn" data-filter="progressing" onclick="setFilter('progressing')">Progressing (<span id="count-prog">3</span>)</button>
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All (<span id="count-all">0</span>)</button>
+            <button class="filter-btn" data-filter="progressing" onclick="setFilter('progressing')">Progressing (<span id="count-prog">0</span>)</button>
             <button class="filter-btn" data-filter="charted" onclick="setFilter('charted')">Charted (<span id="count-chart">0</span>)</button>
           </div>
         </div>
@@ -3401,14 +3401,16 @@
         const data = await res.json();
         if (data.status !== 'success') return;
 
-        // Render live tickets into dashboard
-        if (data.tickets && Object.keys(data.tickets).length > 0) {
-          renderTickets(data.tickets);
-        }
+        // Render live tickets into dashboard (unconditionally, handles empty fleet too)
+        renderTickets(data.tickets || {});
 
         const tel = data.telemetry;
         if (tel) {
-          document.getElementById('kpi-fleet-count').textContent = `${tel.monitored_pnr_count} PNRs`;
+          document.getElementById('kpi-fleet-count').textContent = `${tel.monitored_pnr_count} PNR${tel.monitored_pnr_count === 1 ? '' : 's'}`;
+          const paxDescEl = document.getElementById('kpi-pax-desc');
+          if (paxDescEl) {
+            paxDescEl.textContent = `${tel.monitored_pax_count || 0} passenger${tel.monitored_pax_count === 1 ? '' : 's'} across active fleet`;
+          }
           if (tel.nearest_departure_time) {
             const depEl = document.getElementById('kpi-departure-time');
             if (depEl) depEl.textContent = tel.nearest_departure_time;
