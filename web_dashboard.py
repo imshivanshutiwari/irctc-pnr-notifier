@@ -11,6 +11,7 @@ import os
 import uvicorn
 import datetime
 import re
+from pathlib import Path
 from typing import Optional
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -18,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from pnr_client import PNRClient
 from notifier import Notifier
-from tracker import PNRTracker
+from tracker import PNRTracker, DEFAULT_STATE_FILE
 from stations import get_station_info
 from cadence_engine import compute_pnr_cadence, parse_journey_date, is_journey_completed, PRIORITY_CADENCE_SECONDS, STANDARD_CADENCE_SECONDS, IST_TIMEZONE
 
@@ -53,8 +54,11 @@ def init_schedule():
 
     # Load known states to get journey dates
     try:
-        tracker = PNRTracker(pnrs=os.getenv("PNR_NUMBER", "6610459110"), client=PNRClient(), notifier=Notifier())
-        states = tracker.load_all_states()
+        pnrs_env = [p.strip() for p in os.getenv("PNR_NUMBER", "").split(",") if p.strip()]
+        states: dict = {}
+        if pnrs_env:
+            tracker = PNRTracker(pnrs=",".join(pnrs_env), client=PNRClient(), notifier=Notifier())
+            states = tracker.load_all_states()
     except Exception:
         states = {}
 
@@ -149,7 +153,7 @@ async def background_pnr_poller():
 
             client = PNRClient()
             notifier = Notifier()
-            pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "6610459110").split(",") if p.strip()]
+            pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "").split(",") if p.strip()]
             if not pnrs:
                 await asyncio.sleep(30)
                 continue
@@ -351,20 +355,27 @@ def get_nget_train_search():
 
 @app.get("/api/tickets")
 def get_tickets():
-    client = PNRClient()
-    notifier = Notifier()
-    tracker = PNRTracker(pnrs=os.getenv("PNR_NUMBER", "6610459110"), client=client, notifier=notifier)
-    return tracker.load_all_states()
+    state_path = Path(DEFAULT_STATE_FILE)
+    try:
+        states = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
+        if not isinstance(states, dict):
+            states = {}
+    except Exception:
+        states = {}
+    return states
 
 @app.get("/api/status")
 def get_status_overview():
     global LAST_POLL_TIME, LAST_POLL_RESULT
-    client = PNRClient()
-    notifier = Notifier()
-    pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "6610459110").split(",") if p.strip()]
-    tracker_pnrs = ",".join(pnrs) if pnrs else "0000000000"
-    tracker = PNRTracker(pnrs=tracker_pnrs, client=client, notifier=notifier)
-    states = tracker.load_all_states() if pnrs else {}
+    pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "").split(",") if p.strip()]
+    state_path = Path(DEFAULT_STATE_FILE)
+    try:
+        all_raw = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
+        if not isinstance(all_raw, dict):
+            all_raw = {}
+    except Exception:
+        all_raw = {}
+    states = {k: v for k, v in all_raw.items() if k in pnrs} if pnrs else all_raw
     
     total_spots_gained = 0
     progressed_count = 0
@@ -602,10 +613,13 @@ def get_status_overview():
 @app.post("/api/check-now")
 def check_now():
     global LAST_POLL_TIME, LAST_POLL_RESULT, PNR_SCHEDULE
+    pnrs_env = [p.strip() for p in os.getenv("PNR_NUMBER", "").split(",") if p.strip()]
+    if not pnrs_env:
+        return {"status": "success", "alerted": False, "message": "No PNRs configured for monitoring"}
     client = PNRClient()
     notifier = Notifier()
     tracker = PNRTracker(
-        pnrs=os.getenv("PNR_NUMBER", "6610459110"),
+        pnrs=",".join(pnrs_env),
         client=client,
         notifier=notifier
     )
@@ -661,9 +675,14 @@ async def add_pnr(request: Request, pnr: Optional[str] = None):
 
     client = PNRClient()
     notifier = Notifier()
-    # Load state using a tracker scoped only to read/write — not to validate pnr_clean itself
-    tracker = PNRTracker(pnrs="4763331979", client=client, notifier=notifier)
-    states = tracker.load_all_states()
+    # Load state directly from JSON file — no fake PNR needed
+    state_path = Path(DEFAULT_STATE_FILE)
+    try:
+        states = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
+        if not isinstance(states, dict):
+            states = {}
+    except Exception:
+        states = {}
 
     if pnr_clean in states:
         return JSONResponse({"status": "error", "message": f"PNR {pnr_clean} is already being monitored."}, status_code=409)
@@ -671,35 +690,7 @@ async def add_pnr(request: Request, pnr: Optional[str] = None):
     try:
         data = client.fetch_pnr_status(pnr_clean)
     except Exception as e:
-        if pnr_clean == "6610459110":
-            data = {
-                "pnr": "6610459110",
-                "train_number": "12252",
-                "train_name": "WAINGANGA EXP",
-                "date_of_journey": "15-11-2026",
-                "from_station": "Korba",
-                "to_station": "Hyderabad Kacheguda",
-                "from_name": "Korba",
-                "to_name": "Hyderabad Kacheguda",
-                "from_code": "KRBA",
-                "to_code": "KCG",
-                "from_hi": "कोरबा",
-                "to_hi": "हैदराबाद काचेगुड़ा",
-                "coach_class": "SL",
-                "quota": "GN",
-                "fare": "540",
-                "dep_time": "08:05",
-                "arr_time": "01:00",
-                "chart_prepared": False,
-                "passengers": [
-                    {
-                        "passenger_number": 1,
-                        "booking_status": "PQWL  15",
-                        "current_status": "PQWL  12"
-                    }
-                ]
-            }
-        elif isinstance(e, ValueError) or any(k in str(e).lower() for k in ["flushed", "not yet generated", "invalid", "does not exist", "not found"]):
+        if isinstance(e, ValueError) or any(k in str(e).lower() for k in ["flushed", "not yet generated", "invalid", "does not exist", "not found"]):
             return JSONResponse(
                 {"status": "error", "message": f"{e}"},
                 status_code=400
@@ -711,9 +702,11 @@ async def add_pnr(request: Request, pnr: Optional[str] = None):
             )
 
     states[pnr_clean] = data
+    # Persist updated state
+    tracker = PNRTracker(pnrs=pnr_clean, client=client, notifier=notifier)
     tracker.save_all_states(states)
 
-    current_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "6610459110").split(",") if p.strip()]
+    current_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "").split(",") if p.strip()]
     if pnr_clean not in current_pnrs:
         current_pnrs.append(pnr_clean)
         os.environ["PNR_NUMBER"] = ",".join(current_pnrs)
@@ -773,7 +766,7 @@ async def delete_pnr(request: Request, pnr: Optional[str] = None):
             "pnrs": PNR_SCHEDULE
         })
 
-    current_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "6610459110").split(",") if p.strip()]
+    current_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "").split(",") if p.strip()]
     if pnr_clean in current_pnrs:
         current_pnrs.remove(pnr_clean)
         os.environ["PNR_NUMBER"] = ",".join(current_pnrs)
