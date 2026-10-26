@@ -20,18 +20,20 @@ TEST_STATE_FILE = "test_status_state.json"
 
 class TestPNRTracker(unittest.TestCase):
     def setUp(self):
-        if os.path.exists(TEST_STATE_FILE):
-            os.remove(TEST_STATE_FILE)
+        for f in (TEST_STATE_FILE, f"archived_{TEST_STATE_FILE}"):
+            if os.path.exists(f):
+                os.remove(f)
 
     def tearDown(self):
-        if os.path.exists(TEST_STATE_FILE):
-            os.remove(TEST_STATE_FILE)
+        for f in (TEST_STATE_FILE, f"archived_{TEST_STATE_FILE}"):
+            if os.path.exists(f):
+                os.remove(f)
 
     def test_first_run_records_baseline_and_alerts(self):
         initial_mock = {
             "train_number": "12952",
             "train_name": "MUMBAI RAJDHANI",
-            "date_of_journey": "25-10-2026",
+            "date_of_journey": "25-10-2027",
             "from_station": "NDLS",
             "to_station": "MMCT",
             "passengers": [
@@ -64,7 +66,7 @@ class TestPNRTracker(unittest.TestCase):
         baseline_mock = {
             "train_number": "12952",
             "train_name": "MUMBAI RAJDHANI",
-            "date_of_journey": "25-10-2026",
+            "date_of_journey": "25-10-2027",
             "passengers": [
                 {"passenger_number": 1, "booking_status": "RLWL 15", "current_status": "RLWL 10"}
             ]
@@ -84,7 +86,7 @@ class TestPNRTracker(unittest.TestCase):
         updated_mock = {
             "train_number": "12952",
             "train_name": "MUMBAI RAJDHANI",
-            "date_of_journey": "25-10-2026",
+            "date_of_journey": "25-10-2027",
             "passengers": [
                 {"passenger_number": 1, "booking_status": "RLWL 15", "current_status": "RLWL 9"}
             ]

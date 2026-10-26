@@ -98,7 +98,10 @@ class PNRTracker:
         self.client = client or PNRClient()
         self.notifier = notifier or Notifier()
         self.state_file = Path(state_file)
-        self.archive_file = Path(archive_file)
+        if str(archive_file) == DEFAULT_ARCHIVE_FILE and self.state_file.name != DEFAULT_STATE_FILE:
+            self.archive_file = self.state_file.parent / f"archived_{self.state_file.name}"
+        else:
+            self.archive_file = Path(archive_file)
         self.notify_on_first_run = notify_on_first_run
 
     def load_archived_pnrs(self) -> set:

@@ -52,15 +52,21 @@ def init_schedule():
     now_epoch = datetime.datetime.now(datetime.timezone.utc).timestamp()
     pnr_schedules = persisted.get("pnrs", {})
 
-    # Load known states to get journey dates
+    # Load all persistent states directly
+    state_path = Path(DEFAULT_STATE_FILE)
     try:
-        pnrs_env = [p.strip() for p in os.getenv("PNR_NUMBER", "").split(",") if p.strip()]
-        states: dict = {}
-        if pnrs_env:
-            tracker = PNRTracker(pnrs=",".join(pnrs_env), client=PNRClient(), notifier=Notifier())
-            states = tracker.load_all_states()
+        states = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
+        if not isinstance(states, dict):
+            states = {}
     except Exception:
         states = {}
+
+    # Synchronize PNR_NUMBER environment variable with all persistent states
+    known_pnrs = list(states.keys())
+    env_pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "").split(",") if p.strip()]
+    merged = list(dict.fromkeys(known_pnrs + env_pnrs))
+    if merged:
+        os.environ["PNR_NUMBER"] = ",".join(merged)
 
     for pnr, data in states.items():
         cadence_info = compute_pnr_cadence(data.get("date_of_journey"), bool(data.get("chart_prepared")))
@@ -367,15 +373,13 @@ def get_tickets():
 @app.get("/api/status")
 def get_status_overview():
     global LAST_POLL_TIME, LAST_POLL_RESULT
-    pnrs = [p.strip() for p in os.getenv("PNR_NUMBER", "").split(",") if p.strip()]
     state_path = Path(DEFAULT_STATE_FILE)
     try:
-        all_raw = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
-        if not isinstance(all_raw, dict):
-            all_raw = {}
+        states = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
+        if not isinstance(states, dict):
+            states = {}
     except Exception:
-        all_raw = {}
-    states = {k: v for k, v in all_raw.items() if k in pnrs} if pnrs else all_raw
+        states = {}
     
     total_spots_gained = 0
     progressed_count = 0
