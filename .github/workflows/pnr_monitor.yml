@@ -57,4 +57,4 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          python tracker.py --state-file "$RUNNER_TEMP/status_state.json"
+          python tracker.py --state-file "$RUNNER_TEMP/status_state.json" --allow-transient-errors

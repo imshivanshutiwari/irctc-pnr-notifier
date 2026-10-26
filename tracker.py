@@ -315,6 +315,7 @@ def main() -> int:
     parser.add_argument("--state-file", type=str, default=DEFAULT_STATE_FILE, help="Path to private state JSON")
     parser.add_argument("--dry-run", action="store_true", help="Simulate notifications")
     parser.add_argument("--alert-on-first-run", action="store_true", help="Notify when recording initial baseline")
+    parser.add_argument("--allow-transient-errors", action="store_true", help="Log upstream maintenance or transient network errors without non-zero exit code")
     args = parser.parse_args()
 
     if not args.pnr:
@@ -332,6 +333,26 @@ def main() -> int:
         print(summary)
         return 0
     except Exception as exc:
+        exc_str = str(exc).lower()
+        is_transient = any(
+            pattern in exc_str
+            for pattern in [
+                "down every day from 11:30pm to 12:30am",
+                "indian railways network will be down",
+                "prs",
+                "timeout",
+                "timed out",
+                "connection error",
+                "service unavailable",
+                "gateway",
+                "502",
+                "503",
+                "504",
+            ]
+        )
+        if args.allow_transient_errors or is_transient:
+            print(f"[Tracker] Notice: Upstream IRCTC/PRS network under scheduled maintenance or transient downtime: {exc}. Will retry on next scheduled interval.")
+            return 0
         print(f"[Tracker] Check failed: {exc}")
         return 1
 
