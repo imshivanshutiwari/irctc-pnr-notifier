@@ -54,6 +54,7 @@ class PNRClient:
             raise ValueError(f"Invalid 10-digit PNR: {pnr}")
 
         # Attempt 1: Free Unlimited Open Gateway (Zero quota limits)
+        errors = []
         try:
             free_data = self._fetch_from_free_endpoint(pnr_clean)
             if free_data:
@@ -66,6 +67,7 @@ class PNRClient:
         except PRSError:
             raise
         except Exception as e:
+            errors.append(f"Free rail gateway: {e}")
             print(f"[PNRClient] Free gateway notice ({e}), attempting RapidAPI fallback...")
 
         # Attempt 2: RapidAPI (if key is configured)
@@ -75,20 +77,29 @@ class PNRClient:
                 "x-rapidapi-host": self.api_host
             }
 
-            if "irctc1.p.rapidapi.com" in self.api_host:
-                url = f"https://{self.api_host}/api/v3/getPNRStatus"
-                params = {"pnrNumber": pnr_clean}
-                response = requests.get(url, headers=headers, params=params, timeout=20)
-            else:
-                url = f"https://{self.api_host}/pnr-status/{pnr_clean}"
-                response = requests.get(url, headers=headers, timeout=20)
+            try:
+                if "irctc1.p.rapidapi.com" in self.api_host:
+                    url = f"https://{self.api_host}/api/v3/getPNRStatus"
+                    params = {"pnrNumber": pnr_clean}
+                    response = requests.get(url, headers=headers, params=params, timeout=20)
+                else:
+                    url = f"https://{self.api_host}/pnr-status/{pnr_clean}"
+                    response = requests.get(url, headers=headers, timeout=20)
 
-            if response.status_code == 200:
-                data = response.json()
-                if not (data.get("status") is False and "message" in data):
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") is False and "message" in data:
+                        raise PRSError(f"RapidAPI ({self.api_host}): {data.get('message')}")
                     return self._normalize_response(pnr_clean, data)
+                else:
+                    errors.append(f"RapidAPI HTTP {response.status_code}: {response.text[:100]}")
+            except PRSError:
+                raise
+            except Exception as e:
+                errors.append(f"RapidAPI: {e}")
 
-        raise RuntimeError(f"Failed to fetch PNR status for {pnr_clean} across all providers.")
+        err_details = "; ".join(errors) if errors else "no active provider response"
+        raise RuntimeError(f"Failed to fetch PNR status for {pnr_clean}: {err_details}")
 
     def _normalize_response(self, pnr: str, raw: Dict[str, Any]) -> Dict[str, Any]:
         """

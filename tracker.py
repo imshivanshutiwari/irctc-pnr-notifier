@@ -345,7 +345,10 @@ def main() -> int:
             perm in exc_str
             for perm in [
                 "flushed",
-                "invalid 10-digit",
+                "pnr not found",
+                "not found",
+                "does not exist",
+                "invalid",
                 "cancelled",
                 "cannot safely read state file",
                 "must contain a json object",
@@ -363,11 +366,12 @@ def main() -> int:
                 "timeout",
                 "timed out",
                 "connection error",
+                "connection refused",
                 "service unavailable",
                 "502 bad gateway",
                 "503 service unavailable",
                 "504 gateway timeout",
-                "failed to fetch pnr status for",
+                "temporary gateway outage",
             ]
         ) and not is_permanent_error
 
