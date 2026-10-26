@@ -346,9 +346,11 @@ def main() -> int:
             for perm in [
                 "flushed",
                 "pnr not found",
-                "not found",
+                "invalid pnr",
+                "invalid 10-digit",
+                "pnr is invalid",
+                "not yet generated",
                 "does not exist",
-                "invalid",
                 "cancelled",
                 "cannot safely read state file",
                 "must contain a json object",
@@ -356,23 +358,30 @@ def main() -> int:
                 "permission denied",
             ]
         )
-        # Upstream temporary network/maintenance outages
-        is_transient_error = any(
-            pattern in exc_str
-            for pattern in [
-                "down every day from 11:30pm to 12:30am",
-                "indian railways network will be down",
-                "prs maintenance",
-                "timeout",
-                "timed out",
-                "connection error",
-                "connection refused",
-                "service unavailable",
-                "502 bad gateway",
-                "503 service unavailable",
-                "504 gateway timeout",
-                "temporary gateway outage",
-            ]
+        # Upstream temporary network/maintenance outages or HTTP 5xx errors
+        is_transient_error = (
+            any(
+                pattern in exc_str
+                for pattern in [
+                    "down every day from 11:30pm to 12:30am",
+                    "indian railways network will be down",
+                    "prs maintenance",
+                    "timeout",
+                    "timed out",
+                    "connection error",
+                    "connection refused",
+                    "service unavailable",
+                    "internal server error",
+                    "temporary gateway outage",
+                    "free rail endpoint returned 5",
+                    "rapidapi http 5",
+                    "500 internal server error",
+                    "502 bad gateway",
+                    "503 service unavailable",
+                    "504 gateway timeout",
+                ]
+            )
+            or bool(re.search(r"\b5\d{2}\b", exc_str))
         ) and not is_permanent_error
 
         if (args.allow_transient_errors or is_transient_error) and not is_permanent_error:
