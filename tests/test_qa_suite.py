@@ -279,9 +279,10 @@ class TestQAArchiveAndSpamPrevention(unittest.TestCase):
             
             # Arrival was 3 hours ago (past the 2-hour train delay buffer, within 6-hour alert window)
             arrival_time = datetime.now(IST_TIMEZONE) - timedelta(hours=3)
-            doj = arrival_time.strftime("%d-%m-%Y")
+            dep_time = arrival_time - timedelta(hours=4)
+            doj = dep_time.strftime("%d-%m-%Y")
             arr_str = arrival_time.strftime("%H:%M")
-            dep_str = (arrival_time - timedelta(hours=4)).strftime("%H:%M")
+            dep_str = dep_time.strftime("%H:%M")
             
             class MockRecentClient:
                 def fetch_pnr_status(self, pnr):

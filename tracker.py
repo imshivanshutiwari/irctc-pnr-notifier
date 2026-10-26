@@ -68,6 +68,24 @@ def is_improvement(old_status: Any, new_status: Any) -> bool:
     return False
 
 
+def load_state_file(state_file: Union[str, Path] = DEFAULT_STATE_FILE) -> Dict[str, Dict[str, Any]]:
+    """Loads cached states from disk safely without resetting corrupted state."""
+    path = Path(state_file)
+    if not path.exists():
+        return {}
+    try:
+        content = path.read_text(encoding="utf-8")
+        data = json.loads(content)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Cannot safely read state file {path}: {exc}") from exc
+
+    if not isinstance(data, dict):
+        raise RuntimeError(f"State file {path} must contain a JSON object.")
+    if "pnr" in data:  # legacy single-PNR format
+        return {str(data["pnr"]): data}
+    return data
+
+
 class PNRTracker:
     def __init__(
         self,
@@ -128,19 +146,7 @@ class PNRTracker:
 
     def load_all_states(self) -> Dict[str, Dict[str, Any]]:
         """Loads cached states from disk safely without resetting corrupted state."""
-        if not self.state_file.exists():
-            return {}
-        try:
-            content = self.state_file.read_text(encoding="utf-8")
-            data = json.loads(content)
-        except (OSError, json.JSONDecodeError) as exc:
-            raise RuntimeError(f"Cannot safely read state file {self.state_file}: {exc}") from exc
-
-        if not isinstance(data, dict):
-            raise RuntimeError(f"State file {self.state_file} must contain a JSON object.")
-        if "pnr" in data:  # legacy single-PNR format
-            return {str(data["pnr"]): data}
-        return data
+        return load_state_file(self.state_file)
 
     def save_all_states(self, all_states: Dict[str, Dict[str, Any]]) -> None:
         """Write state atomically using temp file and rename."""
@@ -334,24 +340,39 @@ def main() -> int:
         return 0
     except Exception as exc:
         exc_str = str(exc).lower()
-        is_transient = any(
+        # Explicit permanent rejection or fatal state corruption errors that must always exit non-zero
+        is_permanent_error = any(
+            perm in exc_str
+            for perm in [
+                "flushed",
+                "invalid 10-digit",
+                "cancelled",
+                "cannot safely read state file",
+                "must contain a json object",
+                "no valid passenger data",
+                "permission denied",
+            ]
+        )
+        # Upstream temporary network/maintenance outages
+        is_transient_error = any(
             pattern in exc_str
             for pattern in [
                 "down every day from 11:30pm to 12:30am",
                 "indian railways network will be down",
-                "prs",
+                "prs maintenance",
                 "timeout",
                 "timed out",
                 "connection error",
                 "service unavailable",
-                "gateway",
-                "502",
-                "503",
-                "504",
+                "502 bad gateway",
+                "503 service unavailable",
+                "504 gateway timeout",
+                "failed to fetch pnr status for",
             ]
-        )
-        if args.allow_transient_errors or is_transient:
-            print(f"[Tracker] Notice: Upstream IRCTC/PRS network under scheduled maintenance or transient downtime: {exc}. Will retry on next scheduled interval.")
+        ) and not is_permanent_error
+
+        if (args.allow_transient_errors or is_transient_error) and not is_permanent_error:
+            print(f"[Tracker] Notice: Upstream IRCTC network under scheduled maintenance or transient downtime: {exc}. Will retry on next scheduled interval.")
             return 0
         print(f"[Tracker] Check failed: {exc}")
         return 1

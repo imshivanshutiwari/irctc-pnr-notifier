@@ -280,10 +280,11 @@
     // Authoritative gateway override: If railway authority explicitly provided berth code (e.g. 'WS'), prioritize it
     const cleanAuthCode = authoritativeBerthCode ? String(authoritativeBerthCode).trim().toUpperCase() : null;
     if (cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) {
+      const authPos = AUTHORITATIVE_CODES[cleanAuthCode].position;
       berthMeta = {
         code: cleanAuthCode,
         name: AUTHORITATIVE_CODES[cleanAuthCode].name,
-        position: berthMeta ? berthMeta.position : AUTHORITATIVE_CODES[cleanAuthCode].position
+        position: authPos || (berthMeta ? berthMeta.position : null)
       };
     }
 
@@ -311,7 +312,17 @@
           { seatNumber: 3, berthCode: 'AS', berthName: 'Aisle Seat', position: 'row-2-aisle' },
           { seatNumber: 4, berthCode: 'WS', berthName: 'Window Seat', position: 'row-2-window' }
         ];
-        r1.forEach(b => bayBerths.push({ ...b, isUserSeat: b.seatNumber === seat }));
+        r1.forEach(b => {
+          const isUser = b.seatNumber === seat;
+          const authActive = isUser && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode];
+          bayBerths.push({
+            seatNumber: b.seatNumber,
+            berthCode: authActive ? cleanAuthCode : b.berthCode,
+            berthName: authActive ? AUTHORITATIVE_CODES[cleanAuthCode].name : b.berthName,
+            position: (authActive && AUTHORITATIVE_CODES[cleanAuthCode].position) ? AUTHORITATIVE_CODES[cleanAuthCode].position : b.position,
+            isUserSeat: isUser
+          });
+        });
       } else if (bayNumber === 16) {
         const r16 = [
           { seatNumber: 75, berthCode: 'WS', berthName: 'Window Seat', position: 'row-2-window' },
@@ -319,7 +330,17 @@
           { seatNumber: 77, berthCode: 'AS', berthName: 'Aisle Seat', position: 'row-2-aisle' },
           { seatNumber: 78, berthCode: 'WS', berthName: 'Window Seat', position: 'row-2-window' }
         ];
-        r16.forEach(b => bayBerths.push({ ...b, isUserSeat: b.seatNumber === seat }));
+        r16.forEach(b => {
+          const isUser = b.seatNumber === seat;
+          const authActive = isUser && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode];
+          bayBerths.push({
+            seatNumber: b.seatNumber,
+            berthCode: authActive ? cleanAuthCode : b.berthCode,
+            berthName: authActive ? AUTHORITATIVE_CODES[cleanAuthCode].name : b.berthName,
+            position: (authActive && AUTHORITATIVE_CODES[cleanAuthCode].position) ? AUTHORITATIVE_CODES[cleanAuthCode].position : b.position,
+            isUserSeat: isUser
+          });
+        });
       } else {
         const rowStart = 5 + (bayNumber - 2) * 5;
         const rowDefs = [
@@ -331,12 +352,14 @@
         ];
         rowDefs.forEach(d => {
           const sNum = rowStart + d.offset;
+          const isUser = sNum === seat;
+          const authActive = isUser && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode];
           bayBerths.push({
             seatNumber: sNum,
-            berthCode: (sNum === seat && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) ? cleanAuthCode : d.code,
-            berthName: (sNum === seat && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) ? AUTHORITATIVE_CODES[cleanAuthCode].name : d.name,
-            position: d.position,
-            isUserSeat: sNum === seat
+            berthCode: authActive ? cleanAuthCode : d.code,
+            berthName: authActive ? AUTHORITATIVE_CODES[cleanAuthCode].name : d.name,
+            position: (authActive && AUTHORITATIVE_CODES[cleanAuthCode].position) ? AUTHORITATIVE_CODES[cleanAuthCode].position : d.position,
+            isUserSeat: isUser
           });
         });
       }
@@ -346,12 +369,14 @@
         const bSeat = bayStartSeat + (i - 1);
         const bInfo = spec.berthMap[i];
         if (bInfo) {
+          const isUser = bSeat === seat;
+          const authActive = isUser && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode];
           bayBerths.push({
             seatNumber: bSeat,
-            berthCode: (bSeat === seat && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) ? cleanAuthCode : bInfo.code,
-            berthName: (bSeat === seat && cleanAuthCode && AUTHORITATIVE_CODES[cleanAuthCode]) ? AUTHORITATIVE_CODES[cleanAuthCode].name : bInfo.name,
-            position: bInfo.position,
-            isUserSeat: bSeat === seat
+            berthCode: authActive ? cleanAuthCode : bInfo.code,
+            berthName: authActive ? AUTHORITATIVE_CODES[cleanAuthCode].name : bInfo.name,
+            position: (authActive && AUTHORITATIVE_CODES[cleanAuthCode].position) ? AUTHORITATIVE_CODES[cleanAuthCode].position : bInfo.position,
+            isUserSeat: isUser
           });
         }
       }

@@ -12,16 +12,23 @@ import uvicorn
 import datetime
 import re
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
 from pnr_client import PNRClient
 from notifier import Notifier
-from tracker import PNRTracker, DEFAULT_STATE_FILE
+from tracker import PNRTracker, DEFAULT_STATE_FILE, load_state_file
 from stations import get_station_info
 from cadence_engine import compute_pnr_cadence, parse_journey_date, is_journey_completed, PRIORITY_CADENCE_SECONDS, STANDARD_CADENCE_SECONDS, IST_TIMEZONE
+
+def load_persisted_states(state_file: str = DEFAULT_STATE_FILE) -> Dict[str, Dict[str, Any]]:
+    """
+    Safely loads persisted PNR states via shared validated loader, preserving integrity validation
+    and legacy format conversion. Raises RuntimeError if the state file is corrupted.
+    """
+    return load_state_file(state_file)
 
 # Autonomous background poller cadence configuration
 CHECK_INTERVAL_SECONDS = 18000  # Default fleet fallback (5 hours)
@@ -52,13 +59,11 @@ def init_schedule():
     now_epoch = datetime.datetime.now(datetime.timezone.utc).timestamp()
     pnr_schedules = persisted.get("pnrs", {})
 
-    # Load all persistent states directly
-    state_path = Path(DEFAULT_STATE_FILE)
+    # Load all persistent states directly via validated loader
     try:
-        states = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
-        if not isinstance(states, dict):
-            states = {}
-    except Exception:
+        states = load_persisted_states()
+    except Exception as exc:
+        print(f"[Dashboard] Warning: Could not safely read state file: {exc}")
         states = {}
 
     # Synchronize PNR_NUMBER environment variable with all persistent states
@@ -361,23 +366,17 @@ def get_nget_train_search():
 
 @app.get("/api/tickets")
 def get_tickets():
-    state_path = Path(DEFAULT_STATE_FILE)
     try:
-        states = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
-        if not isinstance(states, dict):
-            states = {}
-    except Exception:
-        states = {}
+        states = load_persisted_states()
+    except Exception as exc:
+        return JSONResponse({"status": "error", "message": f"State file error: {exc}"}, status_code=500)
     return states
 
 @app.get("/api/status")
 def get_status_overview():
     global LAST_POLL_TIME, LAST_POLL_RESULT
-    state_path = Path(DEFAULT_STATE_FILE)
     try:
-        states = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
-        if not isinstance(states, dict):
-            states = {}
+        states = load_persisted_states()
     except Exception:
         states = {}
     
@@ -679,14 +678,14 @@ async def add_pnr(request: Request, pnr: Optional[str] = None):
 
     client = PNRClient()
     notifier = Notifier()
-    # Load state directly from JSON file — no fake PNR needed
-    state_path = Path(DEFAULT_STATE_FILE)
+    # Load state safely using validated tracker loader - stops enrollment if state file is damaged
     try:
-        states = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
-        if not isinstance(states, dict):
-            states = {}
-    except Exception:
-        states = {}
+        states = load_persisted_states()
+    except Exception as exc:
+        return JSONResponse(
+            {"status": "error", "message": f"Existing state file cannot be read safely: {exc}. Enrollment halted to preserve data integrity."},
+            status_code=500
+        )
 
     if pnr_clean in states:
         return JSONResponse({"status": "error", "message": f"PNR {pnr_clean} is already being monitored."}, status_code=409)

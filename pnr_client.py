@@ -10,6 +10,11 @@ import requests
 from typing import Dict, Any, Optional
 from stations import get_station_info
 
+class PRSError(ValueError):
+    """Explicit upstream Indian Railways PRS rejection or error response."""
+    pass
+
+
 class PNRClient:
     def __init__(
         self,
@@ -55,10 +60,10 @@ class PNRClient:
                 err_msg = free_data.get("Error") or free_data.get("ErrorMessage")
                 has_passengers = bool(free_data.get("PassengerStatus") or free_data.get("passengers"))
                 if err_msg and not has_passengers:
-                    raise ValueError(f"Indian Railways PRS: {err_msg}")
+                    raise PRSError(f"Indian Railways PRS: {err_msg}")
                 if has_passengers:
                     return self._normalize_response(pnr_clean, free_data)
-        except ValueError:
+        except PRSError:
             raise
         except Exception as e:
             print(f"[PNRClient] Free gateway notice ({e}), attempting RapidAPI fallback...")
