@@ -1,14 +1,15 @@
-# RailPulse — Autonomous Indian Railways PRS Telematics & PNR Monitor
+# RailPulse — Autonomous Indian Railways PRS Telematics & PNR Monitor (Rust Edition)
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Rust: 1.80+](https://img.shields.io/badge/rust-1.80%2B-orange.svg)](https://www.rust-lang.org/)
+[![Axum](https://img.shields.io/badge/framework-Axum%200.8-blue.svg)](https://github.com/tokio-rs/axum)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmonth-brightgreen.svg)]()
-[![Automated Tests](https://img.shields.io/badge/Tests-52%20Passed-brightgreen.svg)]()
+[![Automated Tests](https://img.shields.io/badge/Tests-34%20Passed-brightgreen.svg)]()
 [![Berth Engine](https://img.shields.io/badge/Berth%20Engine-Verified%20Layouts-gold.svg)]()
 [![Cloudflare Tunnel](https://img.shields.io/badge/Tunnel-Cloudflare%20Zero%20Trust-orange.svg)]()
 [![Multi-Channel](https://img.shields.io/badge/Alerts-ntfy%20%7C%20Telegram%20%7C%20WhatsApp-orange.svg)]()
 
-> An autonomous, full-stack Indian Railways (IRCTC/CRIS) Passenger Reservation System (PRS) telematics engine with exact physical dot-matrix ticket rendering, interactive visual cabin blueprints, adaptive journey-date polling cadences, real-time background tracking daemon, multi-channel mobile alerts, and Cloudflare zero-trust edge access.
+> An autonomous, high-performance, full-stack Indian Railways (IRCTC/CRIS) Passenger Reservation System (PRS) telematics engine in pure Rust with exact physical dot-matrix ticket rendering, interactive visual cabin blueprints, adaptive journey-date polling cadences, real-time background tracking daemon, multi-channel mobile alerts, and Cloudflare zero-trust edge access.
 
 ---
 
@@ -25,7 +26,7 @@ Unlike standard command-line scrapers or basic static clones, RailPulse is an en
   - **Passenger Proximity Resolver:** Validates multi-passenger bookings in the same PNR to determine if passengers are truly seated together in the same bay (`Co-located in Same Cabin`) or split across different bays/coaches.
   - **Zero Fake Precision:** Refuses to guess irregular or manually charted coaches (e.g., First AC `1A` coupes or unreserved `2S`) and provides explicit, truthful railway status badges (`Seat allocation pending final chart`).
 
-### 2. Adaptive Per-PNR Polling Cadence Engine (`cadence_engine.py`)
+### 2. Adaptive Per-PNR Polling Cadence Engine (`src/cadence.rs`)
 - **Journey-Date Awareness (IST Timezone):**
   - **⚡ High Priority (2-Hour Interval / 7,200s):** For tickets within 2 calendar days of journey (`journey_day - 2`, `journey_day - 1`, and `journey_day`).
   - **Standard Fleet Cadence (5-Hour Interval / 18,000s):** For tickets farther out (> 2 days).
@@ -33,15 +34,15 @@ Unlike standard command-line scrapers or basic static clones, RailPulse is an en
   - **Live Card Indicators:** Visual badges on each PNR card reflect whether the ticket is under `⚡ 2h Poll` or standard `5h Poll`.
 
 ### 3. Real-Time Operational Fleet Metrics & Live Schedules
-- **Live Departure Tracker:** Automatically calculates the nearest upcoming train departure across the monitored fleet (e.g., `Tomorrow 18:25 · 12791 SC DNR SF EXP · NGP → PRYJ`).
-- **Fleet Chart Preparation Status:** Direct gateway check tracking finalized vs. pending charts (`Chart Status: 0 of 4 Prepared (Pending)`).
+- **Live Departure Tracker:** Automatically calculates the nearest upcoming train departure across the monitored fleet (e.g., `Today 17:05 · 13148 UTTAR BANGA EXP · JPE → BWN`).
+- **Fleet Chart Preparation Status:** Direct gateway check tracking finalized vs. pending charts (`Chart Status: All 1 Charts Finalized`).
 - **Persistent Fleet Countdown:** Live synchronization against backend schedule epochs to prevent countdown resets across page refreshes.
 
 ### 4. 1:1 Scale Dot-Matrix PRS Ticket Canvas
 - Bilingual Indian Railways counter ticket typography in English & Hindi.
 - Authentic Ashok Chakra watermark, thermal perforation edges, and dynamic status stamps (`CONFIRMED`, `WAITLISTED`, `CHART PREPARED`).
 - Full Block 3 fare matrix columns: `COACH`, `SEAT/BERTH`, `SEX`, `AGE`, `T.AUTHORITY`, `CONC`, `R.FEE`, `S.CH.`, `SF.CH`, `VOUCH.Rs.`, and `T.CASH Rs.`
-- Real-time station lookup via `stations.py` with authentic Hindi translations (e.g., `प्रयागराज जंक्शन`, `सिकंदराबाद जंक्शन`, `नागपुर जंक्शन`, `अयोध्या`, `कोरबा`).
+- Real-time station lookup via `src/stations.rs` with authentic Hindi translations (e.g., `प्रयागराज जंक्शन`, `सिकंदराबाद जंक्शन`, `नागपुर जंक्शन`, `अयोध्या`, `कोरबा`, `वर्धमान जंक्शन`).
 
 ### 5. Multi-Channel Instant Push Notification Pipeline
 - **ntfy.sh:** Zero-account, instant mobile push alerts with custom audio alarms and urgency priority tags.
@@ -65,13 +66,13 @@ flowchart TD
         AntiInspect["Anti-Inspect & Shortcut Interceptor"]
     end
 
-    subgraph Server["FastAPI Backend (Port 8000)"]
-        Lifespan["FastAPI Lifespan Manager"]
+    subgraph Server["Rust Axum Backend (Port 8000)"]
+        AxumRouter["Axum HTTP & Static Asset Router"]
         Cadence["Adaptive Cadence Engine (2h / 5h Rules)"]
-        Daemon["Autonomous 30s Tick Scheduler"]
-        Tracker["tracker.py State Engine"]
-        StationDB["stations.py Station Lookup (80+ Codes)"]
-        Persistence["status_state.json & .last_poll_state.json (Atomic Writes)"]
+        Daemon["Autonomous Background Tick Scheduler"]
+        Tracker["tracker.rs State Engine"]
+        StationDB["stations.rs Station Lookup (80+ Codes)"]
+        Persistence["status_state.json (Atomic File Replacement)"]
     end
 
     subgraph Gateways["Railway Telemetry Providers"]
@@ -126,43 +127,40 @@ flowchart TD
 │   ├── berth_resolver.js        # Verified IRCTC Coach & Cabin Layout Engine
 │   ├── test_berth_engine.js     # Pure JS unit test suite (8 test suites)
 │   ├── index.html               # Authentic PRS dot-matrix UI & modal viewer
-│   ├── styles.css               # Official IRCTC responsive stylesheet
 │   ├── 404.html                 # Custom railway 404 error page
 │   ├── robots.txt               # Crawler directives
 │   ├── sitemap.xml              # Search engine sitemap
 │   └── llms.txt                 # LLM context documentation
-├── tests/
-│   ├── test_cadence_engine.py   # Adaptive 2h/5h polling cadence unit tests
-│   ├── test_status_rules.py     # Regex classification & stations unit tests
-│   ├── test_qa_suite.py         # Boundary, persistence, & notifier test suite
-│   └── test_inputs_live.py      # Live HTTP endpoint validation suite
-├── cadence_engine.py            # IST-based adaptive polling interval calculator
-├── notifier.py                  # Multi-channel notification engine (ntfy/Telegram/WhatsApp)
-├── pnr_client.py                # Dual-gateway Indian Railways API client
-├── stations.py                  # Master railway station codes, names & Hindi translations
-├── tracker.py                   # Atomic state management & status diff engine
-├── web_dashboard.py             # FastAPI telematics server & adaptive background daemon
-├── test_tracker.py              # Multi-passenger progression & tracking tests
-└── requirements.txt             # Project dependencies (FastAPI, Uvicorn, Requests, Pytest)
+├── src/
+│   ├── main.rs                  # CLI entrypoint & server dispatch
+│   ├── cadence.rs               # IST-based adaptive polling interval calculator (2h/5h)
+│   ├── notifier.rs              # Multi-channel notification engine (ntfy/Telegram/WhatsApp)
+│   ├── pnr_client.rs            # Dual-gateway Indian Railways API client
+│   ├── stations.rs              # Master railway station codes, names & Hindi translations
+│   ├── tracker.rs               # Atomic state management & status diff engine
+│   ├── web_server.rs            # Axum dashboard server & adaptive background daemon
+│   └── tests.rs                 # Comprehensive Rust unit and security test suite (34 tests)
+├── Cargo.toml                   # Rust package configuration
+└── Cargo.lock                   # Deterministic dependency lock
 ```
 
 ---
 
 ## Quick Start Guide
 
-### 1. Installation
-Clone the repository and install dependencies:
+### 1. Build from Source
+Clone the repository and compile the optimized release binary with Cargo:
 ```bash
 git clone https://github.com/imshivanshutiwari/irctc-pnr-notifier.git
 cd irctc-pnr-notifier
-pip install -r requirements.txt
+cargo build --release
 ```
 
 ### 2. Environment Configuration
 Create a local `.env` file based on `.env.example`:
 ```ini
 # Comma-separated 10-digit Indian Railways PNRs
-PNR_NUMBER=4763331979,7000126327,6610459110,4443362878
+PNR_NUMBER=6612542049
 
 # Push notifications (ntfy topic)
 NTFY_TOPIC=my-private-train-alerts
@@ -183,14 +181,14 @@ DRY_RUN=false
 
 ### 3. Run Web Dashboard
 ```bash
-python web_dashboard.py
+./target/release/irctc-pnr-notifier-rust server --port 8000
 ```
 Open `http://localhost:8000` to view the live dashboard and real-time physical tickets.
 
 ### 4. Run Automated Test Suite
-Run all **52 automated unit, integration, and cadence tests**:
+Run the full test suite (input validation, SQLi/XSS sanitization, status transitions, cadence rules, atomic writes):
 ```bash
-python -m pytest -v
+cargo test
 ```
 
 To run the JavaScript Berth Engine unit tests:
@@ -224,9 +222,10 @@ This instantly generates a public HTTPS URL (`https://<random>.trycloudflare.com
 ## Quality Assurance & Verification Standards
 
 RailPulse enforces strict software verification standards:
+* **Pure Rust Performance:** High-throughput async I/O via Tokio & Axum with embedded static assets (`rust-embed`) and zero runtime interpreter dependencies.
 * **Zero Synthetic Data:** Professional railway telematics with 100% authentic gateway data and truthful `--` placeholders.
 * **Deterministic Berth Calculations:** Every seat is mapped using official coach schemas (SL, 3A, 3E, 2A) rather than speculative algorithms.
-* **Atomic State Persistence:** State file updates use `tempfile.NamedTemporaryFile` + `os.fsync` + `os.replace` to prevent JSON corruption during system crashes.
+* **Atomic State Persistence:** State file updates use `tempfile` atomic file replacement to prevent JSON corruption during system crashes.
 * **Graceful Degradation:** Upstream gateway outages return structured HTTP 502 Bad Gateway responses rather than fabricating placeholder records.
 * **Information Redaction:** Secret tokens and internal notification topics are excluded from public API responses.
 

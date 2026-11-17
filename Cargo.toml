@@ -1,0 +1,24 @@
+[package]
+name = "irctc-pnr-notifier-rust"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.43", features = ["full"] }
+axum = { version = "0.8", features = ["macros"] }
+tower-http = { version = "0.6", features = ["fs", "cors", "trace"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["json"] }
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
+regex = "1.11"
+dotenvy = "0.15"
+tempfile = "3.16"
+urlencoding = "2.1"
+clap = { version = "4.5", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rust-embed = { version = "8.5", features = ["interpolate-folder-path"] }
+mime_guess = "2.0"
+thiserror = "2.0"

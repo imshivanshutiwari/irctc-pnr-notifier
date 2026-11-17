@@ -18,3 +18,4 @@ archived_pnrs.json
 irctc-pnr-notifier-upgrade.zip
 .last_poll_state.json
 screenshots_verification/
+target/
