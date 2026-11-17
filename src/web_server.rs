@@ -138,6 +138,12 @@ fn extract_digits(s: &str) -> Vec<i64> {
     result
 }
 
+fn is_env_configured(key: &str) -> bool {
+    std::env::var(key)
+        .map(|v| !v.trim().is_empty())
+        .unwrap_or(false)
+}
+
 pub async fn run_server(port: u16, state_file: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     let client = PNRClient::new(None, None, None);
     let now = Utc::now();
@@ -665,8 +671,8 @@ pub async fn get_status_overview(State(state): State<AppState>) -> impl IntoResp
         format!("All {} Charts Finalized", total_enriched)
     };
 
-    let ntfy_configured = std::env::var("NTFY_TOPIC").is_ok();
-    let telegram_configured = std::env::var("TELEGRAM_BOT_TOKEN").is_ok() && std::env::var("TELEGRAM_CHAT_ID").is_ok();
+    let ntfy_configured = is_env_configured("NTFY_TOPIC");
+    let telegram_configured = is_env_configured("TELEGRAM_BOT_TOKEN") && is_env_configured("TELEGRAM_CHAT_ID");
     let last_poll_result_str = state.last_poll_result.read().await.clone();
 
     let telemetry = json!({

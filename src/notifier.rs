@@ -45,11 +45,11 @@ impl Notifier {
             .unwrap_or_default();
 
         Self {
-            whatsapp_phone: whatsapp_phone.or_else(|| env::var("WHATSAPP_PHONE").ok()),
-            callmebot_api_key: callmebot_api_key.or_else(|| env::var("CALLMEBOT_API_KEY").ok()),
-            telegram_bot_token: telegram_bot_token.or_else(|| env::var("TELEGRAM_BOT_TOKEN").ok()),
-            telegram_chat_id: telegram_chat_id.or_else(|| env::var("TELEGRAM_CHAT_ID").ok()),
-            ntfy_topic: ntfy_topic.or_else(|| env::var("NTFY_TOPIC").ok()),
+            whatsapp_phone: whatsapp_phone.or_else(|| env::var("WHATSAPP_PHONE").ok().filter(|v| !v.trim().is_empty())),
+            callmebot_api_key: callmebot_api_key.or_else(|| env::var("CALLMEBOT_API_KEY").ok().filter(|v| !v.trim().is_empty())),
+            telegram_bot_token: telegram_bot_token.or_else(|| env::var("TELEGRAM_BOT_TOKEN").ok().filter(|v| !v.trim().is_empty())),
+            telegram_chat_id: telegram_chat_id.or_else(|| env::var("TELEGRAM_CHAT_ID").ok().filter(|v| !v.trim().is_empty())),
+            ntfy_topic: ntfy_topic.or_else(|| env::var("NTFY_TOPIC").ok().filter(|v| !v.trim().is_empty())),
             dry_run: is_dry_run,
             client,
         }
