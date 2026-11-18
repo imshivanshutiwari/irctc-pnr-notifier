@@ -1,54 +1,54 @@
-    name: IRCTC PNR Waiting List 24/7 Monitor
+name: IRCTC PNR Waiting List 24/7 Monitor
 
-    on:
-      schedule:
-        # Runs every 2 hours to service priority near-journey cadences and auto-pruning
-        - cron: '0 */2 * * *'
-      workflow_dispatch: # Allows manual trigger from GitHub Actions anytime
+on:
+  schedule:
+    # Runs every 2 hours to service priority near-journey cadences and auto-pruning
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions anytime
 
-    permissions:
-      contents: read
-      actions: write
+permissions:
+  contents: read
+  actions: write
 
-    concurrency:
-      group: pnr-monitor
-      cancel-in-progress: false
+concurrency:
+  group: pnr-monitor
+  cancel-in-progress: false
 
-    jobs:
-      check-pnr:
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
+jobs:
+  check-pnr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-        steps:
-          - name: Checkout repository
-            uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-          - name: Set up Rust toolchain
-            uses: dtolnay/rust-toolchain@stable
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-          - name: Cache Cargo build artifacts
-            uses: Swatinem/rust-cache@v2
+      - name: Cache Cargo build artifacts
+        uses: Swatinem/rust-cache@v2
 
-          - name: Run verification test suite
-            run: cargo test --verbose
+      - name: Run verification test suite
+        run: cargo test --verbose
 
-          - name: Restore private state cache
-            uses: actions/cache@v4
-            with:
-              path: ${{ runner.temp }}/status_state.json
-              key: pnr-state-${{ runner.os }}-${{ github.run_id }}
-              restore-keys: |
-                pnr-state-${{ runner.os }}-
+      - name: Restore private state cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/status_state.json
+          key: pnr-state-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            pnr-state-${{ runner.os }}-
 
-          - name: Execute PNR Status Check
-            env:
-              PNR_NUMBER: ${{ secrets.PNR_NUMBER }}
-              NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-              RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-              RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST }}
-              WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
-              CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
-              TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-              TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-            run: |
-              cargo run --release -- check --state-file "$RUNNER_TEMP/status_state.json" --allow-transient-errors
+      - name: Execute PNR Status Check
+        env:
+          PNR_NUMBER: ${{ secrets.PNR_NUMBER }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST }}
+          WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
+          CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          cargo run --release -- check --state-file "$RUNNER_TEMP/status_state.json" --allow-transient-errors
