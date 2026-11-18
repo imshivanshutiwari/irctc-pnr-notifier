@@ -2433,7 +2433,7 @@
         <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
           <span class="metric-label" id="kpi-poll-header">Next Scheduled Poll</span>
           <button type="button" class="btn-poll-now-pill" onclick="handleGatewayPoll()" title="Trigger manual IRCTC gateway check right now">
-            ⚡ Poll Now
+            Poll Now
           </button>
         </div>
         <div id="kpi-dual-timers" style="display: flex; flex-direction: column; gap: 6px;">
@@ -2441,7 +2441,7 @@
           <div id="kpi-priority-timer-box" style="display: flex; align-items: baseline; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 6px;">
               <span class="channel-dot" style="background: #FF7B7B; box-shadow: 0 0 8px #FF7B7B;"></span>
-              <span style="font-size: 11px; font-weight: 700; color: #FF7B7B; text-transform: uppercase; letter-spacing: 0.04em;">⚡ 2h Priority</span>
+              <span style="font-size: 11px; font-weight: 700; color: #FF7B7B; text-transform: uppercase; letter-spacing: 0.04em;">2h Priority</span>
             </div>
             <div class="metric-value" id="kpi-priority-countdown" style="font-size: 19px; color: #FF8F8F; font-family: var(--font-mono); font-weight: 700; letter-spacing: -0.02em;">--:--:--</div>
           </div>
@@ -3405,7 +3405,7 @@
               ${proximityBadgeHtml}
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px;">
                 <div class="pnr-cadence-badge ${b.is_near_journey ? 'cadence-priority' : 'cadence-standard'}" title="${b.tier_label || 'Polling Cadence'}">
-                  <span>${b.is_near_journey ? '⚡ 2h Poll' : '5h Poll'}</span>
+                  <span>${b.is_near_journey ? '2h Poll' : '5h Poll'}</span>
                 </div>
               </div>
             </div>
@@ -3449,7 +3449,7 @@
               <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px;">
                 ${berthBadgeHtml}
                 <div class="pnr-cadence-badge ${b.is_near_journey ? 'cadence-priority' : 'cadence-standard'}" title="${b.tier_label || 'Polling Cadence'}">
-                  <span>${b.is_near_journey ? '⚡ 2h Poll' : '5h Poll'}</span>
+                  <span>${b.is_near_journey ? '2h Poll' : '5h Poll'}</span>
                 </div>
               </div>
             </div>
@@ -3477,9 +3477,9 @@
             </div>
 
             <div class="pnr-train-info">
-              <span class="pnr-info-pill">🚆 ${trainNo} ${trainName}</span>
-              <span class="pnr-info-pill">📅 ${doj}</span>
-              ${depTime !== '--' ? `<span class="pnr-info-pill">🕒 DEP ${depTime} &middot; ARR ${arrTime}</span>` : ''}
+              <span class="pnr-info-pill">${trainNo} ${trainName}</span>
+              <span class="pnr-info-pill">DOJ: ${doj}</span>
+              ${depTime !== '--' ? `<span class="pnr-info-pill">DEP ${depTime} &middot; ARR ${arrTime}</span>` : ''}
             </div>
 
             <div class="pnr-details-bar">

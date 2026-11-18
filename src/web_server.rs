@@ -367,8 +367,8 @@ pub async fn run_server(port: u16, state_file: PathBuf) -> Result<(), Box<dyn st
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     info!("=======================================================");
     info!("  RailPulse IRCTC Dashboard (Rust Powered) is LIVE!");
-    info!("  👉 Open in Browser: http://localhost:{}", port);
-    info!("  👉 Or:              http://127.0.0.1:{}", port);
+    info!("  Open in Browser: http://localhost:{}", port);
+    info!("  Or:              http://127.0.0.1:{}", port);
     info!("=======================================================");
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
