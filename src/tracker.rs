@@ -263,6 +263,7 @@ impl PNRTracker {
 
                 if days_ago > 2 {
                     info!("[Tracker] Journey for PNR {} completed {} days ago. Archiving without alert.", pnr, days_ago);
+                    all_states.remove(pnr);
                     self.archive_pnr(pnr);
                     continue;
                 }
@@ -279,6 +280,7 @@ impl PNRTracker {
                         .await;
                     any_alert_sent = true;
                 }
+                all_states.remove(pnr);
                 self.archive_pnr(pnr);
                 continue;
             }

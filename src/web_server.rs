@@ -156,13 +156,33 @@ pub async fn run_server(port: u16, state_file: PathBuf) -> Result<(), Box<dyn st
         last_poll_result: Arc::new(RwLock::new("Baseline synchronized successfully across active fleet".to_string())),
     };
 
-    // Initialize schedule from persistent states
+    // Initialize schedule from persistent states & prune completed journeys
     {
-        let states = load_state_file(&state_file).unwrap_or_default();
-        let mut sched = app_state.schedule.write().await;
+        let mut states = load_state_file(&state_file).unwrap_or_default();
         let now_epoch = now.timestamp() as f64;
         let now_ist = now.with_timezone(&Kolkata);
 
+        // Auto-prune any journeys that already concluded (arrival + 120 mins)
+        let mut completed_pnrs = Vec::new();
+        for (pnr, data) in &states {
+            let doj = data.get("date_of_journey").and_then(|v| v.as_str());
+            let dep = data.get("dep_time").or_else(|| data.get("departure_time")).and_then(|v| v.as_str());
+            let arr = data.get("arr_time").or_else(|| data.get("arrival_time")).and_then(|v| v.as_str());
+            let (done, _) = is_journey_completed(doj, dep, arr, 120, Some(now_ist));
+            if done {
+                completed_pnrs.push(pnr.clone());
+            }
+        }
+
+        if !completed_pnrs.is_empty() {
+            for pnr in &completed_pnrs {
+                states.remove(pnr);
+                info!("[Server Startup] Auto-pruned completed journey PNR: {}", pnr);
+            }
+            let _ = save_state_file(&state_file, &states);
+        }
+
+        let mut sched = app_state.schedule.write().await;
         for (pnr, data) in &states {
             let doj = data.get("date_of_journey").and_then(|v| v.as_str());
             let chart_prep = data.get("chart_prepared").and_then(|v| v.as_bool()).unwrap_or(false);
@@ -200,6 +220,32 @@ pub async fn run_server(port: u16, state_file: PathBuf) -> Result<(), Box<dyn st
                 Ok(s) => s,
                 Err(_) => continue,
             };
+
+            if states.is_empty() {
+                continue;
+            }
+
+            // Auto-prune completed journeys (arrival + 120 mins) continuously every 30s
+            let mut completed_pnrs = Vec::new();
+            for (pnr, data) in &states {
+                let doj = data.get("date_of_journey").and_then(|v| v.as_str());
+                let dep = data.get("dep_time").or_else(|| data.get("departure_time")).and_then(|v| v.as_str());
+                let arr = data.get("arr_time").or_else(|| data.get("arrival_time")).and_then(|v| v.as_str());
+                let (done, _) = is_journey_completed(doj, dep, arr, 120, Some(now_ist));
+                if done {
+                    completed_pnrs.push(pnr.clone());
+                }
+            }
+
+            if !completed_pnrs.is_empty() {
+                let mut sched = daemon_state.schedule.write().await;
+                for pnr in &completed_pnrs {
+                    states.remove(pnr);
+                    sched.remove(pnr);
+                    info!("[Background Poller] Auto-pruned completed journey PNR: {}", pnr);
+                }
+                let _ = save_state_file(&daemon_state.state_file, &states);
+            }
 
             if states.is_empty() {
                 continue;
@@ -295,26 +341,6 @@ pub async fn run_server(port: u16, state_file: PathBuf) -> Result<(), Box<dyn st
                         poll_summaries.push(format!("{}: Gateway poll failed ({})", pnr, e));
                     }
                 }
-            }
-
-            // Prune completed journeys (arrival + 120 mins)
-            let mut completed_pnrs = Vec::new();
-            for (pnr, data) in &states {
-                let doj = data.get("date_of_journey").and_then(|v| v.as_str());
-                let dep = data.get("dep_time").or_else(|| data.get("departure_time")).and_then(|v| v.as_str());
-                let arr = data.get("arr_time").or_else(|| data.get("arrival_time")).and_then(|v| v.as_str());
-                let (done, _) = is_journey_completed(doj, dep, arr, 120, Some(now_ist));
-                if done {
-                    completed_pnrs.push(pnr.clone());
-                }
-            }
-
-            for pnr in completed_pnrs {
-                states.remove(&pnr);
-                states_modified = true;
-                let mut sched = daemon_state.schedule.write().await;
-                sched.remove(&pnr);
-                info!("[Background Poller] Auto-pruned completed journey PNR: {}", pnr);
             }
 
             if states_modified {
