@@ -851,6 +851,27 @@
       color: var(--primary);
     }
 
+    .btn-poll-now-pill {
+      background: rgba(217, 166, 91, 0.15);
+      border: 1px solid rgba(217, 166, 91, 0.4);
+      color: var(--primary);
+      border-radius: 4px;
+      padding: 2px 9px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .btn-poll-now-pill:hover {
+      background: var(--primary);
+      color: #1A1816;
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(217, 166, 91, 0.4);
+    }
+
     .pnr-card-actions {
       display: flex;
       gap: 10px;
@@ -2409,8 +2430,11 @@
       </div>
 
       <div class="metric-card animate-entrance delay-3" id="kpi-poll-card">
-        <div class="metric-header">
+        <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
           <span class="metric-label" id="kpi-poll-header">Next Scheduled Poll</span>
+          <button type="button" class="btn-poll-now-pill" onclick="handleGatewayPoll()" title="Trigger manual IRCTC gateway check right now">
+            ⚡ Poll Now
+          </button>
         </div>
         <div id="kpi-dual-timers" style="display: flex; flex-direction: column; gap: 6px;">
           <!-- Primary / Priority 2H Timer (Shows if tickets are within 2 days) -->
@@ -2422,15 +2446,15 @@
             <div class="metric-value" id="kpi-priority-countdown" style="font-size: 19px; color: #FF8F8F; font-family: var(--font-mono); font-weight: 700; letter-spacing: -0.02em;">--:--:--</div>
           </div>
           <!-- Regular 5H Fleet Timer -->
-          <div id="kpi-standard-timer-box" style="display: flex; align-items: baseline; justify-content: space-between; border-top: 1px dashed rgba(217, 166, 91, 0.2); padding-top: 4px;">
+          <div id="kpi-standard-timer-box" style="display: flex; align-items: baseline; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="channel-dot" style="background: var(--text-muted);"></span>
-              <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Regular 5h</span>
+              <span class="channel-dot" id="kpi-standard-dot" style="background: var(--status-healthy); box-shadow: 0 0 8px rgba(118, 184, 138, 0.6);"></span>
+              <span id="kpi-standard-label" style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">5h Fleet Cycle</span>
             </div>
-            <div class="metric-value" id="kpi-standard-countdown" style="font-size: 15px; color: var(--text-primary); font-family: var(--font-mono); font-weight: 600;">--:--:--</div>
+            <div class="metric-value" id="kpi-standard-countdown" style="font-size: 24px; color: var(--status-healthy); font-family: var(--font-mono); font-weight: 700;">--:--:--</div>
           </div>
         </div>
-        <div class="metric-desc" id="kpi-last-poll-desc" style="margin-top: 4px;">Cadence: 2h Priority & 5h Fleet</div>
+        <div class="metric-desc" id="kpi-last-poll-desc" style="margin-top: 4px;">Cadence: 5h Automated Cycle</div>
       </div>
 
       <div class="metric-card animate-entrance delay-3">
@@ -2698,6 +2722,11 @@
         try {
           localStorage.setItem('railpulse_priority_poll_epoch', String(nextPriorityPollEpoch));
         } catch (_) {}
+      } else {
+        nextPriorityPollEpoch = 0;
+        try {
+          localStorage.removeItem('railpulse_priority_poll_epoch');
+        } catch (_) {}
       }
 
       // Sync Standard 5H Timer
@@ -2725,20 +2754,51 @@
       const standardBox = document.getElementById('kpi-standard-timer-box');
       const priorityEl = document.getElementById('kpi-priority-countdown');
       const standardEl = document.getElementById('kpi-standard-countdown');
+      const standardLabel = document.getElementById('kpi-standard-label');
+      const standardDot = document.getElementById('kpi-standard-dot');
 
       // 1. Priority Timer (Only displays if there are tickets within 2 days of journey)
       if (hasPriorityFleet && nextPriorityPollEpoch > 0) {
         if (priorityBox) priorityBox.style.display = 'flex';
         const remPriority = Math.max(0, (nextPriorityPollEpoch - now) / 1000);
         if (priorityEl) priorityEl.textContent = formatTimeRemaining(remPriority);
+        if (standardBox) {
+          standardBox.style.borderTop = '1px dashed rgba(217, 166, 91, 0.2)';
+          standardBox.style.paddingTop = '4px';
+        }
+        if (standardEl) {
+          standardEl.style.fontSize = '15px';
+          standardEl.style.color = 'var(--text-primary)';
+        }
+        if (standardLabel) standardLabel.textContent = 'Regular 5h';
+        if (standardDot) {
+          standardDot.style.background = 'var(--text-muted)';
+          standardDot.style.boxShadow = 'none';
+        }
       } else {
         if (priorityBox) priorityBox.style.display = 'none';
+        if (standardBox) {
+          standardBox.style.borderTop = 'none';
+          standardBox.style.paddingTop = '0';
+        }
+        if (standardEl) {
+          standardEl.style.fontSize = '24px';
+          standardEl.style.color = 'var(--status-healthy)';
+        }
+        if (standardLabel) standardLabel.textContent = '5h Fleet Cycle';
+        if (standardDot) {
+          standardDot.style.background = 'var(--status-healthy)';
+          standardDot.style.boxShadow = '0 0 8px rgba(118, 184, 138, 0.6)';
+        }
       }
 
       // 2. Standard 5h Fleet Timer
       if (nextStandardPollEpoch > 0) {
         const remStandard = Math.max(0, (nextStandardPollEpoch - now) / 1000);
         if (standardEl) standardEl.textContent = formatTimeRemaining(remStandard);
+        if (remStandard <= 0) {
+          fetchStatus();
+        }
       } else {
         if (standardEl) standardEl.textContent = '04:59:45';
       }
@@ -3828,21 +3888,25 @@
 
     // Manual Gateway Poll via backend /api/check-now
     async function handleGatewayPoll() {
-      const btn = document.getElementById('btn-gateway-poll');
-      const origText = btn.innerHTML;
-      btn.innerHTML = '<span>Querying Gateway...</span>';
-      btn.disabled = true;
+      const btns = document.querySelectorAll('#btn-gateway-poll, .btn-poll-now-pill');
+      btns.forEach(b => {
+        b.dataset.origText = b.innerHTML;
+        b.innerHTML = '<span>Querying...</span>';
+        b.disabled = true;
+      });
 
       try {
         const res = await fetch('/api/check-now', { method: 'POST' });
         const data = await res.json();
-        logEvent('GATEWAY', data.message || '3 of 3 PNRs re-verified successfully.', 'cat-gateway');
-        fetchStatus();
+        logEvent('GATEWAY', data.message || 'PNRs re-verified successfully against gateway.', 'cat-gateway');
+        await fetchStatus();
       } catch (err) {
         logEvent('GATEWAY', 'Verified status against active local state.', 'cat-gateway');
       } finally {
-        btn.innerHTML = origText;
-        btn.disabled = false;
+        btns.forEach(b => {
+          if (b.dataset.origText) b.innerHTML = b.dataset.origText;
+          b.disabled = false;
+        });
       }
     }
 
