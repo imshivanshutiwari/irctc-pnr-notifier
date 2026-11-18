@@ -3188,7 +3188,21 @@
         const doj = b.date_of_journey || "--";
         const coachClass = b.coach_class || b.class || "--";
         const quota = b.quota || "--";
-        const totalFare = b.total_fare && b.total_fare !== "--" ? `₹${b.total_fare}` : (b.fare ? `₹${b.fare}` : '--');
+        const rawFare = b.total_fare && b.total_fare !== "--" ? b.total_fare : (b.fare && b.fare !== "--" ? b.fare : null);
+        let totalFare = '--';
+        if (rawFare) {
+          const fareNum = parseInt(String(rawFare).replace(/[^\d]/g, ''), 10);
+          if (!isNaN(fareNum) && fareNum > 0) {
+            if (paxList.length > 1) {
+              const perPax = b.fare_per_pax && b.fare_per_pax !== '--' 
+                ? b.fare_per_pax 
+                : Math.round(fareNum / paxList.length);
+              totalFare = `₹${fareNum} <span style="font-size:11px;opacity:0.85;font-weight:600;">(₹${perPax}/pax)</span>`;
+            } else {
+              totalFare = `₹${fareNum}`;
+            }
+          }
+        }
         const depTime = b.dep_time || b.departure_time || "--";
         const arrTime = b.arr_time || b.arrival_time || "--";
 

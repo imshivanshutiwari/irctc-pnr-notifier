@@ -559,7 +559,7 @@ pub async fn get_status_overview(State(state): State<AppState>) -> impl IntoResp
         ticket_val["ticket_spots_gained"] = json!(ticket_spots);
         ticket_val["has_progressed"] = json!(ticket_spots > 0);
 
-        // Fare in Indian Words
+        // Fare in Indian Words & Per-Passenger Breakdown
         let fare_val = data.get("fare").or_else(|| data.get("total_fare"));
         let fare_int = fare_val.and_then(|v| {
             if let Some(s) = v.as_str() {
@@ -572,14 +572,23 @@ pub async fn get_status_overview(State(state): State<AppState>) -> impl IntoResp
             }
         }).unwrap_or(0);
 
+        let pax_count = data.get("passengers")
+            .and_then(|v| v.as_array())
+            .map(|a| a.len())
+            .unwrap_or(1)
+            .max(1);
+
         if fare_int > 0 {
             ticket_val["total_fare"] = json!(fare_int.to_string());
             ticket_val["fare"] = json!(fare_int.to_string());
             ticket_val["fare_words"] = json!(format!("{} (IRCTC OFFICIAL PRS FARE)", num_to_indian_words(fare_int)));
+            let per_pax = fare_int / pax_count as i64;
+            ticket_val["fare_per_pax"] = json!(per_pax.to_string());
         } else {
             ticket_val["total_fare"] = json!("--");
             ticket_val["fare"] = json!("--");
             ticket_val["fare_words"] = json!("FARE DATA NOT AVAILABLE IN PUBLIC PNR QUERY");
+            ticket_val["fare_per_pax"] = json!("--");
         }
 
         ticket_val["distance_km"] = json!("--");
