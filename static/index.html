@@ -745,6 +745,112 @@
       border: 1px solid rgba(160, 160, 160, 0.25);
       color: var(--text-secondary);
     }
+
+    /* Multi-passenger roster on overview cards */
+    .pnr-multi-pax-roster {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 12px;
+      margin-bottom: 8px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+    .pnr-pax-card-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .pnr-pax-card-row:last-child {
+      border-bottom: none;
+    }
+    .pax-row-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .pax-num-pill {
+      background: var(--bg-elevated);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid rgba(217, 166, 91, 0.3);
+      font-family: var(--font-mono, monospace);
+    }
+    .pax-status-text {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.01em;
+    }
+    .pax-status-text.is-cnf {
+      color: var(--status-healthy);
+    }
+    .pax-booking-ref {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .pax-row-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pax-berth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: rgba(118, 184, 138, 0.12);
+      border: 1px solid rgba(118, 184, 138, 0.3);
+      color: var(--status-healthy);
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .pax-berth-badge.badge-pending {
+      background: rgba(226, 184, 107, 0.12);
+      border-color: rgba(226, 184, 107, 0.3);
+      color: var(--primary);
+    }
+    .pax-berth-badge.badge-wl {
+      background: rgba(226, 184, 107, 0.08);
+      border-color: rgba(226, 184, 107, 0.2);
+      color: var(--text-secondary);
+    }
+    .pnr-proximity-card-note {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      margin-bottom: 4px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(118, 184, 138, 0.09);
+      border: 1px solid rgba(118, 184, 138, 0.25);
+      color: var(--status-healthy);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .pnr-proximity-card-note.is-split {
+      background: rgba(226, 184, 107, 0.08);
+      border-color: rgba(226, 184, 107, 0.25);
+      color: var(--primary);
+    }
+
     .pnr-card-actions {
       display: flex;
       gap: 10px;
@@ -2813,17 +2919,41 @@
       const fareWords = b.fare_words || "* * NO FARE DATA IN PUBLIC PNR QUERY · IRCTC PRS TELEMETRY * *";
       const zonalRailway = "INDIAN RAILWAYS / भारतीय रेल";
 
+      let paxRowsHtml = '';
       let paxRosterHtml = '';
       paxList.forEach((p, pIdx) => {
+        const rowTop = 333 + pIdx * 24;
         const pCur = p.current_status || 'WL';
-        const pBook = p.booking_status || 'WL';
+        const pBook = p.booking_status || pCur;
+        let cStr = p.coach || '--';
+        let sStr = pCur;
+        let berthNote = '';
+        if (window.RailPulseBerthEngine) {
+          const ext = window.RailPulseBerthEngine.extractCoachBerth(pCur);
+          if (ext.coach) cStr = ext.coach;
+          if (ext.seat) {
+            const authCode = p.berth_code || (pCur.includes('WS') ? 'WS' : null);
+            const det = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, ext.seat, ext.coach, authCode);
+            sStr = det.berthCode ? `${ext.seat} ${det.berthCode}` : `${ext.seat}`;
+            if (det.berthName) berthNote = ` (${cStr}/${ext.seat} · ${det.berthCode} ${det.berthName})`;
+          }
+        }
+        paxRowsHtml += `
+          <div class="abs dm" style="left:80px;top:${rowTop}px;width:68px;text-align:center;font-size:15px">${cStr}</div>
+          <div class="abs dm" style="left:148px;top:${rowTop}px;width:110px;text-align:center;font-size:15px;white-space:nowrap;">${sStr}</div>
+          <div class="abs dm" style="left:258px;top:${rowTop}px;width:48px;text-align:center;font-size:15px">--</div>
+          <div class="abs dm" style="left:306px;top:${rowTop}px;width:48px;text-align:center;font-size:15px">--</div>
+          <div class="abs dm" style="left:354px;top:${rowTop}px;width:106px;text-align:center;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="Booked: ${pBook}">P${p.passenger_number || pIdx + 1}: ${pBook}</div>
+          <div class="abs dm" style="left:460px;top:${rowTop}px;width:64px;text-align:center;font-size:14px">--</div>
+        `;
         paxRosterHtml += `
-          <div style="display:flex;justify-content:space-between;padding:1px 0;">
-            <span>P${p.passenger_number || pIdx + 1}: ${pCur}</span>
-            <span style="opacity:0.75;">(BKD: ${pBook})</span>
+          <div style="display:flex;justify-content:space-between;padding:2px 0;font-size:13px;border-bottom:1px dotted rgba(122,140,176,0.3);">
+            <span><strong>P${p.passenger_number || pIdx + 1}:</strong> ${pCur}${berthNote}</span>
+            <span style="opacity:0.8;font-size:12px;">BKD: ${pBook}</span>
           </div>
         `;
       });
+      const rosterBoxTop = Math.max(380, 333 + paxList.length * 24 + 10);
 
       let spokes = '';
       for (let i = 0; i < 16; i++) {
@@ -2953,12 +3083,7 @@
           <div class="abs" style="left:520px;top:334px;width:426px;height:48px;background:rgba(232, 205, 207, 0.4);z-index:2;pointer-events:none;"></div>
           <div class="abs" style="inset:0;pointer-events:none;z-index:1;">${wmCircles}</div>
 
-          <div class="abs dm" style="left:80px;top:333px;width:68px;text-align:center;font-size:16px">${coachStr}</div>
-          <div class="abs dm" style="left:148px;top:333px;width:110px;text-align:center;font-size:16px;white-space:nowrap;">${primaryCurrent}</div>
-          <div class="abs dm" style="left:258px;top:333px;width:48px;text-align:center;font-size:16px">--</div>
-          <div class="abs dm" style="left:306px;top:333px;width:48px;text-align:center;font-size:16px">--</div>
-          <div class="abs dm" style="left:354px;top:333px;width:106px;text-align:center;font-size:14px">--</div>
-          <div class="abs dm" style="left:460px;top:333px;width:64px;text-align:center;font-size:14px">--</div>
+          ${paxRowsHtml}
           <div class="abs dm" style="left:524px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
           <div class="abs dm" style="left:588px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
           <div class="abs dm" style="left:652px;top:333px;width:64px;text-align:center;font-size:16px">--</div>
@@ -2966,7 +3091,7 @@
           <div class="abs dm" style="left:800px;top:333px;width:146px;text-align:center;font-size:17px;font-weight:700;">${totalCashFare}</div>
 
           <!-- Multi-passenger status breakdown box inside ticket -->
-          <div class="abs dm" style="left:80px;top:370px;width:430px;background:rgba(255,255,255,0.85);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;z-index:12;">
+          <div class="abs dm" style="left:80px;top:${rosterBoxTop}px;width:430px;background:rgba(255,255,255,0.88);padding:8px 12px;border:1px dashed #7a8cb0;font-size:14px;line-height:1.4;z-index:12;">
             <div style="font-weight:700;margin-bottom:3px;color:var(--t-blue);border-bottom:1px solid #7a8cb0;padding-bottom:2px;">PASSENGER STATUS ROSTER:</div>
             ${paxRosterHtml}
           </div>
@@ -3048,9 +3173,11 @@
         if (hasProg) progCount++;
 
         const paxList = Array.isArray(b.passengers) && b.passengers.length > 0 ? b.passengers : [{ passenger_number: 1, booking_status: "WL", current_status: "WL" }];
+        const isMultiPax = paxList.length > 1;
         const primaryPax = paxList[0];
         const primaryCurrent = primaryPax.current_status || "UNKNOWN";
-        const isConfirmed = primaryCurrent.includes('CNF');
+        const anyConfirmed = paxList.some(p => (p.current_status || '').includes('CNF'));
+        const allConfirmed = paxList.every(p => (p.current_status || '').includes('CNF'));
 
         const trainNo = String(b.train_number || '--');
         const trainName = String(b.train_name || 'EXP');
@@ -3074,49 +3201,185 @@
 
         const card = document.createElement('article');
         const entranceAnim = isFirstLoad ? `animate-entrance delay-${Math.min(4 + idx, 7)}` : '';
-        card.className = `pnr-card ${entranceAnim} ${isConfirmed ? 'is-confirmed' : ''}`.trim();
+        card.className = `pnr-card ${entranceAnim} ${anyConfirmed ? 'is-confirmed' : ''}`.trim();
         card.id = `card-${pnrStr}`;
         card.setAttribute('data-state', stateAttr);
 
-        // Extract verified coach and berth details using BerthEngine if available
-        let berthBadgeHtml = '';
-        let seatMapBtnHtml = '';
+        // Check if ANY passenger has an allocated seat for Seat Map button
+        let hasAllocatedSeat = false;
         if (window.RailPulseBerthEngine) {
-          const coachBerth = window.RailPulseBerthEngine.extractCoachBerth(primaryCurrent);
-          if (coachBerth.coach && coachBerth.seat) {
-            const p0 = (b.passengers && b.passengers[0]) ? b.passengers[0] : {};
-            const authCode = p0.berth_code || (p0.current_status && p0.current_status.includes('WS') ? 'WS' : null);
-            const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, coachBerth.seat, coachBerth.coach, authCode);
-            if (details.isSupported && details.berthCode) {
-              berthBadgeHtml = `
-                <div class="pnr-berth-badge">
-                  <span>${details.coach} / ${details.seat} · ${details.berthCode} (${details.berthName})</span>
+          for (const p of paxList) {
+            const ext = window.RailPulseBerthEngine.extractCoachBerth(p.current_status || '');
+            if (ext.coach && ext.seat) {
+              hasAllocatedSeat = true;
+              break;
+            }
+          }
+        }
+        let seatMapBtnHtml = '';
+        if (hasAllocatedSeat) {
+          seatMapBtnHtml = `
+            <button type="button" class="btn-card-seatmap" onclick="openCabinMapModal('${pnrStr}')" title="View Cabin Blueprint">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+              <span>Seat Map</span>
+            </button>
+          `;
+        }
+
+        // Render Status Section: Multi-passenger roster vs single passenger
+        let statusSectionHtml = '';
+        if (isMultiPax) {
+          const cnfCount = paxList.filter(p => (p.current_status || '').includes('CNF')).length;
+          let summaryStatus = '';
+          let isSummaryCnf = false;
+          if (allConfirmed) {
+            summaryStatus = `CNF · ${paxList.length} Passengers`;
+            isSummaryCnf = true;
+          } else if (cnfCount > 0) {
+            summaryStatus = `${cnfCount}/${paxList.length} Confirmed`;
+            isSummaryCnf = true;
+          } else {
+            summaryStatus = `${primaryCurrent} · ${paxList.length} Pax`;
+          }
+
+          let multiPaxRosterHtml = '';
+          paxList.forEach((p, pIdx) => {
+            const pNum = p.passenger_number || pIdx + 1;
+            const pCur = p.current_status || 'UNKNOWN';
+            const pBook = p.booking_status || pCur;
+            const pIsCnf = pCur.includes('CNF');
+
+            let pBerthHtml = '';
+            if (window.RailPulseBerthEngine) {
+              const ext = window.RailPulseBerthEngine.extractCoachBerth(pCur);
+              if (ext.coach && ext.seat) {
+                const authCode = p.berth_code || (pCur.includes('WS') ? 'WS' : null);
+                const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, ext.seat, ext.coach, authCode);
+                if (details.isSupported && details.berthCode) {
+                  pBerthHtml = `<span class="pax-berth-badge">${details.coach} / ${details.seat} · ${details.berthCode} (${details.berthName})</span>`;
+                } else if (details.class === '1A') {
+                  pBerthHtml = `<span class="pax-berth-badge badge-pending">${details.coach} · First Class</span>`;
+                } else {
+                  pBerthHtml = `<span class="pax-berth-badge">${ext.coach} / ${ext.seat}</span>`;
+                }
+              } else if (pIsCnf) {
+                pBerthHtml = `<span class="pax-berth-badge badge-pending">Seat pending chart</span>`;
+              } else {
+                pBerthHtml = `<span class="pax-berth-badge badge-wl">Waitlist</span>`;
+              }
+            } else if (pIsCnf) {
+              pBerthHtml = `<span class="pax-berth-badge badge-pending">${pCur}</span>`;
+            }
+
+            multiPaxRosterHtml += `
+              <div class="pnr-pax-card-row">
+                <div class="pax-row-left">
+                  <span class="pax-num-pill">P${pNum}</span>
+                  <span class="pax-status-text ${pIsCnf ? 'is-cnf' : ''}">${pCur}</span>
+                  ${pBook !== pCur ? `<span class="pax-booking-ref" title="Booking Status">BKD: ${pBook}</span>` : ''}
+                </div>
+                <div class="pax-row-right">
+                  ${pBerthHtml}
+                </div>
+              </div>
+            `;
+          });
+
+          let proximityBadgeHtml = '';
+          if (window.RailPulseBerthEngine) {
+            const proximity = window.RailPulseBerthEngine.evaluatePassengerProximity(paxList, b.coach_class);
+            if (proximity.status === 'together') {
+              proximityBadgeHtml = `
+                <div class="pnr-proximity-card-note">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <span>Seated Together in Cabin ${proximity.bayNumber} (Coach ${proximity.coach})</span>
                 </div>
               `;
-              seatMapBtnHtml = `
-                <button type="button" class="btn-card-seatmap" onclick="openCabinMapModal('${pnrStr}')" title="View Cabin Blueprint">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="3" y1="9" x2="21" y2="9"></line>
-                    <line x1="9" y1="21" x2="9" y2="9"></line>
-                  </svg>
-                  <span>Seat Map</span>
-                </button>
+            } else if (proximity.status === 'split-bay') {
+              proximityBadgeHtml = `
+                <div class="pnr-proximity-card-note is-split">
+                  <span>Same Coach (${proximity.coach}) · Different Cabins</span>
+                </div>
               `;
-            } else if (details.class === '1A') {
-              berthBadgeHtml = `
-                <div class="pnr-berth-badge badge-pending">
-                  <span>${details.coach} · First Class</span>
+            } else if (proximity.status === 'split-coach') {
+              proximityBadgeHtml = `
+                <div class="pnr-proximity-card-note is-split">
+                  <span>Split across separate coaches</span>
                 </div>
               `;
             }
-          } else if (isConfirmed) {
-            berthBadgeHtml = `
-              <div class="pnr-berth-badge badge-pending">
-                <span>Seat allocation pending final chart</span>
-              </div>
-            `;
           }
+
+          statusSectionHtml = `
+            <div class="pnr-status-group">
+              <div class="pnr-current-status-wrapper">
+                <div class="pnr-current-status ${isSummaryCnf ? 'is-cnf' : ''}">${summaryStatus}</div>
+                <div class="pnr-movement-text ${b.ticket_spots_gained > 0 ? 'has-gain' : ''}">${deltaText}</div>
+              </div>
+              <div class="pnr-multi-pax-roster">
+                ${multiPaxRosterHtml}
+              </div>
+              ${proximityBadgeHtml}
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px;">
+                <div class="pnr-cadence-badge ${b.is_near_journey ? 'cadence-priority' : 'cadence-standard'}" title="${b.tier_label || 'Polling Cadence'}">
+                  <span>${b.is_near_journey ? '⚡ 2h Poll' : '5h Poll'}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          // Single passenger
+          let berthBadgeHtml = '';
+          if (window.RailPulseBerthEngine) {
+            const coachBerth = window.RailPulseBerthEngine.extractCoachBerth(primaryCurrent);
+            if (coachBerth.coach && coachBerth.seat) {
+              const authCode = primaryPax.berth_code || (primaryCurrent.includes('WS') ? 'WS' : null);
+              const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, coachBerth.seat, coachBerth.coach, authCode);
+              if (details.isSupported && details.berthCode) {
+                berthBadgeHtml = `
+                  <div class="pnr-berth-badge">
+                    <span>${details.coach} / ${details.seat} · ${details.berthCode} (${details.berthName})</span>
+                  </div>
+                `;
+              } else if (details.class === '1A') {
+                berthBadgeHtml = `
+                  <div class="pnr-berth-badge badge-pending">
+                    <span>${details.coach} · First Class</span>
+                  </div>
+                `;
+              }
+            } else if (anyConfirmed) {
+              berthBadgeHtml = `
+                <div class="pnr-berth-badge badge-pending">
+                  <span>Seat allocation pending final chart</span>
+                </div>
+              `;
+            }
+          }
+
+          statusSectionHtml = `
+            <div class="pnr-status-group">
+              <div class="pnr-current-status-wrapper">
+                <div class="pnr-current-status ${anyConfirmed ? 'is-cnf' : ''}">${primaryCurrent}</div>
+                <div class="pnr-movement-text ${b.ticket_spots_gained > 0 ? 'has-gain' : ''}">${deltaText}</div>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px;">
+                ${berthBadgeHtml}
+                <div class="pnr-cadence-badge ${b.is_near_journey ? 'cadence-priority' : 'cadence-standard'}" title="${b.tier_label || 'Polling Cadence'}">
+                  <span>${b.is_near_journey ? '⚡ 2h Poll' : '5h Poll'}</span>
+                </div>
+              </div>
+            </div>
+          `;
         }
 
         card.innerHTML = `
@@ -3164,18 +3427,7 @@
               </div>
             </div>
 
-            <div class="pnr-status-group">
-              <div class="pnr-current-status-wrapper">
-                <div class="pnr-current-status ${isConfirmed ? 'is-cnf' : ''}">${primaryCurrent}</div>
-                <div class="pnr-movement-text ${b.ticket_spots_gained > 0 ? 'has-gain' : ''}">${deltaText}</div>
-              </div>
-              <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px;">
-                ${berthBadgeHtml}
-                <div class="pnr-cadence-badge ${b.is_near_journey ? 'cadence-priority' : 'cadence-standard'}" title="${b.tier_label || 'Polling Cadence'}">
-                  <span>${b.is_near_journey ? '⚡ 2h Poll' : '5h Poll'}</span>
-                </div>
-              </div>
-            </div>
+            ${statusSectionHtml}
           </div>
 
           <div class="pnr-card-actions">
@@ -3252,9 +3504,16 @@
       }
 
       const paxList = Array.isArray(b.passengers) && b.passengers.length > 0 ? b.passengers : [];
-      const primaryPax = paxList[0] || {};
-      const primaryCurrent = primaryPax.current_status || '';
-      const coachBerth = window.RailPulseBerthEngine.extractCoachBerth(primaryCurrent);
+      let coachBerth = { coach: null, seat: null };
+      let allocatedPax = null;
+      for (const p of paxList) {
+        const ext = window.RailPulseBerthEngine.extractCoachBerth(p.current_status || '');
+        if (ext.coach && ext.seat) {
+          coachBerth = ext;
+          allocatedPax = p;
+          break;
+        }
+      }
 
       // Multi-passenger proximity check
       const proximity = window.RailPulseBerthEngine.evaluatePassengerProximity(paxList, b.coach_class);
@@ -3285,7 +3544,7 @@
         return;
       }
 
-      const p0 = (b.passengers && b.passengers[0]) ? b.passengers[0] : {};
+      const p0 = allocatedPax || (b.passengers && b.passengers[0]) || {};
       const authCode = p0.berth_code || (p0.current_status && p0.current_status.includes('WS') ? 'WS' : null);
       const details = window.RailPulseBerthEngine.resolveBerthDetails(b.coach_class, coachBerth.seat, coachBerth.coach, authCode);
 
