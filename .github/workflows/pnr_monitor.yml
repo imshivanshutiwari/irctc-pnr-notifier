@@ -2,7 +2,7 @@
 
     on:
       schedule:
-  	# Runs every 2 hours to service priority near-journey cadences and auto-pruning
+        # Runs every 2 hours to service priority near-journey cadences and auto-pruning
         - cron: '0 */2 * * *'
       workflow_dispatch: # Allows manual trigger from GitHub Actions anytime
 
@@ -45,10 +45,10 @@
               PNR_NUMBER: ${{ secrets.PNR_NUMBER }}
               NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
               RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
-  	          RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST }}
+              RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST }}
               WHATSAPP_PHONE: ${{ secrets.WHATSAPP_PHONE }}
               CALLMEBOT_API_KEY: ${{ secrets.CALLMEBOT_API_KEY }}
-  	      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+              TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
               TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
             run: |
               cargo run --release -- check --state-file "$RUNNER_TEMP/status_state.json" --allow-transient-errors
